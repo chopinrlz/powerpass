@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<meta http-equiv="expires" content="0" />
+	<meta http-equiv="cache-control" content="no-cache" />
+	<meta http-equiv="pragma" content="no-cache" />
+
+	<meta name="author" content="Dominik Reichl" />
+
+	
+	
+
+	<meta name="DC.title" content="TAN Support - KeePass" />
+	<meta name="DC.creator" content="Dominik Reichl" />
+	<meta name="DC.type" content="Text" />
+	<meta name="DC.format" content="text/html" />
+	<meta name="DC.language" content="en" />
+	<meta name="DC.rights" content="Copyright (C) 2003-2023 Dominik Reichl" />
+
+	<meta name="robots" content="index, follow" />
+
+	<title>TAN Support - KeePass</title>
+	<base target="_self" />
+	<link rel="stylesheet" type="text/css" href="../../default.css" />
+
+	
+</head>
+<body>
+
+
+
+<table class="sectionheader"><tr>
+<td><img src="../images/b64x64_vcard.png" alt="" /></td>
+<td><h1>TAN Support</h1>
+<p>KeePass supports Transaction Authentication Numbers (TANs).</p></td>
+</tr></table>
+
+<ul>
+<li><a href="#wizard">Using the <i>TAN Wizard</i> to add TANs</a></li>
+<li><a href="#usage">Using TANs</a></li>
+</ul>
+
+<p>KeePass supports TANs, i.e. passwords that can be used only
+once.
+These special passwords are used by some banks: you need to confirm
+transactions using such TANs. This provides additional security, as
+a spy cannot perform transactions, even if he knows the password of
+your banking account.</p>
+
+<br />
+
+<a name="wizard"></a>
+<h2 class="sectiontitle"><img src="../images/b16x16_vcard.png" alt="" />
+Using the <i>TAN Wizard</i> to add TANs</h2>
+
+<p>You can use the KeePass <b>TAN Wizard</b> to add several TANs at once to your
+database. Just open the TAN wizard dialog (menu <i>Tools</i> - <i>TAN Wizard</i>) and enter
+all your TANs. The formatting doesn't really
+matter, KeePass just uses all alphanumerical strings, i.e. characters like line breaks,
+tabs, spaces, dots, etc. are interpreted as separators.</p>
+
+<p>The wizard will then generate several TAN entries from the data you entered into the dialog. Each
+TAN is a standard KeePass entry. The title of a TAN entry always is set to &quot;<code>&lt;TAN&gt;</code>&quot;.
+This tells KeePass that the entry is a TAN entry. You cannot change the title, user
+name and URL of a TAN. But you can freely add notes to a TAN entry, if you wish.</p>
+
+<br />
+
+<a name="usage"></a>
+<h2 class="sectiontitle"><img src="../images/b16x16_vcard.png" alt="" />
+Using TANs</h2>
+
+<p>When you use the TAN (e.g. execute the &quot;Copy Password&quot; command on
+it), its expiration date will be set
+to the current time, which expires the entry. It will get a red
+<span style="color: #FF0000;"><b>X</b></span> as icon.
+If you later want to know when you used a specific TAN,
+you can just have a look at its expiration date.</p>
+
+<p>When copying a TAN to the clipboard, the database is marked as modified. You must save
+the file in order to remember the usage of a TAN.</p>
+
+<p>If you accidently used a TAN without needing it, you can reset it (i.e. remove the red
+<span style="color: #FF0000;"><b>X</b></span> and show it as valid TAN again). To do this, open the
+TAN entry (right-click it and choose <i>'Edit/View Entry...'</i>). Here, uncheck the
+<i>'Expires'</i> checkbox. Click [OK] to close the dialog.</p>
+
+</body></html>
+

@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<meta http-equiv="expires" content="0" />
+	<meta http-equiv="cache-control" content="no-cache" />
+	<meta http-equiv="pragma" content="no-cache" />
+
+	<meta name="author" content="Dominik Reichl" />
+
+	
+	
+
+	<meta name="DC.title" content="Import / Export - KeePass" />
+	<meta name="DC.creator" content="Dominik Reichl" />
+	<meta name="DC.type" content="Text" />
+	<meta name="DC.format" content="text/html" />
+	<meta name="DC.language" content="en" />
+	<meta name="DC.rights" content="Copyright (C) 2003-2023 Dominik Reichl" />
+
+	<meta name="robots" content="index, follow" />
+
+	<title>Import / Export - KeePass</title>
+	<base target="_self" />
+	<link rel="stylesheet" type="text/css" href="../../default.css" />
+
+	
+	<style type="text/css">
+	/* <![CDATA[ */
+	.impexp_uiex_line {
+		text-align: center;
+	}
+
+	.impexp_uiex_inline {
+		display: inline-block;
+		text-align: left;
+		vertical-align: top;
+	}
+	/* ]]> */
+	</style>
+
+</head>
+<body>
+
+
+
+
+
+<table class="sectionheader"><tr>
+<td><img src="../images/b64x64_dataexchange.png" alt="" /></td>
+<td><h1>Import / Export</h1>
+<p>KeePass supports importing/exporting data from/to various file formats.</p></td>
+</tr></table>
+
+<p>KeePass 1.x supports importing data from <b>CSV files</b> (special form),
+<b>CodeWallet</b>, <b>Password Safe</b>, and <b>Personal Vault</b>.</p>
+
+<p>KeePass 2.x supports importing data from <b>CSV files</b> (all),
+<b>KeePass 1.x (KDB, XML and CSV)</b>, <b>KeePass 2.x XML</b>,
+<b>1Password</b>,
+<b>1Password Pro</b>, <b>1PW</b>, <b>Alle meine Passworte</b>,
+<b>Any Password</b>, <b>Bitwarden</b>, <b>CodeWallet</b>, <b>Dashlane</b>,
+<b>DataVault</b>, <b>DesktopKnox</b>, <b>Enpass</b>,
+<b>FlexWallet</b>, <b>Google Chrome</b>, <b>Handy Safe</b>, <b>Handy Safe Pro</b>,
+<b>Kaspersky Password Manager</b>, <b>KeePassX</b>, <b>Keeper</b>,
+<b>Key Folder</b>, <b>LastPass</b>,
+<b>Mozilla Bookmarks</b>, <b>mSecure</b>, <b>Network Password Manager</b>,
+<b>Norton Identity Safe</b>, <b>nPassword</b>, <b>PassKeeper</b>,
+<b>Passphrase Keeper</b>, <b>Password Agent</b>,
+<b>Password Depot</b>, <b>Password Exporter</b>, <!-- <b>Password Gorilla</b>, -->
+<b>Password Keeper</b>, <b>Password Memory</b>, <b>Password Prompter</b>,
+<b>Password Safe</b>, <b>Password Saver</b>, <b>Passwords Plus</b>,
+<b>Passwort.Tresor</b>, <b>Personal Vault</b>,
+<b>PINs</b>, <b>Revelation</b>, <b>RoboForm</b>, <b>SafeWallet</b>,
+<b>Security TXT</b>, <b>SplashID</b>, <b>Steganos Password Manager</b>,
+<b>Sticky Password</b>, <b>True Key</b>, <b>TurboPasswords</b>, <b>VisKeeper</b>,
+<b>Whisper 32</b>, <b>ZDNet's Password Pro</b>, and <b>Spamex.com</b>.</p>
+
+<p>For both KeePass 1.x and 2.x, there are plugins available that
+add more import/export capabilities.</p>
+
+<ul>
+<li>For KeePass 1.x:
+
+<ul>
+<li><a href="#csv">File Format: CSV</a></li>
+<li><a href="#xml">File Format: XML</a></li>
+</ul>
+
+</li>
+
+<li>For KeePass 2.x:
+
+<ul>
+<li><a href="#genericcsv">Generic CSV Importer</a></li>
+
+<li>Formats that require custom options/steps in order to be imported:
+<ul>
+<li><a href="#imp_cwallet">How to Import CodeWallet TXT</a></li>
+<!-- <li><a href="#imp_pwgorilla">How to Import Password Gorilla CSV</a></li> -->
+<li><a href="#imp_pins">How to Import PINs TXT</a></li>
+<li><a href="#imp_roboform">How to Import Data from RoboForm</a></li>
+<li><a href="#imp_steganos">How to Import Data from Steganos Password Manager 2007</a></li>
+<li><a href="#imp_passkeeper">How to Import Data from PassKeeper 1.2</a></li>
+<li><a href="#imp_1pwpro">How to Import 1PW and 1Password Pro CSV</a></li>
+</ul>
+</li>
+
+<li><a href="#exp_parents">Export: Option 'Additionally Export Parent Groups'</a></li>
+</ul>
+
+</li>
+</ul>
+
+<hr />
+
+<p>Unfortunately, there is no standard password database format. Every password
+manager uses its own file format. Anyway, almost all support exporting to CSV or XML
+files. This sounds good at first glance, but CSV and XML files are not specialized password
+database formats, they only specify a low-level layout of the stored data (for CSV: data fields
+are separated by commas; for XML: hierarchical form using tags). These formats do not
+specify the high-level arrangement of the data (for CSV: order/meaning of the fields; for
+XML: tag names and structure). Because of this, many users are confused when application #1
+exports data to CSV/XML and application #2 cannot read the CSV/XML file, although it claims
+that it can read those files.</p>
+
+<p>This help page details the expected CSV and XML file formats. Knowing the formats which
+KeePass expects, you can reformat CSV and XML files exported by other password managers to
+match the KeePass formats. CSV files can be reformatted using e.g. <i>LibreOffice Calc</i>
+(see below).
+XML files can be reformatted using an XML editor.</p>
+
+<p>KeePass can import many password database formats directly (see top of this page).
+Additionally, there are specialized KeePass
+<a href="https://keepass.info/plugins.html" target="_blank">plugins</a> available
+for importing more formats (like AnyPassword CSV, Oubliette files, PINs TXT, ZSafe files,
+and many more). Using these plugins, you do not need to manually reformat the output of
+other password managers; you can directly import the exported files.</p>
+
+<p>If no import plugin exists for importing data from your previous password manager,
+feel free to post a request for it in the
+<a href="https://sourceforge.net/p/keepass/feature-requests/"
+target="_blank">KeePass Feature Requests Tracker</a>
+or in the
+<a href="https://sourceforge.net/p/keepass/discussion/329220/" target="_blank">Open
+Discussion</a> forum.</p>
+
+<br />
+
+<a name="csv"></a>
+<h2 class="sectiontitle"><img src="../images/b16x16_ascii.png" alt="" />
+File Format: CSV (KeePass 1.x)</h2>
+
+<p>KeePass imports and exports data from/to CSV files in the following format:</p>
+
+<p><code>&quot;Account&quot;,&quot;Login Name&quot;,&quot;Password&quot;,&quot;Web Site&quot;,&quot;Comments&quot;</code></p>
+
+<p>The 'Account' field in a CSV file corresponds to the title field of
+a KeePass entry, 'Login Name' corresponds to the user name,
+'Web Site' corresponds to the URL, and 'Comments' correspond to the notes.
+The CSV field names differ from the KeePass entry field names
+in order to ensure the compatibility with certain other applications.</p>
+
+<p>For a detailed example, download this file:
+<img src="../images/b16x16_tar.png" alt="ZIP Package" />
+<a href="https://keepass.info/help/download/FileSample_CSV.zip"
+target="_blank">FileSample_CSV.zip</a>.
+This file is zipped only in order to ensure correct encoding (if not zipped, browsers or
+download managers could automatically convert the file to a different encoding). When importing
+a CSV file, it must <i>not</i> be zipped!</p>
+
+<p>Important notes about the format:</p>
+
+<ul>
+<li>The file must be encoded using UTF-8 (Unicode). Other encodings are not supported.</li>
+<li>CSV files only support the following fields: title, user name, password, URL and notes.
+Other fields like last entry modification time, expiration time, icon, entry file attachments,
+etc. are <i>not</i> supported. If you want to transfer such information, you have to use
+a different format (like XML).</li>
+<li>All fields must be enclosed in quotes (&quot;). These quotes are mandatory, unquoted fields are not allowed.</li>
+<li>Quotes (&quot;) in strings are encoded as <code>\&quot;</code> (two characters).
+Backslashes (\) are encoded as <code>\\</code>.</li>
+<li>Multiline comments are realized through normal line breaks. Encoding line breaks
+by <code>\n</code> is not supported.</li>
+</ul>
+
+<p>Microsoft Excel by default does not enclose fields in quotes (<code>&quot;</code>).
+It is recommended that you use
+LibreOffice Calc
+to create a correct CSV file (see below), or use the <a href="#genericcsv">Generic CSV Importer</a>
+of KeePass 2.x (import your CSV file into KeePass 2.x, then export the data to a
+KeePass 1.x KDB file), or fix the CSV file by manually adding the quotes using a text editor.</p>
+
+<p>If you want to transfer data between KeePass 1.x databases, you must
+not change the default export options of KeePass.
+Do not export additional fields or uncheck any options, otherwise
+KeePass will not be able to re-import the CSV file, because it does not comply to the
+specification above any more.</p>
+
+<p><b>Using <i>LibreOffice Calc</i> to create a CSV file:</b><br />
+<a href="https://www.libreoffice.org/discover/calc/" target="_blank">LibreOffice Calc</a>
+can be used to create CSV files that can be imported correctly into KeePass. Follow these steps:</p>
+
+<ul>
+<li>Make sure you got 5 columns as described above.</li>
+<li>Select everything, right-click and select <i>'Format Cells'</i>. In the dialog, choose <i>Text</i>
+as category. Click [OK].</li>
+<li>Go <i>'File' &rarr; 'Save As...'</i>, choose a location and the
+'Text CSV' file type, and make sure that the check box
+<i>'Edit Filter Settings'</i> is enabled. Click the <i>'Save'</i> button.</li>
+<li>Choose <i>'Unicode (UTF-8)'</i> as character set. The field separator must be set to a comma.
+The text separator must be <code>&quot;</code>. Make sure that the
+<i>'Quote all text cells'</i> option is checked, and that the <i>'Fixed column width'</i>
+option is not checked. Click [OK].</li>
+</ul>
+
+<br />
+
+<a name="xml"></a>
+<h2 class="sectiontitle"><img src="../images/b16x16_ascii.png" alt="" />
+File Format: XML (KeePass 1.x)</h2>
+
+<p>This section describes the KeePass 1.x XML format. Note that this format
+is different from the XML format used by KeePass 2.x (anyway, KeePass 2.x
+can import KeePass 1.x XML files).</p>
+
+<p>You can download a detailed XML sample file here:
+<img src="../images/b16x16_tar.png" alt="ZIP Package" />
+<a href="https://keepass.info/help/download/FileSample_XML.zip"
+target="_blank">FileSample_XML.zip</a>.
+This file is zipped only in order to ensure correct encoding (if not zipped, browsers or
+download managers could automatically convert the file to a different encoding). When importing
+a XML file, it of course must <i>not</i> be zipped!</p>
+
+<p>Important notes about the format:</p>
+
+<ul>
+<li>The files must be encoded using UTF-8 (Unicode). Other encodings are not supported.</li>
+<li>The following five entities must be encoded: <code>&lt; &gt; &amp; &quot; '</code>. They are encoded
+by <code>&amp;lt; &amp;gt; &amp;amp; &amp;quot; &amp;apos;</code>.</li>
+<li>The UUID is a hex-encoded 16-byte string (i.e. an 32 ANSI hex
+character string in the XML file). It
+is unique (also across multiple databases) and can be used to identify entries.</li>
+<li>Dates/times are encoded in the standard date/time XML format (YYYY-MM-DDTHH:mm:ss):
+first the date in form YYYY-MM-DD, a 'T' character, and the
+time in form HH:mm:ss.</li>
+</ul>
+
+<br />
+
+<a name="genericcsv"></a>
+<h2 class="sectiontitle"><img src="../images/b16x16_dataexchange.png" alt="" />
+Generic CSV Importer</h2>
+
+<p>KeePass 2.x features a generic CSV importer.
+This tool can import almost all CSV formats. The CSV
+files are loaded and you can manually specify the encoding / character set, assign columns
+to data fields, and specify how the low-level structure looks like (usage of quotes, etc.).</p>
+
+<p>To start the generic CSV file importer, click <i>'File' &rarr; 'Import'</i> and
+choose <i>'Generic CSV Importer'</i>.</p>
+
+<div style="text-align: center;">
+<a href="https://keepass.info/screenshots/keepass_2x/gencsvimp_big.png"
+target="_blank"><img src="../../screenshots/keepass_2x/gencsvimp.png"
+alt="Generic CSV Importer" /></a>
+</div>
+
+<p>Details about the generic CSV importer (with descriptions of the
+options, examples, etc.) can be found on the
+<a href="https://keepass.info/help/kb/imp_csv.html"
+target="_blank">Generic CSV Importer</a> help page.</p>
+
+<br />
+
+<a name="imp_cwallet"></a>
+<h2 class="sectiontitle"><img src="../images/b16x16_ascii.png" alt="" />
+How to Import CodeWallet TXT</h2>
+
+<p>CodeWallet is a password manager that supports different card types (fields).
+KeePass cannot know which of the CodeWallet fields correspond to the KeePass
+standard fields (title, user name, ...), because they don't have fixed names (language-dependent,
+user-customizable, ...).
+Therefore all fields from the CodeWallet file are imported into custom string fields
+of KeePass entries. After importing the file, you can move some of the strings
+to the correct standard fields (by clicking the <i>'Move'</i> button on the second tab page
+of the entries dialog.</p>
+
+<br />
+
+<!-- <a name="imp_pwgorilla"></a>
+<h2 class="sectiontitle"><img src="../images/b16x16_ascii.png" alt="" />
+How to Import Password Gorilla CSV</h2>
+
+<p>In order to successfully import a Password Gorilla CSV file, you need
+to configure the following settings in <i>'File - Preferences - Export'</i> in
+Password Gorilla:</p>
+
+<ul>
+<li>Enable <i>'Include password field'</i>.</li>
+<li>Enable <i>'Include notes field'</i>.</li>
+<li>Enable <i>'Save as Unicode text file'</i>.</li>
+<li>Set the field separator to '&#181;' (mu, press AltGr+M).</li>
+<li>Make sure you didn't use the '&#181;' character anywhere in your password database.</li>
+</ul>
+
+<p>When you carefully set these options, export the data to a CSV file and import
+it into KeePass using <i>'File &rarr; Import'</i> in KeePass 2.x.</p>
+
+<br /> -->
+
+<a name="imp_pins"></a>
+<h2 class="sectiontitle"><img src="../images/b16x16_ascii.png" alt="" />
+How to Import PINs TXT</h2>
+
+<p>In order to successfully import a PINs TXT file, you need to do the following:</p>
+
+<ul>
+<li>Switch PINs language to 'English'.</li>
+<li>In PINs export dialog: Enable <i>all</i> fields.</li>
+<li>In PINs export dialog: Set separator to <i>'tab'</i>.</li>
+<li>In PINs export dialog: Enable <i>'Quote texts'</i>.</li>
+</ul>
+
+<p>After exporting a TXT file using the settings above, import it using
+<i>'File &rarr; Import'</i> in KeePass 2.x.</p>
+
+<br />
+
+<a name="imp_roboform"></a>
+<h2 class="sectiontitle"><img src="../images/b16x16_ascii.png" alt="" />
+How to Import Data from RoboForm</h2>
+
+<ol>
+<!-- <li>In RoboForm go <i>'Options'</i> &rarr; tab <i>'User Data'</i> and
+uncheck the option <i>'PrintList shows new dialog'</i>.
+If you cannot find this option (old RoboForm version), simply continue with
+the next step.</li> -->
+<li>Export your logins to a HTML file. To do this, open
+RoboForm's <i>Passcard Editor</i> (<i>'Edit Passcards'</i> or <i>'RoboForm Editor'</i>
+in the Windows start menu)
+and in the editor's main menu go <i>'Passcard'</i> &rarr; <i>'Print List'</i>
+(in newer versions you have to click the <i>'RoboForm'</i> button and go
+<i>'Print List'</i> &rarr; <i>'Logins'</i>). In the
+dialog that opens, click the <i>'Save'</i> button. Choose a location and file name,
+and click <i>'Save'</i>.</li>
+
+<li>Open your KeePass 2.x database file and go <i>'File'</i> &rarr; <i>'Import'</i>.
+Choose <i>'RoboForm HTML'</i> as format and select the HTML file you just exported,
+then click <i>'OK'</i>.</li>
+</ol>
+
+<br />
+
+<a name="imp_steganos"></a>
+<h2 class="sectiontitle"><img src="../images/b16x16_ascii.png" alt="" />
+How to Import Data from Steganos Password Manager 2007</h2>
+
+<p><b>Warning!</b> It is possible that the transfer fails and that KeePass accidently
+overwrites your existing passwords in Steganos Password Manager. Therefore, back up your
+SEF file before starting the import! In any case you should restore your passwords by
+restoring the backup you just created after the import process! Even if you think
+KeePass hasn't changed anything, restore from the backup!</p>
+
+<p>Unfortunately Steganos Password Manager (SPM) lacks any form of export functionality. As the
+SEF file format (in which the data is stored) is proprietary and no specification
+is available, KeePass needs to try to get all the data out of the windows of
+SPM.</p>
+
+<p>The import process works as follows. First you start SPM and open your password
+database. The main password management window should be open (i.e. the one which lists
+your items in the middle of the screen, and got toolbar-like buttons at the top). Make
+sure that <i>all</i> your items are displayed in the list (select the correct filter in
+the combobox above the item list).</p>
+
+<p>Now switch to KeePass 2.x and open your KeePass database. Go <i>File &rarr; Import</i> and
+choose <i>Steganos Password Manager 2007</i>. Click [OK]. Now read the rest before continuing.</p>
+
+<p>After pressing the [Yes] button in the KeePass import confirmation dialog, you got
+10 seconds to switch to the SPM window. Select the very first entry within the SPM window
+(but do not open it, just select it). This is important! The first entry must have the
+keyboard focus and must be selected.</p>
+
+<p>When the 10 seconds are over, KeePass will start importing. You will see how
+KeePass opens the SPM items, copies the data, closes the item's window, select the
+next item, etc. Everything goes automatic now and you can just sit back and watch.
+Sometimes Windows playes a <i>ding</i> sound, this is normal.</p>
+
+<p>Note that it can take quite some time to import your items. Do <b>not</b> do
+anything while KeePass is importing! One single mouse click or keypress can ruin the
+complete import process.</p>
+
+<p>The last item will be scanned twice. When completed, KeePass will
+show a message &quot;The import process has finished!&quot;.</p>
+
+<p>It is possible that KeePass failed to import some items (mainly caused by SPM's
+unpredictable slow response times). It is highly recommended that you compare each of
+the entries.</p>
+
+<br />
+
+<a name="imp_passkeeper"></a>
+<h2 class="sectiontitle"><img src="../images/b16x16_ascii.png" alt="" />
+How to Import Data from PassKeeper 1.2</h2>
+
+<p>The import process works visually, exactly like the import method for
+Steganos Password Manager data. Please read all instructions in
+<a href="#imp_steganos">How to Import Data from Steganos Password Manager 2007</a>.</p>
+
+<br />
+
+<a name="imp_1pwpro"></a>
+<h2 class="sectiontitle"><img src="../images/b16x16_ascii.png" alt="" />
+How to Import 1PW and 1Password Pro CSV</h2>
+
+<p>KeePass can import CSV files exported by 1PW and 1Password Pro.
+When exporting the data, make sure:</p>
+
+<ul>
+<li>Choose the tabulator (Tab) as field separator.</li>
+<li>The option for enclosing fields in quotes must be enabled.</li>
+<li>All fields must be exported, in the original order.</li>
+</ul>
+
+<br />
+
+<a name="exp_parents"></a>
+<h2 class="sectiontitle"><img src="../images/b16x16_kmultiple.png" alt="" />
+Export: Option 'Additionally Export Parent Groups'</h2>
+
+<p>In KeePass 2.x, there is an option 'Additionally export parent groups'
+in the export dialog.
+If this option is turned on, the parent groups of the selected groups/entries
+are exported, too (all up to the root group of the database).
+Unselected groups/entries in parent groups are not exported.</p>
+
+<p>If the selected file format does not support groups, the option
+has no effect.
+When exporting the whole database (via 'File' &rarr; 'Export') or the
+root group, the option is disabled, because the root group has no parent
+group.</p>
+
+<p>Properties of the parent groups (icons, notes, auto-type settings, etc.)
+are exported, if the selected file format supports them.
+When importing a file, the properties of the groups in the current database
+may be overwritten by the properties of the groups in the file
+(depending on the import mode and the last modification times).</p>
+
+<p><b>Example.</b>
+Assume that the user selects the entry 'Entry B' that is stored in
+the groups 'Group 1' &rarr; 'Group 1.2' of a database.</p>
+
+<div class="impexp_uiex_line">
+<table class="impexp_uiex_inline uiex_w">
+<tr><td><img src="../images/folder_closed.png" alt="" /></td>
+<td colspan="3"><b>Root Group</b></td></tr>
+<tr><td></td><td><img src="../images/folder_closed.png" alt="" /></td>
+<td colspan="2">Group 1</td></tr>
+<tr><td colspan="2"></td><td><img src="../images/folder_closed.png" alt="" /></td>
+<td>Group 1.1</td></tr>
+<tr><td colspan="2"></td><td><img src="../images/folder_closed.png" alt="" /></td>
+<td class="uiex_t_sel">Group 1.2</td></tr>
+<tr><td></td><td><img src="../images/folder_closed.png" alt="" /></td>
+<td colspan="2">Group 2</td></tr>
+</table>
+&nbsp;
+<table class="impexp_uiex_inline uiex_w">
+<tr><th colspan="2">Title</th><th>User Name</th><th>Password</th><th>URL</th><th>Notes</th></tr>
+<tr><td><img src="../images/b16x16_password.png" alt="" /></td>
+<td>Entry A</td><td>Michael42</td><td>********</td><td>https://example.net/</td><td>None.</td></tr>
+<tr><td><img src="../images/b16x16_password.png" alt="" /></td>
+<td class="uiex_t_sel">Entry B</td>
+<td class="uiex_t_sel">Michael42</td>
+<td class="uiex_t_sel">********</td>
+<td class="uiex_t_sel">https://example.com/</td>
+<td class="uiex_t_sel">None.</td></tr>
+<tr><td><img src="../images/b16x16_password.png" alt="" /></td>
+<td>Entry C</td><td>Michael42</td><td>********</td><td>https://example.org/</td><td>None.</td></tr>
+</table>
+</div>
+
+<p>Exporting the selected entry (via 'Entry' &rarr; 'Data Exchange' &rarr;
+'Export Entry') to a KDBX database file without turning on the option results in:</p>
+
+<div class="impexp_uiex_line">
+<table class="impexp_uiex_inline uiex_w">
+<tr><td><img src="../images/folder_closed.png" alt="" /></td>
+<td class="uiex_t_sel"><b>Root Group</b></td></tr>
+</table>
+&nbsp;
+<table class="impexp_uiex_inline uiex_w">
+<tr><th colspan="2">Title</th><th>User Name</th><th>Password</th><th>URL</th><th>Notes</th></tr>
+<tr><td><img src="../images/b16x16_password.png" alt="" /></td>
+<td>Entry B</td><td>Michael42</td><td>********</td><td>https://example.com/</td><td>None.</td></tr>
+</table>
+</div>
+
+<p>In contrast, exporting the selected entry to a KDBX database file with
+the option turned on results in:</p>
+
+<div class="impexp_uiex_line">
+<table class="impexp_uiex_inline uiex_w">
+<tr><td><img src="../images/folder_closed.png" alt="" /></td>
+<td colspan="3"><b>Root Group</b></td></tr>
+<tr><td></td><td><img src="../images/folder_closed.png" alt="" /></td>
+<td colspan="2">Group 1</td></tr>
+<tr><td colspan="2"></td><td><img src="../images/folder_closed.png" alt="" /></td>
+<td class="uiex_t_sel">Group 1.2</td></tr>
+</table>
+&nbsp;
+<table class="impexp_uiex_inline uiex_w">
+<tr><th colspan="2">Title</th><th>User Name</th><th>Password</th><th>URL</th><th>Notes</th></tr>
+<tr><td><img src="../images/b16x16_password.png" alt="" /></td>
+<td>Entry B</td><td>Michael42</td><td>********</td><td>https://example.com/</td><td>None.</td></tr>
+</table>
+</div>
+
+</body></html>
+

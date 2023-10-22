@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<meta http-equiv="expires" content="0" />
+	<meta http-equiv="cache-control" content="no-cache" />
+	<meta http-equiv="pragma" content="no-cache" />
+
+	<meta name="author" content="Dominik Reichl" />
+
+	
+	
+
+	<meta name="DC.title" content="Scripting KeePass (2.x) - KeePass" />
+	<meta name="DC.creator" content="Dominik Reichl" />
+	<meta name="DC.type" content="Text" />
+	<meta name="DC.format" content="text/html" />
+	<meta name="DC.language" content="en" />
+	<meta name="DC.rights" content="Copyright (C) 2003-2023 Dominik Reichl" />
+
+	<meta name="robots" content="index, follow" />
+
+	<title>Scripting KeePass (2.x) - KeePass</title>
+	<base target="_self" />
+	<link rel="stylesheet" type="text/css" href="../../default.css" />
+
+	
+</head>
+<body>
+
+
+
+<table class="sectionheader"><tr>
+<td><img src="../images/b64x64_konsole.png" alt="" /></td>
+<td><h1>Scripting KeePass (2.x)</h1>
+<p>How to automate database operations in KeePass 2.x.</p></td>
+</tr></table>
+
+<p><b>Prerequisites:</b></p>
+
+<p>In order to automate KeePass, you need the <i>KPScript</i> plugin/extension.
+You can find the latest version of KPScript on the KeePass plugins
+web page.
+The <code>KPScript.exe</code> file needs to be copied into the directory
+where KeePass is installed (where the <code>KeePass.exe</code> file is).</p>
+
+<hr />
+
+<p>There are two ways to automate KeePass: <i>single command operations</i>
+and <i>KPS script files</i>.</p>
+
+<ul>
+<li><a href="scr_sc_index.html">Single Command Operations</a>:
+KPScript can be invoked using single commands. By passing the database location,
+its key, a command and eventually some parameters, simple operations like adding
+an entry can be performed. The syntax is very simple, no scripting knowledge is
+required. This method is ideal when you quickly want to do some small changes to
+the database. It is not recommended when you need to perform many operations, because
+for each command the database needs to be loaded from file, decrypted, modified,
+encrypted and written back to file.<br />
+<br /></li>
+
+<li><a href="scr_kps_index.html">KPS Script Files</a>: These files are a lot more
+powerful than single command operations, but are also more complicated. You need
+to have heavy experience in C# programming and the KeePass 2.x internals.
+Within KPS files you can do everything that KeePass does.</li>
+</ul>
+
+</body></html>
+

@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<meta http-equiv="expires" content="0" />
+	<meta http-equiv="cache-control" content="no-cache" />
+	<meta http-equiv="pragma" content="no-cache" />
+
+	<meta name="author" content="Dominik Reichl" />
+
+	
+	
+
+	<meta name="DC.title" content="XML Replace - KeePass" />
+	<meta name="DC.creator" content="Dominik Reichl" />
+	<meta name="DC.type" content="Text" />
+	<meta name="DC.format" content="text/html" />
+	<meta name="DC.language" content="en" />
+	<meta name="DC.rights" content="Copyright (C) 2003-2023 Dominik Reichl" />
+
+	<meta name="robots" content="index, follow" />
+
+	<title>XML Replace - KeePass</title>
+	<base target="_self" />
+	<link rel="stylesheet" type="text/css" href="../../default.css" />
+
+	
+</head>
+<body>
+
+
+
+<!-- Org Pub: 2013-12-06 -->
+
+<table class="sectionheader"><tr>
+<td><img src="../images/b64x64_binary.png" alt="" /></td>
+<td><h1>XML Replace</h1>
+<p>About the XML replacement functionality.</p></td>
+</tr></table>
+
+<ul>
+<li><a href="#info">General Information</a></li>
+<li><a href="#ex">Examples</a>:
+<ul>
+<li><a href="#repstr">Replace text in all entry titles and notes</a></li>
+<li><a href="#tohttps">Replace all HTTP URLs by HTTPS URLs</a></li>
+<li><a href="#repgrpicon">Replace group icons</a></li>
+<li><a href="#delstr">Delete entry strings by name</a></li>
+<li><a href="#delbinext">Delete entry attachments by name extension</a></li>
+<li><a href="#resetbgcolor">Reset background colors</a></li>
+<li>Auto-Type:
+<ul>
+<li><a href="#atdisable">Disable auto-type for entries with empty fields</a></li>
+<li><a href="#atdelayupper">Convert <code>{DELAY=</code> to upper-case</a></li>
+<li><a href="#ataddstddelay">Prepend <code>{DELAY=50}</code> to all sequences without a <code>{DELAY=</code></a></li>
+<li><a href="#atmodstddelay">Change <code>{DELAY=</code> values</a></li>
+<li><a href="#atrmvstddelay">Remove <code>{DELAY=<em>x</em>}</code> from all sequences</a></li>
+<li><a href="#atresetifstddelay">Reset default sequences that contain <code>{DELAY=</code></a></li>
+<li><a href="#ataddassoc">Add an auto-type association to all entries</a></li>
+</ul></li>
+<li><a href="#copyurls">Copy entry URLs into title fields</a></li>
+<li><a href="#copytitles">Copy entry titles into empty user name fields</a></li>
+<li><a href="#firstnotempty">Ensure first line is not empty</a></li>
+</ul></li>
+</ul>
+
+<br />
+
+<a name="info"></a>
+<h2 class="sectiontitle"><img src="../images/b16x16_help.png" alt="" />
+General Information</h2>
+
+<p>XML Replace is a powerful feature that modifies a database by manipulating
+its XML representation.</p>
+
+<p>It creates a KeePass 2.x XML DOM of the current database
+in memory, performs the operation specified by the user
+(e.g. remove nodes or replace text), loads the modified XML tree,
+and merges the current database with the modified database.</p>
+
+<p><img src="../images/b16x16_warning.png" class="textimg" alt="Warning" />
+This is a feature for experts. Use with caution!</p>
+
+<p>XML Replace can be invoked via 'Tools' &rarr; 'Database Tools' &rarr;
+'XML Replace'.</p>
+
+<p>Information about XPath and regular expressions can be found on the
+<a href="../base/search.html">Search</a> help page.</p>
+
+<p>KeePass protects history entries; XML Replace cannot be used to modify
+these. Furthermore, any changes to database properties
+(database name/description, etc.) may be ignored.</p>
+
+<br />
+
+<a name="ex"></a>
+<h2 class="sectiontitle"><img src="../images/b16x16_help.png" alt="" />
+Examples</h2>
+
+<br />
+
+<a name="repstr"></a>
+<table class="tablebox">
+<colgroup><col style="width: 20%;" /><col style="width: 80%;" /></colgroup>
+<tr><th colspan="2">Replace text in all entry titles and notes</th></tr>
+<tr><td>Select nodes:</td>
+<td><code>//Entry/String[(Key = 'Title') or (Key = 'Notes')]/Value</code></td></tr>
+<tr><td>Action:</td><td>Replace data</td></tr>
+<tr><td>Data:</td><td>Inner text</td></tr>
+<tr><td>Find what:</td><td><code><i>TheTextToFind</i></code></td></tr>
+<tr><td>Replace with:</td><td><code><i>TheReplacement</i></code></td></tr>
+<tr><td colspan="2">Within all entry titles and notes, this
+replaces all occurences of <code><i>TheTextToFind</i></code> by
+<code><i>TheReplacement</i></code>.</td></tr>
+</table>
+
+<br />
+
+<a name="tohttps"></a>
+<table class="tablebox">
+<colgroup><col style="width: 20%;" /><col style="width: 80%;" /></colgroup>
+<tr><th colspan="2">Replace all HTTP URLs by HTTPS URLs</th></tr>
+<tr><td>Select nodes:</td>
+<td><code>//Entry/String[Key = 'URL']/Value</code></td></tr>
+<tr><td>Action:</td><td>Replace data</td></tr>
+<tr><td>Data:</td><td>Inner text</td></tr>
+<tr><td>Find what:</td><td><code>^http:</code></td></tr>
+<tr><td>Replace with:</td><td><code>https:</code></td></tr>
+<tr><td>Options:</td><td>&#9745; Regular expressions</td></tr>
+<tr><td colspan="2">Within all entry URL fields, this replaces all
+HTTP URLs by HTTPS URLs.</td></tr>
+</table>
+
+<br />
+
+<a name="repgrpicon"></a>
+<table class="tablebox">
+<colgroup><col style="width: 20%;" /><col style="width: 80%;" /></colgroup>
+<tr><th colspan="2">Replace group icons</th></tr>
+<tr><td>Select nodes:</td>
+<td><code>//Group/IconID</code></td></tr>
+<tr><td>Action:</td><td>Replace data</td></tr>
+<tr><td>Data:</td><td>Inner text</td></tr>
+<tr><td>Find what:</td><td><code>^48$</code></td></tr>
+<tr><td>Replace with:</td><td><code>36</code></td></tr>
+<tr><td>Options:</td><td>&#9745; Regular expressions</td></tr>
+<tr><td colspan="2">This assigns the ZIP package icon to all groups that
+currently have a closed folder as icon.<br />
+<br />
+All icon IDs can be found in the icon picker dialog.</td></tr>
+</table>
+
+<br />
+
+<!-- https://sourceforge.net/p/keepass/discussion/329221/thread/56a33495/ -->
+<a name="delstr"></a>
+<table class="tablebox">
+<colgroup><col style="width: 20%;" /><col style="width: 80%;" /></colgroup>
+<tr><th colspan="2">Delete entry strings by name</th></tr>
+<tr><td>Select nodes:</td>
+<td><code>//Entry/String[Key = '<i>TheName</i>']</code></td></tr>
+<tr><td>Action:</td><td>Remove nodes</td></tr>
+<tr><td colspan="2">Removes all entry strings named
+<code><i>TheName</i></code>.</td></tr>
+</table>
+
+<br />
+
+<a name="delbinext"></a>
+<table class="tablebox">
+<colgroup><col style="width: 20%;" /><col style="width: 80%;" /></colgroup>
+<tr><th colspan="2">Delete entry attachments by name extension</th></tr>
+<tr><td>Select nodes:</td>
+<td><code>//Entry/Binary/Key[(string-length(.) >= 4) and (substring(., string-length(.) - 3) = '.jpg')]/..</code></td></tr>
+<tr><td>Action:</td><td>Remove nodes</td></tr>
+<tr><td colspan="2">Removes all entry attachments that have a name
+ending in '.jpg'.</td></tr>
+</table>
+
+<br />
+
+<a name="resetbgcolor"></a>
+<table class="tablebox">
+<colgroup><col style="width: 20%;" /><col style="width: 80%;" /></colgroup>
+<tr><th colspan="2">Reset background colors</th></tr>
+<tr><td>Select nodes:</td>
+<td><code>//Entry/BackgroundColor</code></td></tr>
+<tr><td>Action:</td><td>Remove nodes</td></tr>
+<tr><td colspan="2">Sets the background color of all entries to the
+default (transparent/alternating).</td></tr>
+</table>
+
+<br />
+
+<a name="atdisable"></a>
+<table class="tablebox">
+<colgroup><col style="width: 20%;" /><col style="width: 80%;" /></colgroup>
+<tr><th colspan="2">Disable auto-type for entries with empty fields</th></tr>
+<tr><td>Select nodes:</td>
+<td><code>//Entry/String[((Key = 'UserName') or (Key = 'Password')) and (Value = '')]/../AutoType/Enabled</code></td></tr>
+<tr><td>Action:</td><td>Replace data</td></tr>
+<tr><td>Data:</td><td>Inner text</td></tr>
+<tr><td>Find what:</td><td><code>True</code></td></tr>
+<tr><td>Replace with:</td><td><code>False</code></td></tr>
+<tr><td colspan="2">Disables auto-type for all entries that have an empty
+user name field or an empty password field.</td></tr>
+</table>
+
+<br />
+
+<a name="atdelayupper"></a>
+<table class="tablebox">
+<colgroup><col style="width: 20%;" /><col style="width: 80%;" /></colgroup>
+<tr><th colspan="2">Convert <code>{DELAY=</code> to upper-case</th></tr>
+<tr><td>Select nodes:</td>
+<td><code>//DefaultSequence | //KeystrokeSequence</code></td></tr>
+<tr><td>Action:</td><td>Replace data</td></tr>
+<tr><td>Data:</td><td>Inner text</td></tr>
+<tr><td>Find what:</td><td><code>{DELAY=</code></td></tr>
+<tr><td>Replace with:</td><td><code>{DELAY=</code></td></tr>
+<tr><td colspan="2">Converts all <code>{DELAY=</code> codes
+within auto-type sequence overrides and associations to upper-case
+(by default the case sensitivity option is turned off, thus the 'Find what'
+text matches all cases).<br />
+<br />
+In KeePass 2.x, placeholders are case-insensitive. However, this XML Replace operation
+may be useful as preparation for the following example (which matches
+<code>{DELAY=</code> in a case-sensitive way).</td></tr>
+</table>
+
+<br />
+
+<a name="ataddstddelay"></a>
+<table class="tablebox">
+<colgroup><col style="width: 20%;" /><col style="width: 80%;" /></colgroup>
+<tr><th colspan="2">Prepend <code>{DELAY=50}</code> to all sequences without a <code>{DELAY=</code></th></tr>
+<tr><td>Select nodes:</td>
+<td><code>(//DefaultSequence | //KeystrokeSequence)[not(contains(., '{DELAY='))
+and (. != '')]</code></td></tr>
+<tr><td>Action:</td><td>Replace data</td></tr>
+<tr><td>Data:</td><td>Inner text</td></tr>
+<tr><td>Find what:</td><td><code>^(.*)$</code></td></tr>
+<tr><td>Replace with:</td><td><code>{DELAY=50}$1</code></td></tr>
+<tr><td>Options:</td><td>&#9745; Regular expressions</td></tr>
+<tr><td colspan="2">Prepends a <code>{DELAY=50}</code> to all auto-type
+sequence overrides and associations that do not contain any
+<code>{DELAY=</code> already and are not empty.<br />
+<br />
+Note that the node selection is case-sensitive (independent of the data
+case sensitivity option), thus you need to ensure that all
+<code>{DELAY=</code> codes are upper-case before performing this operation.
+This can e.g. be done using the XML Replace operation mentioned
+<a href="#atdelayupper">above</a>.</td></tr>
+</table>
+
+<br />
+
+<a name="atmodstddelay"></a>
+<table class="tablebox">
+<colgroup><col style="width: 20%;" /><col style="width: 80%;" /></colgroup>
+<tr><th colspan="2">Change <code>{DELAY=</code> values</th></tr>
+<tr><td>Select nodes:</td>
+<td><code>//DefaultSequence | //KeystrokeSequence</code></td></tr>
+<tr><td>Action:</td><td>Replace data</td></tr>
+<tr><td>Data:</td><td>Inner text</td></tr>
+<tr><td>Find what:</td><td><code>\{DELAY=[\d\s]*\}</code></td></tr>
+<tr><td>Replace with:</td><td><code>{DELAY=50}</code></td></tr>
+<tr><td>Options:</td><td>&#9745; Regular expressions</td></tr>
+<tr><td colspan="2">Sets the values of all <code>{DELAY=</code> codes
+within auto-type sequence overrides and associations to 50.</td></tr>
+</table>
+
+<br />
+
+<a name="atrmvstddelay"></a>
+<table class="tablebox">
+<colgroup><col style="width: 20%;" /><col style="width: 80%;" /></colgroup>
+<tr><th colspan="2">Remove <code>{DELAY=<em>x</em>}</code> from all sequences</th></tr>
+<tr><td>Select nodes:</td>
+<td><code>//DefaultSequence | //KeystrokeSequence</code></td></tr>
+<tr><td>Action:</td><td>Replace data</td></tr>
+<tr><td>Data:</td><td>Inner text</td></tr>
+<tr><td>Find what:</td><td><code>\{DELAY=[\d\s]*\}</code></td></tr>
+<tr><td>Replace with:</td><td><em>(Leave empty)</em></td></tr>
+<tr><td>Options:</td><td>&#9745; Regular expressions</td></tr>
+<tr><td colspan="2">Removes all <code>{DELAY=<em>x</em>}</code> codes from
+all auto-type sequences.</td></tr>
+</table>
+
+<br />
+
+<a name="atresetifstddelay"></a>
+<table class="tablebox">
+<colgroup><col style="width: 20%;" /><col style="width: 80%;" /></colgroup>
+<tr><th colspan="2">Reset default sequences that contain <code>{DELAY=</code></th></tr>
+<tr><td>Select nodes:</td>
+<td><code>//DefaultSequence[contains(., '{DELAY=')]</code></td></tr>
+<tr><td>Action:</td><td>Remove nodes</td></tr>
+<tr><td colspan="2">If a sequence has been specified in the field
+'Override default sequence' (in the entry dialog) and it contains
+<code>{DELAY=</code>, the sequence is reset,
+i.e. the option 'Inherit default auto-type sequence from group' is activated.</td></tr>
+</table>
+
+<br />
+
+<a name="ataddassoc"></a>
+<table class="tablebox">
+<colgroup><col style="width: 20%;" /><col style="width: 80%;" /></colgroup>
+<tr><th colspan="2">Add an auto-type association to all entries</th></tr>
+<tr><td>Select nodes:</td>
+<td><code>//Entry/AutoType</code></td></tr>
+<tr><td>Action:</td><td>Replace data</td></tr>
+<tr><td>Data:</td><td>Outer XML</td></tr>
+<tr><td>Find what:</td><td><code>&lt;/AutoType&gt;\Z</code></td></tr>
+<tr><td>Replace with:</td><td><code>&lt;Association&gt;&lt;Window&gt;* - Notepad&lt;/Window&gt;&lt;KeystrokeSequence&gt;{PASSWORD}&lt;/KeystrokeSequence&gt;&lt;/Association&gt;&lt;/AutoType&gt;</code></td></tr>
+<tr><td>Options:</td><td>&#9745; Regular expressions</td></tr>
+<tr><td colspan="2">Adds an auto-type association to all entries: the window title
+'<code>* - Notepad</code>' is associated with the sequence '<code>{PASSWORD}</code>'.</td></tr>
+</table>
+
+<br />
+
+<a name="copyurls"></a>
+<table class="tablebox">
+<colgroup><col style="width: 20%;" /><col style="width: 80%;" /></colgroup>
+<tr><th colspan="2">Copy entry URLs into title fields</th></tr>
+<tr><td>Select nodes:</td>
+<td><code>//Entry</code></td></tr>
+<tr><td>Action:</td><td>Replace data</td></tr>
+<tr><td>Data:</td><td>Inner XML</td></tr>
+<tr><td>Find what:</td><td><code>(?s)(&lt;Key&gt;Title&lt;/Key&gt;\s*)(&lt;Value&gt;.*?&lt;/Value&gt;|&lt;Value\s*/&gt;)(.*?&lt;Key&gt;URL&lt;/Key&gt;\s*)(&lt;Value&gt;.*?&lt;/Value&gt;|&lt;Value\s*/&gt;)</code></td></tr>
+<tr><td>Replace with:</td><td><code>$1$4$3$4</code></td></tr>
+<tr><td>Options:</td><td>&#9745; Case-sensitive<br />
+&#9745; Regular expressions</td></tr>
+<tr><td colspan="2">Copies the entry URL into the title field of the
+entry (overwriting any existing data in the title field).<br />
+<br />
+If you want the entry URL to be copied only if the title field is empty,
+use the following for 'Select nodes':<br />
+<code>//Entry/String[(Key = 'Title') and (Value = '')]/..</code></td></tr>
+</table>
+
+<br />
+
+<a name="copytitles"></a>
+<table class="tablebox">
+<colgroup><col style="width: 20%;" /><col style="width: 80%;" /></colgroup>
+<tr><th colspan="2">Copy entry titles into empty user name fields</th></tr>
+<tr><td>Select nodes:</td>
+<td><code>//Entry/String[(Key = 'UserName') and (Value = '')]/..</code></td></tr>
+<tr><td>Action:</td><td>Replace data</td></tr>
+<tr><td>Data:</td><td>Inner XML</td></tr>
+<tr><td>Find what:</td><td><code>(?s)(&lt;Key&gt;Title&lt;/Key&gt;\s*&lt;Value&gt;)(.*?)(&lt;/Value&gt;.*?&lt;Key&gt;UserName&lt;/Key&gt;\s*)(&lt;Value&gt;&lt;/Value&gt;|&lt;Value\s*/&gt;)</code></td></tr>
+<tr><td>Replace with:</td><td><code>$1$2$3&lt;Value&gt;$2&lt;/Value&gt;</code></td></tr>
+<tr><td>Options:</td><td>&#9745; Case-sensitive<br />
+&#9745; Regular expressions</td></tr>
+<tr><td colspan="2">Copies the entry title into the user name field of the
+entry, if this field is empty.</td></tr>
+</table>
+
+<br />
+
+<a name="firstnotempty"></a>
+<table class="tablebox">
+<colgroup><col style="width: 20%;" /><col style="width: 80%;" /></colgroup>
+<tr><th colspan="2">Ensure first line is not empty</th></tr>
+<tr><td>Select nodes:</td>
+<td><code>//Entry/String/Value</code></td></tr>
+<tr><td>Action:</td><td>Replace data</td></tr>
+<tr><td>Data:</td><td>Inner text</td></tr>
+<tr><td>Find what:</td><td><code>(?s)^(\r?\n)</code></td></tr>
+<tr><td>Replace with:</td><td><code>--$1</code></td></tr>
+<tr><td>Options:</td><td>&#9745; Regular expressions</td></tr>
+<tr><td colspan="2">For all multi-line fields,
+this inserts '<code>--</code>' into the first line of the field value,
+if this line is empty and the value has at least two lines.
+Example:<br />
+<br />
+<div style="font-family: monospace; background-color: #C6C6C6;"><br />
+<br />
+Sample data</div>
+<br />
+is replaced by<br />
+<br />
+<div style="font-family: monospace; background-color: #C6C6C6;">--<br />
+<br />
+Sample data</div></td></tr>
+</table>
+
+</body></html>
+

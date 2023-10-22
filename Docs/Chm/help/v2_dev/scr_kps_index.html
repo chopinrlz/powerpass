@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<meta http-equiv="expires" content="0" />
+	<meta http-equiv="cache-control" content="no-cache" />
+	<meta http-equiv="pragma" content="no-cache" />
+
+	<meta name="author" content="Dominik Reichl" />
+
+	
+	
+
+	<meta name="DC.title" content="KPS Script Files - KeePass" />
+	<meta name="DC.creator" content="Dominik Reichl" />
+	<meta name="DC.type" content="Text" />
+	<meta name="DC.format" content="text/html" />
+	<meta name="DC.language" content="en" />
+	<meta name="DC.rights" content="Copyright (C) 2003-2023 Dominik Reichl" />
+
+	<meta name="robots" content="index, follow" />
+
+	<title>KPS Script Files - KeePass</title>
+	<base target="_self" />
+	<link rel="stylesheet" type="text/css" href="../../default.css" />
+
+	
+</head>
+<body>
+
+
+
+<table class="sectionheader"><tr>
+<td><img src="../images/b64x64_konsole.png" alt="" /></td>
+<td><h1>KPS Script Files</h1>
+<p>How to use KPS script files to automate KeePass 2.x.</p></td>
+</tr></table>
+
+<p>KPS script files are a lot more powerful than single command operations,
+but are also more complicated. You need
+to have heavy experience in C# programming and the KeePass 2.x internals.
+Within KPS files you can do everything that KeePass does.</p>
+
+<p><b>What are KPS files?</b></p>
+
+<p>KPS files are C# files that are loaded,
+compiled and executed by the <code>KPScript.exe</code> program.
+Within the script file, you got full access to the KeePass internals.</p>
+
+<p>The main differences to &quot;normal&quot; C# files are:</p>
+
+<ul>
+<li>No need for <code>using</code> directives.</li>
+<li>No need to add a reference to the KeePass assembly.</li>
+<li>No need to write a wrapper class. Simply start with <code>Main()</code>. The
+complete script file is embedded in a static class.</li>
+</ul>
+
+<p>Here's the famous Hello World program as KPS script:</p>
+
+<pre><span class="codekw">public static void</span> Main()
+{
+	<span class="codetp">MessageService</span>.ShowInfo(<span class="codest">&quot;Hello World!&quot;</span>);
+}</pre>
+
+<p>For the most important namespaces, KPScript automatically adds
+<code>using</code> directives at the start of the file before compiling it.
+<code>MessageService</code> for example is located in <code>KeePassLib.Utility</code>,
+but as it's included automatically by KPScript, you can use it directly.</p>
+
+<hr />
+
+<p><b>Executing a KPS file:</b></p>
+
+<p>To run a KPS file, you simply pass it to KPScript:</p>
+
+<pre>KPScript.exe C:\KeePass\MyScriptFile.kps</pre>
+
+<p>It is important that the file extension is <code>.kps</code>, otherwise KPScript won't
+recognize the file and will interpret it as database for single command operations.</p>
+
+</body></html>
+

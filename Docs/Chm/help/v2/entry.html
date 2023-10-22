@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<meta http-equiv="expires" content="0" />
+	<meta http-equiv="cache-control" content="no-cache" />
+	<meta http-equiv="pragma" content="no-cache" />
+
+	<meta name="author" content="Dominik Reichl" />
+
+	
+	
+
+	<meta name="DC.title" content="Entry Dialog - KeePass" />
+	<meta name="DC.creator" content="Dominik Reichl" />
+	<meta name="DC.type" content="Text" />
+	<meta name="DC.format" content="text/html" />
+	<meta name="DC.language" content="en" />
+	<meta name="DC.rights" content="Copyright (C) 2003-2023 Dominik Reichl" />
+
+	<meta name="robots" content="index, follow" />
+
+	<title>Entry Dialog - KeePass</title>
+	<base target="_self" />
+	<link rel="stylesheet" type="text/css" href="../../default.css" />
+
+	
+</head>
+<body>
+
+
+
+
+<table class="sectionheader"><tr>
+<td><img src="../images/b64x64_vcard.png" alt="" /></td>
+<td><h1>Entry Dialog</h1>
+<p>Edit new/existing entries.</p></td>
+</tr></table>
+
+<ul>
+<li><a href="#gen">General</a></li>
+<li><a href="#adv">Advanced</a></li>
+<li><a href="#prp">Properties</a></li>
+<li><a href="#at">Auto-Type</a></li>
+<li><a href="#hst">History</a></li>
+<li><a href="#tools">Tools</a></li>
+<li><a href="#multi">Editing Multiple Entries At Once</a></li>
+</ul>
+
+<br />
+
+<a name="gen"></a>
+<h2 class="sectiontitle"><img src="../images/b16x16_vcard.png" alt="" />
+General</h2>
+
+<p>On the tab page 'General', you can specify the main information
+of an account.</p>
+
+<p><b>Title.</b><br />
+In the title field, the name of the system/service should be entered.</p>
+
+<p>For certain systems/services, it can make sense to ensure that the
+entry title occurs within the target window title, because this allows
+<a href="../base/autotype.html">auto-type</a> to associate the entry
+with the target window.
+For details, see <a href="../base/autotype.html#autoglobal">global auto-type</a>.
+However, if the target window title does not contain the system/service name
+(e.g. '<code>Login - Browser Name</code>'), it is recommended to create a
+custom window/sequence association instead.</p>
+
+<p><b>User name.</b><br />
+In the user name field, you should specify the data that you are entering
+during a login in order to identify yourself. This typically is a user name,
+an e-mail address or a number.</p>
+
+<p>There is no separate e-mail address field by default, because this
+would decrease the usability. For details, see the section
+'<a href="../base/faq_tech.html#email">Can an e-mail address field be added?</a>'
+in the FAQ.</p>
+
+<p>When typing into the user name field, KeePass may display a list of
+suggestions for the user name.
+This list is generated dynamically: when opening the entry dialog,
+KeePass collects the user names of all entries stored in the currently
+active database.
+If you see an incorrect user name in the list, you need to search this
+user name in your entries (using the search function) and fix it there.</p>
+
+<p>In the <a href="dbsettings.html">database settings</a> (menu 'File' &rarr;
+'Database Settings'), you can define a default user name for new entries.</p>
+
+<p><b>Password.</b><br />
+By default, KeePass generates a password for a new entry (this can be
+<a href="../base/pwgenerator.html#configauto">customized/disabled</a>).
+You can use this password or replace it.</p>
+
+<p>There is a button (right of the password repetition field) that opens
+the <a href="../base/pwgenerator.html">password generator</a>.</p>
+
+<p>Furthermore, there is a button for disabling/enabling the
+<a href="https://keepass.info/help/kb/pw_quality_est.html"
+target="_blank">password quality estimation</a> for the current entry.
+Disabling the password quality estimation for an entry also
+excludes the entry from password quality reports (menu 'Find' &rarr;
+'Password Quality').</p>
+
+<p><b>URL.</b><br />
+See the help page '<a href="../base/autourl.html">URL Field</a>'.</p>
+
+<a name="exp"></a>
+<p><b>Expires.</b><br />
+In the entry list of the main window, an expired entry is displayed
+with a red <span style="color: #FF0000;"><b>X</b></span> icon and a
+strikeout font.
+Expired entries are not deleted/moved automatically.</p>
+
+<p>You can search for expired entries using the menu 'Find' &rarr;
+'Expired'.
+Expired entries can also be displayed automatically when opening
+the database (menu 'Tools' &rarr; 'Options' &rarr; tab 'Advanced' &rarr;
+option 'Show expired entries (if any)').</p>
+
+<br />
+
+<a name="adv"></a>
+<h2 class="sectiontitle"><img src="../images/b16x16_kmultiple.png" alt="" />
+Advanced</h2>
+
+<a name="str"></a>
+<p><b>Custom string fields.</b><br />
+Each entry may have an arbitrary number of custom string fields.
+Such a field consists of a name and a value.
+The name must be unique (within the entry).</p>
+
+<p>In the main window, the value of a custom string field can be
+copied into the clipboard by right-clicking on the entry, pointing
+on 'Other Data' and clicking on the name of the custom string field
+(this is also possible via the menu 'Entry').</p>
+
+<p>The value of a custom string field can also be used in an
+<a href="../base/autotype.html">auto-type</a> sequence;
+see the <a href="../base/placeholders.html">placeholders</a> help page.
+For example, the value of a custom string field named 'BIC'
+(acronym for Business Identifier Code) can be inserted using the
+'<code>{S:BIC}</code>' placeholder.</p>
+
+<p>In database files, custom string fields are stored in encrypted form
+(see '<a href="../base/security.html#secencrypt">Database Encryption</a>').
+The option 'Protect value in process memory' (in the custom string field dialog)
+allows to activate/deactivate the
+<a href="../base/security.html#secmemprot">process memory protection</a>
+for the value of the custom string field.
+Activating this protection induces certain limitations (e.g. the value must
+be hidden using asterisks for the protection to be effective) and increases
+the time required by various operations. Therefore, it should be activated
+only for really sensitive data (e.g. a second password).</p>
+
+<a name="bin"></a>
+<p><b>File attachments.</b><br />
+You can attach arbitrary files to an entry.</p>
+
+<p>Attached files are stored within the database file in encrypted form
+(see '<a href="../base/security.html#secencrypt">Database Encryption</a>').
+When importing a file as attachment, KeePass does not delete the
+source file; you need to delete it yourself, if desired.</p>
+
+<p>This feature is intended to store few/small files (e.g. registration files,
+public/private key pair files, etc.).
+Encrypting many/large files is considered to be out of the scope of a
+password manager and it is recommended to use a specialized file encryption
+software (e.g. VeraCrypt) for this task instead (KeePass can be used
+to store the password for the encrypted file container).</p>
+
+<br />
+
+<a name="prp"></a>
+<h2 class="sectiontitle"><img src="../images/b16x16_kcmsystem.png" alt="" />
+Properties</h2>
+
+<a name="tags"></a>
+<p><b>Tags.</b><br />
+You can assign arbitrary tags to an entry.
+Multiple tags have to be separated by commas (or semicolons).
+When clicking the button right of the tags input field, a menu is
+displayed that allows to add tags found in other entries.</p>
+
+<p>Tags can also be added/removed in the main window: right-click onto
+one or more entries &rarr; 'Edit Entry (Quick)' &rarr; 'Add Tag' or
+'Remove Tag'.</p>
+
+<p>A common use case is to mark frequently used entries (tag 'Favorite').</p>
+
+<p>In order to show all entries that have a specific tag, click the
+three-keys button
+[<img src="../images/b16x16_kgpg_key3.png" class="textimg" alt="3 Keys" />]
+in the toolbar of the main window (to the right of
+the 'Find' toolbar button) and choose the tag.
+Alternatively, this command is also accessible via the main menu:
+'Find' &rarr; 'Tag' &rarr; choose the tag.</p>
+
+<p>If you want to see all entries with a specific tag (e.g. 'Favorite')
+when opening a database, you can create a <a href="triggers.html">trigger</a>
+for this: click 'Tools' &rarr; 'Triggers', add a new trigger,
+enter a name (e.g. 'Show favorites when opening a database'),
+add an event 'Opened database file', and add an action
+'Show entries by tag' with the parameter 'Tag' set to the tag name
+(e.g. 'Favorite').</p>
+
+<p><b>Override URL.</b><br />
+See '<a href="../base/autourl.html#override">Changing the URL Handler</a>'.</p>
+
+<a name="uuid"></a>
+<p><b>UUID.</b><br />
+A UUID is a 128-bit number that uniquely identifies an object
+(an entry in this case).</p>
+
+<p>In some places (e.g. in <a href="../base/fieldrefs.html">field references</a>),
+a UUID needs to be specified in <a href="https://en.wikipedia.org/wiki/Hexadecimal"
+target="_blank">hexadecimal</a> form.
+In some other places (e.g. in KDBX XML files), a UUID is stored in
+<a href="https://en.wikipedia.org/wiki/Base64" target="_blank">Base64</a> form.</p>
+
+<p>The entry dialog shows both forms (hexadecimal and Base64), such that
+you can directly copy the form that you currently need.</p>
+
+<br />
+
+<a name="at"></a>
+<h2 class="sectiontitle"><img src="../images/b16x16_ktouch.png" alt="" />
+Auto-Type</h2>
+
+<p>On this tab page, you can configure the auto-type behavior for
+the current entry.
+See the <a href="../base/autotype.html">auto-type</a> help page.</p>
+
+<br />
+
+<a name="hst"></a>
+<h2 class="sectiontitle"><img src="../images/b16x16_history.png" alt="" />
+History</h2>
+
+<p>Each entry has an own history. When modifying an entry, KeePass
+automatically creates a history entry, which contains the previous data.
+The history entries are listed on the 'History' tab page of the entry dialog.</p>
+
+<p>By default, the number of history entries per entry and the
+history size per entry are limited to reasonable values.
+You can change these limitations in the database settings dialog
+(menu 'File' &rarr; 'Database Settings').</p>
+
+<p>If you want to delete certain history entries manually,
+there are two possibilities:</p>
+<ul>
+<li>On the 'History' tab page of the entry dialog, you can delete
+specific history entries.</li>
+<li>In 'Tools' &rarr; 'Database Tools' &rarr; 'Database Maintenance',
+you can delete all history entries that are older than a specific
+number of days.</li>
+</ul>
+
+<br />
+
+<a name="tools"></a>
+<h2 class="sectiontitle"><img src="../images/b16x16_desktop.png" alt="" />
+Tools</h2>
+
+<p>When clicking the 'Tools' button (bottom left in the entry dialog),
+a menu is displayed that provides some useful commands.</p>
+
+<p><b>Copy initial password.</b><br />
+Copies (to the clipboard) the password that was current when the dialog
+was opened.
+This command can be useful for instance when you try to change the password
+and the website/service requests the previous password as confirmation
+<em>after</em> specifying the new password.</p>
+
+<p><b>URL field commands.</b><br />
+These commands edit the <a href="../base/autourl.html">URL field</a>.</p>
+
+<p><b>Insert field reference.</b><br />
+When clicking one of the commands in this submenu, a dialog is displayed
+that allows to conveniently create a
+<a href="../base/fieldrefs.html">field reference</a> in the chosen field.</p>
+
+<p><b>OTP generator settings.</b><br />
+Displays a dialog for conveniently editing the
+<a href="../base/placeholders.html#otp">one-time password</a>
+generator settings of the entry.</p>
+
+<br />
+
+<a name="multi"></a>
+<h2 class="sectiontitle"><img src="../images/b16x16_kmultiple.png" alt="" />
+Editing Multiple Entries At Once</h2>
+
+<p>The entry dialog supports editing multiple entries at once.
+For this, select multiple entries in the entry list of the main window
+and invoke the 'Edit Entries' command.</p>
+
+<ul>
+<li>If the entries contain different values for a field (e.g. if the
+entries have different user names), the text box in the entry dialog
+shows &quot;<span style="color: #808080;">(Multiple values)</span>&quot;.
+If you do not change this, the values for this field will not be modified.
+If you change it, the new value will be assigned to all entries.</li>
+
+<li>In case of a boolean option, the check box may support three states:
+<ul>
+<li>Unchecked. The option is/will be turned off for all entries.</li>
+<li>Checked. The option is/will be turned on for all entries.</li>
+<li>Indeterminate. For some entries, the option is turned off, whereas
+for the other entries, it is turned on. The states will not be modified.</li>
+</ul></li>
+</ul>
+
+<p>Controls for data that cannot be modified in multiple entries at once
+(e.g. file attachments) are disabled. Such data will not be modified.</p>
+
+</body></html>
+

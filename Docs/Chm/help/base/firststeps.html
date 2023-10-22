@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<meta http-equiv="expires" content="0" />
+	<meta http-equiv="cache-control" content="no-cache" />
+	<meta http-equiv="pragma" content="no-cache" />
+
+	<meta name="author" content="Dominik Reichl" />
+
+	
+	
+
+	<meta name="DC.title" content="First Steps Tutorial - KeePass" />
+	<meta name="DC.creator" content="Dominik Reichl" />
+	<meta name="DC.type" content="Text" />
+	<meta name="DC.format" content="text/html" />
+	<meta name="DC.language" content="en" />
+	<meta name="DC.rights" content="Copyright (C) 2003-2023 Dominik Reichl" />
+
+	<meta name="robots" content="index, follow" />
+
+	<title>First Steps Tutorial - KeePass</title>
+	<base target="_self" />
+	<link rel="stylesheet" type="text/css" href="../../default.css" />
+
+	
+</head>
+<body>
+
+
+
+
+<table class="sectionheader"><tr>
+<td><img src="../images/b64x64_doc.png" alt="" /></td>
+<td><h1>First Steps Tutorial</h1>
+<p>A short tutorial showing you the basic usage of KeePass.</p></td>
+</tr></table>
+
+<p>This short tutorial will show you how to actually use KeePass. It describes
+only the basic usage, advanced features are covered on separate pages.</p>
+<br />
+
+<p><b>Creating a new database</b></p>
+
+<p>The very first step is creating a new password database. KeePass will store all
+your passwords in such a database. To create one, click
+'File' &rarr; 'New...' in the main menu or click the leftmost toolbar button.
+A window will appear, which prompts you for a master password and/or key file.
+The database will be encrypted with the password you enter here. The password
+you enter here will be the only password you'll ever have to remember from on
+now. It should be long and built up of mixed characters. Keep in mind that when
+someone gets your database file and guesses the password, he could access all
+passwords you stored in the database.</p>
+
+<p>For this tutorial, we'll just use a password, not a key file. Click into the password edit
+field and enter a password of your choice. The password edit control isn't limited in length, so
+feel free to even enter a whole sentence (just keep in mind that you'll need to
+remember it).</p>
+
+
+
+
+
+
+After clicking [OK], a second dialog appears. In this dialog you can configure
+some generic database properties. For now, just leave everything as it is and
+click [OK].
+
+
+<p>Now you see the main window. On the left, you see the entry groups. On the
+right, you see the actual password entries. The password entries are
+grouped together into the password groups you see on the left. So, depending
+on which group on the left you selected, it'll show you the entries in this group
+in the right view. KeePass has created a few default groups for you, but you're
+totally free to delete them and create your own ones.</p>
+<br />
+
+<p><b>Adding an entry</b></p>
+
+<p>Time to store your very first password in the KeePass database! Right-click
+into the right password entry view and choose 'Add Entry...'. A window
+will pop up. In this window you can now edit your entry: enter a title for
+it, a user name, a URL, the password, etc. If you don't need some of the
+fields, just leave them empty. When you're done, click [OK].</p>
+<br />
+
+<p><b>Using entries</b></p>
+
+<p>Your new entry is displayed in the
+<a href="usingpws.html#mainlist">main entry list</a> now.
+There are various ways how you can use it.</p>
+
+<p>For example, you can copy the user name of the entry into the clipboard.
+In order to invoke the 'Copy User Name' command, double-click onto the
+user name cell in the main entry list.
+Alternatively, the command can be invoked via the main menu,
+the context menu, the toolbar button, or by pressing
+<kbd><kbd>Ctrl</kbd>+<kbd>B</kbd></kbd>.
+When the user name is in the clipboard, you can paste it into the
+target window.</p>
+
+<p>Copying passwords and other fields works analogously.</p>
+
+<p>Alternatively, you can drag&amp;drop fields into other windows.
+For details, see <a href="usingpws.html#dragdrop">Drag&amp;Drop</a>.</p>
+<br />
+
+<p><b>Saving the database</b></p>
+
+<p>It's time to save your database. Click onto the 'Save' toolbar button
+(which has a disk icon).<!-- As you're saving the database the
+first time, you now have to specify a location
+where you want the database file to be stored. --></p>
+<br />
+
+<p><b>More</b></p>
+
+<p>That's it! You've made the first steps in using KeePass! You can now have a look
+at the more advanced features of KeePass.</p>
+
+<p><a href="keys.html">Passwords and Key Files</a>: In the tutorial above we've encrypted
+the database using a password. But KeePass also supports key files, i.e. you can
+lock your database using a file (which you can carry around on your USB stick
+for example). It even supports combining those two methods for maximum security.</p>
+
+<p><a href="tans.html">TAN Entries</a>: TAN entries are one-time passwords. Many
+banks are using TANs for better security. KeePass supports TAN entries, by
+making them expire automatically when using them.</p>
+
+<p><a href="autotype.html">Auto-Type</a>: The auto-typing functionality is a very
+powerful feature. In the tutorial above you've copied the user name and password
+of an entry to the clipboard. Wouldn't it be nice if KeePass would just type
+those strings for you into other windows? Wouldn't it be nice if you could define
+whole sequences of keypresses that KeePass should type for you? That's exactly
+what the auto-type feature does: it sends simulated keypresses for you to
+other windows!</p>
+
+<p><a href="autourl.html">URL Field</a>: The URL field supports URLs
+of course. In the tutorial, you've learned that you can enter simple URLs into
+this field and KeePass will open the browser window for you. But the URL field
+can do more! It actually supports many different protocols (not just <code>http</code>)
+and supports executing
+Windows command lines through the <code>cmd://</code> virtual protocol. The
+field also features a powerful substitution engine, replacing codes
+by other fields (user name, password, ...) of this entry.</p>
+
+<p><a href="cmdline.html">Command Line Parameters</a>: You can open .kdb(x) files by
+passing the file name to the KeePass executable file. But did you know that you can
+also send the password for the database and key file location over the command line?
+You can also use the command line to preselect a key file for you.</p>
+
+
+
+
+<p><a href="../v2/plugins.html">Plugins</a>:
+
+
+KeePass features a powerful plugin architecture.
+If you miss some functionality, have a look at the plugins page to see if there
+are other people that have already written plugins for this. Many plugins exist
+to import/export data from/to other file formats.</p>
+
+</body></html>
+

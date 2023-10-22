@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<meta http-equiv="expires" content="0" />
+	<meta http-equiv="cache-control" content="no-cache" />
+	<meta http-equiv="pragma" content="no-cache" />
+
+	<meta name="author" content="Dominik Reichl" />
+
+	
+	
+
+	<meta name="DC.title" content="Secure Edit Controls - KeePass" />
+	<meta name="DC.creator" content="Dominik Reichl" />
+	<meta name="DC.type" content="Text" />
+	<meta name="DC.format" content="text/html" />
+	<meta name="DC.language" content="en" />
+	<meta name="DC.rights" content="Copyright (C) 2003-2023 Dominik Reichl" />
+
+	<meta name="robots" content="index, follow" />
+
+	<title>Secure Edit Controls - KeePass</title>
+	<base target="_self" />
+	<link rel="stylesheet" type="text/css" href="../../default.css" />
+
+	
+</head>
+<body>
+
+
+
+<table class="sectionheader"><tr>
+<td><img src="../images/b64x64_desktop.png" alt="" /></td>
+<td><h1>Secure Edit Controls</h1>
+<p>KeePass supports security-enhanced edit controls.</p></td>
+</tr></table>
+
+<p>KeePass was one of the first password managers featuring secure edit controls.
+The edit controls used in KeePass are resistant to password revealers and password
+control spies. Additionally, the entered passwords are protected against
+memory dumping attacks: the passwords are not visible in the process memory
+of KeePass.</p>
+
+<p>KeePass uses secure edit controls only when the hiding behind asterisks option
+is turned on. If you show the passwords in plaintext, they are not protected
+(secure edit controls are just disabled then, replaced by standard Windows edit
+controls).</p>
+
+
+
+
+
+
+<b>Selection:</b><br />
+There are no selection limitations. Secure edit controls behave exactly like
+standard Windows edit controls.<br />
+<br />
+<b>Process memory protection:</b><br />
+On Windows systems, all characters are protected.
+On Unix-like systems (Linux, MacOS, ...), characters above U+D7FF
+(see <a href="https://en.wikipedia.org/wiki/Plane_(Unicode)#Basic_Multilingual_Plane"
+target="_blank">Basic Multilingual Plane</a>)
+are not protected.
+
+
+</body></html>
+

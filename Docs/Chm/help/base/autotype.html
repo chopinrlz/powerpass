@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<meta http-equiv="expires" content="0" />
+	<meta http-equiv="cache-control" content="no-cache" />
+	<meta http-equiv="pragma" content="no-cache" />
+
+	<meta name="author" content="Dominik Reichl" />
+
+	
+	
+
+	<meta name="DC.title" content="Auto-Type - KeePass" />
+	<meta name="DC.creator" content="Dominik Reichl" />
+	<meta name="DC.type" content="Text" />
+	<meta name="DC.format" content="text/html" />
+	<meta name="DC.language" content="en" />
+	<meta name="DC.rights" content="Copyright (C) 2003-2023 Dominik Reichl" />
+
+	<meta name="robots" content="index, follow" />
+
+	<title>Auto-Type - KeePass</title>
+	<base target="_self" />
+	<link rel="stylesheet" type="text/css" href="../../default.css" />
+
+	
+	<style type="text/css">
+	/* <![CDATA[ */
+	.at_char {
+		color: #000000;
+		background-color: #EEEEEE;
+		padding-left: 2px;
+		padding-right: 2px;
+	}
+	/* ]]> */
+	</style>
+
+</head>
+<body>
+
+
+
+
+
+<table class="sectionheader"><tr>
+<td><img src="../images/b64x64_ktouch.png" alt="" /></td>
+<td><h1>Auto-Type</h1>
+<p>Powerful feature that sends simulated keypresses to other applications.</p></td>
+</tr></table>
+
+<ul>
+<li><a href="#autobasic">Basic Auto-Type Information</a></li>
+<li><a href="#req">Requirements and Limitations</a></li>
+<li>Invoking Auto-Type
+<ul>
+<li><a href="#autoctx">Context Menu: '<i>Perform Auto-Type</i>' Command</a></li>
+<li><a href="#autoglobal">Global Auto-Type Hot Key</a></li>
+</ul>
+</li>
+<li>Specifying Keystroke Sequences and Target Windows
+<ul>
+<li><a href="#autoseq">Auto-Type Keystroke Sequences</a></li>
+<li><a href="#autowindows">Target Window Filters</a></li>
+<li><a href="#changedefaultseq">Change Default Auto-Type Sequence</a></li>
+</ul>
+</li>
+<li><a href="#autoexample">Usage Example</a></li>
+</ul>
+
+<br />
+
+<a name="autobasic"></a>
+<h2 class="sectiontitle"><img src="../images/b16x16_ktouch.png" alt="" />
+Basic Auto-Type Information</h2>
+
+<p>KeePass features an &quot;Auto-Type&quot; functionality. This feature allows you to define
+a sequence of keypresses, which KeePass can automatically perform for you. The
+simulated keypresses can be sent to any other currently open window of your choice (browser windows,
+login dialogs, ...).</p>
+
+<p>By default, the sent keystroke sequence is <code>{USERNAME}{TAB}{PASSWORD}{ENTER}</code>,
+i.e. it first types the user name of the selected entry, then presses the <kbd><kbd>Tab</kbd></kbd> key,
+then types the password of the entry and finally presses the <kbd><kbd>Enter</kbd></kbd> key.</p>
+
+<p>For <a href="tans.html">TAN entries</a>, the default sequence is <code>{PASSWORD}</code>,
+i.e. it just types the TAN into the target window, without pressing <kbd><kbd>Enter</kbd></kbd>.</p>
+
+
+
+
+
+
+Auto-Type can be configured individually for each entry using the
+<i>Auto-Type</i> tab page on the entry dialog (select an entry &rarr; <i>Edit Entry</i>).
+On this page you can specify a default sequence and customize specific
+window/sequence associations.<br />
+<br />
+<a href="../v2/autotype_obfuscation.html">Two-Channel Auto-Type Obfuscation</a> is supported (making
+Auto-Type resistant against keyloggers).
+
+
+<p>Additionally, you can create customized window/sequence associations, which override the
+default sequence. You can specify different keystroke sequences for different windows for each entry.
+For example, imagine a webpage, to which you want to login, that has multiple
+pages where one can login. These pages could all look a bit different (on one
+you could additionally need to check some checkbox &#8211; like often seen in forums).
+Here creating customized window/sequence associations solves the problems: you simply
+specify different auto-type sequences for each windows (identified by their window
+titles).</p>
+
+<p><b>Invoking Auto-Type:</b><br />
+There are three different methods to invoke auto-type:</p>
+
+<ul>
+<li>Invoke auto-type for an entry by using the
+context menu command <i>Perform Auto-Type</i> while the entry is selected.</li>
+<li>Select the entry and press <kbd><kbd>Ctrl</kbd>+<kbd>V</kbd></kbd>
+(that's the menu shortcut for the context menu command above).</li>
+<li>Using the system-wide auto-type hot key. KeePass will
+search all entries in the currently opened database for matching sequences.</li>
+</ul>
+
+<p>All methods are explained in detail below.</p>
+
+<p><b>Input Focus:</b><br />
+Note that auto-type starts typing into the control of the target window
+that has the input focus. Thus, for example for the default
+sequence you have to ensure that the input focus is set to the
+user name control of the target window before invoking auto-type using any of
+the above methods.</p>
+
+<br />
+
+<a name="req"></a>
+<h2 class="sectiontitle"><img src="../images/b16x16_help.png" alt="" />
+Requirements and Limitations</h2>
+
+<p><b>Rights:</b><br />
+For auto-type to work, KeePass must be running with the same or higher
+rights as the target application. Especially, if the target application
+is running with administrative rights, KeePass must be running with
+administrative rights, too. For details, see
+<!-- https://msdn.microsoft.com/en-us/library/bb625963.aspx -->
+<!-- https://docs.microsoft.com/en-us/previous-versions/dotnet/articles/bb625963(v=msdn.10) -->
+<a href="https://learn.microsoft.com/en-us/previous-versions/dotnet/articles/bb625963(v=msdn.10)"
+target="_blank">Windows Integrity Mechanism Design</a>.
+An example are certain instances of VMware Workstation that run on
+a higher integrity level.</p>
+
+<p><b>Remote Desktops and Virtual Machines:</b><br />
+KeePass does not know the keyboard layout that has been selected in
+a remote desktop or virtual machine window.
+If you want to auto-type into such a window, you must ensure
+that the local and the remote/virtual system are using the same
+keyboard layout.</p>
+
+<p>When performing auto-type into a remote desktop or virtual machine
+window, the following characters may be problematic (depending on the
+exact circumstances) and should therefore be avoided, if possible:
+<code class="at_char">&#x22;</code> (U+0022),
+<code class="at_char">&#x27;</code> (U+0027),
+<code class="at_char">&#x5E;</code> (U+005E),
+<code class="at_char">&#x60;</code> (U+0060),
+<code class="at_char">&#x7E;</code> (U+007E),
+<code class="at_char">&#xA8;</code> (U+00A8),
+<code class="at_char">&#xAF;</code> (U+00AF),
+<code class="at_char">&#xB0;</code> (U+00B0),
+<code class="at_char">&#xB4;</code> (U+00B4),
+<code class="at_char">&#xB8;</code> (U+00B8),
+<a href="https://en.wikipedia.org/wiki/Spacing_Modifier_Letters"
+target="_blank">spacing modifier letters</a> (U+02B0 to U+02FF),
+and characters that cannot be realized with a direct key combination.</p>
+
+<p><b>Wayland:</b><br />
+On a Unix-like system with a Wayland compositor, there may be further
+limitations; see the <a href="https://keepass.info/help/kb/autotype_wayland.html"
+target="_blank">Auto-Type on Wayland</a> page.</p>
+
+<br />
+
+<a name="autoctx"></a>
+<h2 class="sectiontitle"><img src="../images/b16x16_ktouch.png" alt="" />
+Context Menu: '<i>Perform Auto-Type</i>' Command</h2>
+
+<p>This method is the one that requires the least amount of configuration and is
+the simpler one, but it has the disadvantage that you need to select the entry
+in KeePass which you want to auto-type.</p>
+
+<p>The method is simple: right-click on an entry of your currently opened database
+and click '<i>Perform Auto-Type</i>' (or alternatively press the
+<kbd><kbd>Ctrl</kbd>+<kbd>V</kbd></kbd>
+shortcut for this command). The window that previously got the focus
+(i.e. the one in which you worked before switching to KeePass) will be brought
+to the foreground and KeePass auto-types into this window.</p>
+
+<p>The sequence which is auto-typed depends on the window's title. If you didn't
+specify any custom window/sequence associations, the default sequence is sent. If
+you created associations, KeePass uses the sequence of the first matching
+association. If none of the associations match, the default sequence is used.</p>
+
+<br />
+
+<a name="autoglobal"></a>
+<h2 class="sectiontitle"><img src="../images/b16x16_ktouch.png" alt="" />
+Global Auto-Type Hot Key</h2>
+
+<p>This is the more powerful method, but it also requires a little bit more
+work/knowledge, before it can be used.</p>
+
+<p><b>Simple Global Auto-Type Example:</b></p>
+
+<ol>
+<li>Create an entry in KeePass titled <i>Notepad</i> with values for user name and password.</li>
+<li>Start Notepad (under 'Programs' &rarr; 'Accessories').</li>
+<li>Press <kbd><kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>A</kbd></kbd> within Notepad.
+The user name and password will be typed into Notepad.</li>
+</ol>
+
+<p>The KeePass entry title <i>Notepad</i> is matched with the window title of
+Notepad and the default Auto-Type sequence is typed.</p>
+
+<p><b>How It Works - Details:</b></p>
+
+<p>KeePass registers a system-wide hot key for auto-type. The advantage of
+this hot key is that you don't need to switch to the KeePass window and
+select the entry. You simply press the hot key while having the target window
+open (i.e. the window which will receive the simulated keypresses).</p>
+
+<p>By default, the global hot key is
+<kbd><kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>A</kbd></kbd>
+(i.e. hold the <kbd><kbd>Ctrl</kbd></kbd> and <kbd><kbd>Alt</kbd></kbd> keys,
+press <kbd><kbd>A</kbd></kbd> and release all keys).
+You can change this hot key in the options dialog
+(main menu 'Tools' &rarr; 'Options' &rarr; tab
+
+
+
+'Integration'):
+
+here, click into the global auto-type hot key textbox and press the hot key
+that you wish to use. If the hot key is usable, it will appear in the textbox.</p>
+
+<p>When you press the hot key, KeePass looks at the title of the currently opened window and
+searches the currently opened database for usable entries. If KeePass finds multiple
+entries that can be used, it displays a selection dialog.
+An entry is considered to be usable for the current window title when
+at least one of the following conditions is fulfilled:</p>
+
+<ul>
+<li>The title of the entry is a substring of the currently active window title.</li>
+<li>The entry has a window/sequence association, of which the window specifier matches
+the currently active window title.</li>
+</ul>
+
+<p>The second condition has been mentioned already, but the first one
+is new. By using entry titles as filters for window titles, the configuration amount
+for auto-type is almost zero: you only need to make sure that the entry title
+is contained in the window title of the window into which you want the entry to be
+auto-typed. Of course, this is not always possible (for example, if a webpage has a
+very generic title like <i>&quot;Welcome&quot;</i>), here you need to
+use custom window/sequence associations.</p>
+
+
+
+
+
+
+Custom window/sequence associations can be specified on the <i>'Auto-Type'</i> tab
+page of each entry.<br />
+<br />
+The associations complement the KeePass entry title.
+Any associations specified will be used in addition to the KeePass entry 
+title to determine a match.
+
+
+<p>Auto-Type window definitions, entry titles and URLs are Spr-compiled, i.e.
+<a href="placeholders.html">placeholders</a>,
+<a href="placeholders.html#envvars">environment variables</a>,
+<a href="fieldrefs.html">field references</a>, etc. can be used.</p>
+
+<br />
+
+<a name="autoseq"></a>
+<h2 class="sectiontitle"><img src="../images/b16x16_ktouch.png" alt="" />
+Auto-Type Keystroke Sequences</h2>
+
+<p>An auto-type keystroke sequence is a one-line string that can contain
+placeholders and special key codes.</p>
+
+<p>A complete list of all supported placeholders can be found on the page
+<a href="placeholders.html">Placeholders</a>. The special key codes can
+be found below.</p>
+
+<p>Above you've seen already that the
+default auto-type is <code>{USERNAME}{TAB}{PASSWORD}{ENTER}</code>. Here,
+<code>{USERNAME}</code> and <code>{PASSWORD}</code> are placeholders: when auto-type
+is performed, these are replaced by the appropriate field values of the entry.
+<code>{TAB}</code> and <code>{ENTER}</code> are special key codes: these are replaced
+by the appropriate keypresses. Special key codes are the only way to specify special
+keys like Arrow-Down, Shift, Escape, etc.</p>
+
+<p>Of course, keystroke sequences can also contain simple characters to be sent.
+For example, the following string is perfectly valid as keystroke sequence string:<br />
+<code>{USERNAME}{TAB}Some text to be sent!{ENTER}</code>.</p>
+
+
+
+
+
+
+Special key codes are case-insensitive.
+
+
+<p><b>Special Keys:</b><br />
+The following codes for special keys are supported:</p>
+
+<table class="tablebox75">
+<colgroup><col style="width: 50%;" /><col style="width: 50%;" /></colgroup>
+<tr><th>Special Key</th><th>Code</th></tr>
+<tr><td>Tab</td><td><code>{TAB}</code></td></tr>
+<tr><td>Enter</td><td><code>{ENTER}</code> or <code>~</code></td></tr>
+<tr><td>Arrow Up</td><td><code>{UP}</code></td></tr>
+<tr><td>Arrow Down</td><td><code>{DOWN}</code></td></tr>
+<tr><td>Arrow Left</td><td><code>{LEFT}</code></td></tr>
+<tr><td>Arrow Right</td><td><code>{RIGHT}</code></td></tr>
+<tr><td>Insert</td><td><code>{INSERT}</code> or <code>{INS}</code></td></tr>
+<tr><td>Delete</td><td><code>{DELETE}</code> or <code>{DEL}</code></td></tr>
+<tr><td>Home</td><td><code>{HOME}</code></td></tr>
+<tr><td>End</td><td><code>{END}</code></td></tr>
+<tr><td>Page Up</td><td><code>{PGUP}</code></td></tr>
+<tr><td>Page Down</td><td><code>{PGDN}</code></td></tr>
+<tr><td>Space</td><td><code>{SPACE}</code></td></tr>
+<tr><td>Backspace</td><td><code>{BACKSPACE}</code>,
+<code>{BS}</code> or <code>{BKSP}</code></td></tr>
+<tr><td>Break</td><td><code>{BREAK}</code></td></tr>
+<tr><td>Caps-Lock</td><td><code>{CAPSLOCK}</code></td></tr>
+<tr><td>Escape</td><td><code>{ESC}</code></td></tr>
+<tr><td>Windows Key</td><td><code>{WIN}</code> (equ. to <code>{LWIN}</code>)</td></tr>
+<tr><td>Windows Key: left, right</td><td><code>{LWIN}</code>, <code>{RWIN}</code></td></tr>
+<tr><td>Apps / Menu</td><td><code>{APPS}</code></td></tr>
+<tr><td>Help</td><td><code>{HELP}</code></td></tr>
+<tr><td>Numlock</td><td><code>{NUMLOCK}</code></td></tr>
+<tr><td>Print Screen</td><td><code>{PRTSC}</code></td></tr>
+<tr><td>Scroll Lock</td><td><code>{SCROLLLOCK}</code></td></tr>
+<tr><td>F1 - F16</td><td><code>{F1}</code> - <code>{F16}</code></td></tr>
+<tr><td>Numeric Keypad +</td><td><code>{ADD}</code></td></tr>
+<tr><td>Numeric Keypad -</td><td><code>{SUBTRACT}</code></td></tr>
+<tr><td>Numeric Keypad *</td><td><code>{MULTIPLY}</code></td></tr>
+<tr><td>Numeric Keypad /</td><td><code>{DIVIDE}</code></td></tr>
+<tr><td>Numeric Keypad 0 to 9</td><td><code>{NUMPAD0}</code> to <code>{NUMPAD9}</code></td></tr>
+<tr><td>Shift</td><td><code>+</code></td></tr>
+<tr><td>Ctrl</td><td><code>^</code></td></tr>
+<tr><td>Alt</td><td><code>%</code></td></tr>
+</table>
+
+<br />
+
+
+
+
+
+
+<table class="tablebox75">
+<colgroup><col style="width: 50%;" /><col style="width: 50%;" /></colgroup>
+<tr><th>Special Key</th><th>Code</th></tr>
+<tr><td>+</td><td><code>{+}</code></td></tr>
+<tr><td>%</td><td><code>{%}</code></td></tr>
+<tr><td>^</td><td><code>{^}</code></td></tr>
+<tr><td>~</td><td><code>{~}</code></td></tr>
+<tr><td>(, )</td><td><code>{(}</code>, <code>{)}</code></td></tr>
+<tr><td>[, ]</td><td><code>{[}</code>, <code>{]}</code></td></tr>
+<tr><td>{, }</td><td><code>{{}</code>, <code>{}}</code></td></tr>
+</table>
+
+
+<p>Additionally, some special commands are supported:</p>
+
+<table class="tablebox75">
+<colgroup><col style="width: 50%;" /><col style="width: 50%;" /></colgroup>
+<tr><th>Command Syntax</th><th>Action</th></tr>
+<tr><td><code>{DELAY <i>X</i>}</code></td><td>Delays <i>X</i> milliseconds.</td></tr>
+<tr><td><code>{DELAY=<i>X</i>}</code></td><td>Sets the default
+delay to <i>X</i> milliseconds for all following keypresses.</td></tr>
+<tr><td><code>{CLEARFIELD}</code></td><td>Clears the contents of the
+edit control that currently has the focus (only single-line edit controls).</td></tr>
+<tr><td><code>{VKEY <i>X</i>}</code></td><td>Sends the
+<!-- https://msdn.microsoft.com/en-us/library/windows/desktop/dd375731.aspx -->
+<!-- https://docs.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes -->
+<a href="https://learn.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes"
+target="_blank">virtual key</a> of value <i>X</i>.</td></tr>
+<tr><td><code>{APPACTIVATE <i>WindowTitle</i>}</code></td><td>Activates
+the window &quot;<i>WindowTitle</i>&quot;.<!-- <br />
+2.x only:
+If the specified window does not exist or cannot be focused, auto-type is aborted.
+This command ignores the options 'Cancel auto-type when the target window changes'
+and 'Cancel auto-type when the target window title changes'. --></td></tr>
+<tr><td><code>{BEEP <i>X</i> <i>Y</i>}</code></td><td>Beeps with
+a frequency of <i>X</i> hertz and a duration of <i>Y</i> milliseconds.</td></tr>
+</table>
+
+<br />
+
+
+<table class="tablebox75">
+<colgroup><col style="width: 50%;" /><col style="width: 50%;" /></colgroup>
+<tr><th>Command Syntax</th><th>Action</th></tr>
+<!-- <tr><td><code>{VKEY-NX <i>X</i>}</code></td><td>Sends the
+non-extended virtual key of value <i>X</i>.
+If possible, use <code>{VKEY <i>X</i>}</code> instead.</td></tr>
+<tr><td><code>{VKEY-EX <i>X</i>}</code></td><td>Sends the
+extended virtual key of value <i>X</i>.
+If possible, use <code>{VKEY <i>X</i>}</code> instead.</td></tr> -->
+<tr><td><code>{VKEY <i>X</i> <i>F</i>}</code></td><td>Sends the
+<a href="https://learn.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes"
+target="_blank">virtual key</a> of value <i>X</i>; see <a href="#vkey">below</a>.</td></tr>
+</table>
+
+
+<br />
+
+<a name="vkey"></a>
+
+<b><code>{VKEY <i>X</i> <i>F</i>}</code>:</b><br />
+This command sends the
+<a href="https://learn.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes"
+target="_blank">virtual key</a> of value <i>X</i>.
+The parameter <i>F</i> is optional and may be a combination of the following
+values:
+<ul>
+<li><b><code>E</code></b>:
+<!-- https://docs.microsoft.com/en-us/windows/win32/inputdev/about-keyboard-input#extended-key-flag -->
+Send an <a href="https://learn.microsoft.com/en-us/windows/win32/inputdev/about-keyboard-input#extended-key-flag"
+target="_blank">extended key</a>; see below.</li>
+<li><b><code>N</code></b>:
+Send a non-extended key; see below.</li>
+<li><b><code>D</code></b>:
+Press and hold down the key (without releasing it).</li>
+<li><b><code>U</code></b>:
+Release the key (without pressing it).</li>
+</ul>
+
+<p>The values <code>E</code> and <code>N</code> are mutually exclusive.
+It is recommended to specify neither <code>E</code> nor <code>N</code>,
+if possible; KeePass then determines automatically whether the virtual key
+is typically realized using an extended key.</p>
+
+<p>The values <code>D</code> and <code>U</code> are mutually exclusive.
+If neither <code>D</code> nor <code>U</code> is specified, KeePass
+sends a keypress (i.e. down and up).</p>
+
+<p>On Linux systems, KeePass automatically converts most Windows virtual key codes
+to Linux key codes (i.e. the <code>{VKEY ...}</code> command works on both
+systems).</p>
+
+Examples:
+<ul>
+<li><code>{VKEY 13}</code><br />
+Presses and releases the primary <kbd><kbd>Enter</kbd></kbd> key.
+This is equivalent to <code>{ENTER}</code>.</li>
+<li><code>{VKEY 13 E}</code><br />
+Presses and releases the <kbd><kbd>Enter</kbd></kbd> key of the
+numeric keypad.</li>
+<li><code>{VKEY 91 D}e{VKEY 91 U}</code><br />
+Sends <kbd><kbd>Win</kbd>+<kbd>E</kbd></kbd>
+(i.e. it presses and holds down the left <kbd><kbd>Win</kbd></kbd>
+key, presses and releases the <kbd><kbd>E</kbd></kbd> key, and
+releases the <kbd><kbd>Win</kbd></kbd> key),
+which starts Windows Explorer (on Windows).
+This is not equivalent to <code>{LWIN}e</code>
+(which first presses and releases the left <kbd><kbd>Win</kbd></kbd> key
+and then presses and releases the <kbd><kbd>E</kbd></kbd> key).<br />
+Note that Windows Explorer can also be started using
+<code>{CMD:/Explorer.exe/W=0/}</code>
+(the <a href="placeholders.html#cmd"><code>{CMD:/.../}</code></a>
+placeholder can run arbitrary command lines).</li>
+</ul>
+
+Do not use the <code>{VKEY ...}</code> command to change the state of the
+<kbd><kbd>Shift</kbd></kbd>, <kbd><kbd>Ctrl</kbd></kbd> and
+<kbd><kbd>Alt</kbd></kbd> modifiers. For this, use <code>+</code>,
+<code>^</code> and <code>%</code> instead (see above).
+
+
+<br />
+
+
+Keys and special keys (not placeholders or commands) can be repeated by
+appending a number within the code. For example, <code>{TAB 5}</code>
+presses the <kbd><kbd>Tab</kbd></kbd> key 5 times.
+
+
+<p><b>Examples:</b></p>
+
+<p><code>{TITLE}{TAB}{USERNAME}{TAB}{PASSWORD}{ENTER}</code><br />
+Types the entry's title, a <kbd><kbd>Tab</kbd></kbd>, the user name,
+a <kbd><kbd>Tab</kbd></kbd>, the password of the
+currently selected entry, and presses <kbd><kbd>Enter</kbd></kbd>.</p>
+
+<p><code>{TAB}{PASSWORD}{ENTER}</code><br />
+Presses the <kbd><kbd>Tab</kbd></kbd> key, enters the entry's password and
+presses <kbd><kbd>Enter</kbd></kbd>.</p>
+
+<p><code>{USERNAME}{TAB}^v{ENTER}</code><br />
+Types the user name, presses <kbd><kbd>Tab</kbd></kbd>, presses
+<kbd><kbd>Ctrl</kbd>+<kbd>V</kbd></kbd> (which pastes data from the Windows
+clipboard in most applications), and presses <kbd><kbd>Enter</kbd></kbd>.</p>
+
+<p><b>Toggling Checkboxes:</b><br />
+A checkbox (e.g. &quot;Stay logged in on this computer&quot;) can
+usually be toggled by sending a space character (<code>' '</code>).
+Example:<br />
+<code>{USERNAME}{TAB}{PASSWORD}{TAB} {TAB}{ENTER}</code><br />
+If there is a form with a user name field, a password field and a checkbox,
+this sequence would enter the user name, the password and toggle the checkbox
+that follows the password control.</p>
+
+<p><b>Pressing Non-Default Buttons:</b><br />
+Pressing non-default buttons works the same as toggling checkboxes: send
+a space character (<code>' '</code>).
+Note that this should only be used for non-default buttons; for
+default buttons, <code>{ENTER}</code> should be sent instead.</p>
+
+<p><b>Higher ANSI Characters:</b><br />
+The auto-type function supports sending of higher ANSI characters in range 126-255. This
+means that you can send special characters like &copy;, @, etc. without any problems;
+you can write them directly into the keystroke sequence definition.</p>
+
+<br />
+
+<a name="autowindows"></a>
+<h2 class="sectiontitle"><img src="../images/b16x16_window_list.png" alt="" />
+Target Window Filters</h2>
+
+<p>When creating a custom window/sequence association, you need to tell
+KeePass how the matching window titles look like. Here, KeePass supports
+simple wildcards:</p>
+
+<table class="tablebox75">
+<colgroup><col style="width: 25%;" /><col style="width: 75%;" /></colgroup>
+<tr><th>String with Wildcard</th><th>Meaning</th></tr>
+<tr><td>STRING</td><td>Matches all window titles that are named exactly &quot;STRING&quot;.</td></tr>
+<tr><td>STRING*</td><td>Matches all window titles that start with &quot;STRING&quot;.</td></tr>
+<tr><td>*STRING</td><td>Matches all window titles that end with &quot;STRING&quot;.</td></tr>
+<tr><td>*STRING*</td><td>Matches all window titles that have &quot;STRING&quot; somewhere in the window title. This includes the string being directly at the start or at the end of the window title.</td></tr>
+</table>
+
+<br />
+
+
+
+
+
+
+Wildcards may also appear in the middle of patterns.
+For example, <code>*Windows*Explorer*</code> would match
+<code>Windows Internet Explorer</code>.<br />
+<br />
+Additionally, matching using
+<!-- https://msdn.microsoft.com/en-us/library/az24scfc.aspx -->
+<!-- https://docs.microsoft.com/en-us/dotnet/standard/base-types/regular-expression-language-quick-reference -->
+<a href="https://learn.microsoft.com/en-us/dotnet/standard/base-types/regular-expression-language-quick-reference"
+target="_blank">regular expressions</a> is supported. In order to
+tell KeePass that the pattern is a regular expression, enclose it in
+<code>//</code>. For example, <code>//B.?g Window//</code> would
+match <code>Big Window</code>, <code>Bug Window</code> and <code>Bg Window</code>.
+
+
+<p>By using wildcards, you can make your auto-type associations browser-independent.
+See the usage examples for more information.</p>
+
+<br />
+
+<a name="changedefaultseq"></a>
+<h2 class="sectiontitle"><img src="../images/b16x16_ktouch.png" alt="" />
+Change Default Auto-Type Sequence</h2>
+
+<p>The default auto-type sequence (i.e. the one which is used when you don't specify
+a custom one) is <code>{USERNAME}{TAB}{PASSWORD}{ENTER}</code>. KeePass allows you
+to change this default sequence. Normally you won't need to change it (use
+custom window/sequence definitions instead!), but it is quite useful when some
+other application is interfering with KeePass (for example a security software that
+always asks you for permission before allowing KeePass to auto-type).</p>
+
+
+
+
+
+
+By default, entries inherit the auto-type sequence of their containing group.
+Groups also inherit the auto-type sequence of their parent groups. There is
+only one top group (the first group contains all other groups). Consequently, if
+you change the auto-type sequence of this very first group, all other groups
+and their entries will use this sequence. Practically, this is a global override.
+To change it, right-click on the first group, choose <i>'Edit Group'</i> and switch
+to the <i>'Auto-Type'</i> tab.
+<br />
+
+
+<br /><br />
+
+<a name="autoexample"></a>
+<h2 class="sectiontitle"><img src="../images/b16x16_ascii.png" alt="" />
+Usage Example</h2>
+
+<p>Now let's have a look at a real-world example: logging into a website. In this example,
+will we use the global auto-type hot key to fill out the login webpage.
+First open the <a href="https://keepass.info/help/kb/testform.html"
+target="_blank">test page</a>, and afterwards create a new entry
+in KeePass with title <i>Test Form</i> and a user name and password
+of your choice.</p>
+
+<p>Let's assume the global auto-type hot key is set to
+<kbd><kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>A</kbd></kbd> (the default).
+KeePass is running in the background, you have opened your database and the workspace is unlocked.</p>
+
+<p>When you now navigate to the test page and are being prompted for your user name and password,
+just click into the user name field and press
+<kbd><kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>A</kbd></kbd>.
+KeePass enters the user name and password for you!</p>
+
+<p>Why did this work? The window title of your browser window was
+<i>&quot;Test Form - KeePass - Internet Explorer&quot;</i> or
+<i>&quot;Test Form - KeePass - Mozilla Firefox&quot;</i>, depending on the browser
+you are using. Because we gave the entry in KeePass the title <i>Test Form</i>, the
+entry title is contained in the window title, therefore KeePass uses this entry.</p>
+
+<p>Here you see the huge advantages of auto-type: it not only doesn't require
+any additional browser software
+(the browser knows nothing of KeePass &#8211; there are no helper browser plugins required),
+it is also browser-independent: the one entry that you created within KeePass works
+for Internet Explorer <i>and</i> Mozilla Firefox (and other browsers) without
+requiring any modifications or definitions.</p>
+
+<p>When you would use window/sequence associations
+(instead of entry title matching), you can achieve the same
+browser-independent effect using wildcards: you could for example have used
+<code>Test Form - KeePass - *</code> as window filter. This filter matches both
+the Internet Explorer and the Firefox window.</p>
+
+</body></html>
+

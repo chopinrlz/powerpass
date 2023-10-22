@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<meta http-equiv="expires" content="0" />
+	<meta http-equiv="cache-control" content="no-cache" />
+	<meta http-equiv="pragma" content="no-cache" />
+
+	<meta name="author" content="Dominik Reichl" />
+
+	
+	
+
+	<meta name="DC.title" content="Application Policy - KeePass" />
+	<meta name="DC.creator" content="Dominik Reichl" />
+	<meta name="DC.type" content="Text" />
+	<meta name="DC.format" content="text/html" />
+	<meta name="DC.language" content="en" />
+	<meta name="DC.rights" content="Copyright (C) 2003-2023 Dominik Reichl" />
+
+	<meta name="robots" content="index, follow" />
+
+	<title>Application Policy - KeePass</title>
+	<base target="_self" />
+	<link rel="stylesheet" type="text/css" href="../../default.css" />
+
+	
+</head>
+<body>
+
+
+
+<table class="sectionheader"><tr>
+<td><img src="../images/b64x64_file_locked.png" alt="" /></td>
+<td><h1>Application Policy</h1>
+<p>Details about the application policy system within KeePass.</p></td>
+</tr></table>
+
+<ul>
+<li><a href="#helpuser">Help for Users</a></li>
+<li><a href="#helpadmin">Help for Administrators</a>
+
+<ul>
+<li><a href="#security">Policy Security</a></li>
+</ul>
+
+</li>
+</ul>
+
+<br />
+
+<a name="helpuser"></a>
+<h2 class="sectiontitle"><img src="../images/b16x16_kdmconfig.png" alt="" />
+Help for Users</h2>
+
+<p>Application policy is a KeePass feature that enables administrators
+to prevent you from accidently compromising the security
+system of your company.</p>
+
+<p>Operations like exporting entries to non-encrypted
+files or printing for example can be prevented effectively
+using the application policy.</p>
+
+<p>If you are using KeePass at home, you can ignore the
+application policy (everything allowed anyway) or reduce
+your rights using the policy yourself, in order to avoid
+accidental leakage of sensitive information.</p>
+
+<p>In order to prevent changing the policy after it has
+been specified, it is recommended to use an
+<a href="https://keepass.info/help/kb/config_enf.html" target="_blank">enforced
+configuration file</a>.</p>
+
+<br />
+
+<a name="helpadmin"></a>
+<h2 class="sectiontitle"><img src="../images/b16x16_kgpg.png" alt="" />
+Help for Administrators</h2>
+
+<p>KeePass can be installed on a network drive and a policy
+can be enforced (like not permitting users to print the
+entry list).</p>
+
+<p>The application policy enforcement is based on
+the mechanism how KeePass stores configuration settings. You
+first need to understand this method before you can continue
+creating a policy; see the
+<a href="../base/configuration.html">configuration</a> help page.</p>
+
+<p>A policy-enforcing KeePass installation looks like
+the following: the KeePass application files are stored
+on the network drive and all users are starting KeePass from
+this drive (i.e. they only have links to the executable on
+the network drive). By using an enforced configuration file
+on the network drive
+(remember that this file overrides all others),
+a policy can be enforced.</p>
+
+<p>In order to create such an installation, follow these steps:</p>
+
+<ol>
+<li>Copy KeePass to a shared network drive that supports file
+access rights (like NTFS).</li>
+
+<li>Create an enforced configuration file that enforces the
+application policy settings that you wish.</li>
+
+<li>Adjust the file access rights: allow users only to read and
+execute all KeePass files, no write access.</li>
+</ol>
+
+<!-- <p>That's it. You created a policy that is enforced on all computers,
+including your own one (until you change the enforced configuration file
+on the network drive).</p> -->
+
+<br />
+
+<a name="security"></a>
+<h2 class="sectiontitle"><img src="../images/b16x16_file_locked.png" alt="" />
+Policy Security</h2>
+
+<p>Recall what the policy mechanism looks like: KeePass and the
+configuration file are stored on the network drive. If you
+grant your users free access to the Internet or allow them
+to insert CD-ROMs/DVDs/USB-sticks, nothing prevents
+a user to download a separate copy of KeePass and run it. In
+this case the policy isn't enforced, as the downloaded KeePass
+doesn't know anything of the enforced configuration file on the network
+drive.</p>
+
+<p>Policy enforcement therefore only is effective if your users
+really use the KeePass version installed on the network drive.</p>
+
+</body></html>
+

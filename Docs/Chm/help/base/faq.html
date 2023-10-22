@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<meta http-equiv="expires" content="0" />
+	<meta http-equiv="cache-control" content="no-cache" />
+	<meta http-equiv="pragma" content="no-cache" />
+
+	<meta name="author" content="Dominik Reichl" />
+
+	
+	
+
+	<meta name="DC.title" content="Administrative FAQ - KeePass" />
+	<meta name="DC.creator" content="Dominik Reichl" />
+	<meta name="DC.type" content="Text" />
+	<meta name="DC.format" content="text/html" />
+	<meta name="DC.language" content="en" />
+	<meta name="DC.rights" content="Copyright (C) 2003-2023 Dominik Reichl" />
+
+	<meta name="robots" content="index, follow" />
+
+	<title>Administrative FAQ - KeePass</title>
+	<base target="_self" />
+	<link rel="stylesheet" type="text/css" href="../../default.css" />
+
+	
+</head>
+<body>
+
+
+
+
+<table class="sectionheader"><tr>
+<td><img src="../images/b64x64_help.png" alt="" /></td>
+<td><h1>Administrative FAQ</h1>
+<p>Frequently Asked Questions about the project, licensing, ...</p></td>
+</tr></table>
+
+<ul>
+<li><a href="#helpme">How can I help you? (Supporting the KeePass project)</a></li>
+<li><a href="#company">May KeePass be used in a company?</a></li>
+<li><a href="#kpserver">What about a centralized KeePass Internet server?</a></li>
+</ul>
+
+<br />
+
+<a name="helpme"></a>
+<h2 class="sectiontitle"><img src="../images/b16x16_help.png" alt="" />
+How can I help you?</h2>
+
+<p>If you like KeePass and would like to help the developers in some way:</p>
+
+<ul>
+<li><a href="https://keepass.info/donate.html" target="_blank"><b>Donate</b></a><br />
+This is the best way of helping, if you don't have that much time or experience
+in application development.</li>
+<li><a href="https://keepass.info/translations.html" target="_blank"><b>Make a translation</b></a><br />
+If you have some free time, you could make a translation of KeePass (of course only if you're
+language isn't offered already).</li>
+<!-- https://sourceforge.net/tracker/?atid=609908&amp;group_id=95013&amp;func=browse -->
+<li><a href="https://sourceforge.net/p/keepass/bugs/"
+target="_blank"><b>Test new releases and report bugs</b></a><br />
+KeePass is under constant development, new features get implemented, bugs get fixed. If you
+have some free time, you could
+test new releases thoroughly and report bugs. If you're a programmer, look through the sources to
+find bugs and maybe even submit fixes.</li>
+<li><b>Spread the word</b><br />
+If you like KeePass, tell all your friends how great KeePass is, publish articles
+about it, press it on CDs/DVDs, ship USB sticks preinstalled with it, submit it to software
+archives, talk in forums about it, etc.!</li>
+</ul>
+
+<br />
+
+<a name="company"></a>
+<h2 class="sectiontitle"><img src="../images/b16x16_server.png" alt="" />
+May KeePass be used in a company?</h2>
+
+<p>Yes. KeePass is free software and you don't have to pay any
+fees. You may freely use KeePass under the terms of its
+
+
+
+
+<a href="../v2/license.html">license</a>.
+
+
+</p>
+
+<p>But of course, if you like KeePass,
+<a href="https://keepass.info/donate.html" target="_blank">donations</a>
+are always greatly appreciated.</p>
+
+
+
+
+
+
+You might be interested in this page:
+<a href="../v2_dev/customize.html">Customization (2.x)</a>.
+
+
+<br /><br />
+
+<a name="kpserver"></a>
+<h2 class="sectiontitle"><img src="../images/b16x16_server.png" alt="" />
+What about a centralized KeePass Internet server?</h2>
+
+<p>The idea on the first glance sounds simple and useful: there should be a centralized
+KeePass Internet server, on which all users can store their passwords. By having
+Internet connection, you'd have access to all your passwords.</p>
+
+<p>Note that this idea is different from simply providing webspace. KeePass 2.x already
+supports storing databases on servers using HTTP/FTP. The point is
+having one server for all users.</p>
+
+<p>When creating such a server, there are several difficulties:</p>
+
+<ul>
+<li>A fairly complex synchronization and caching mechanism will be required.
+You won't want to transfer the complete database, otherwise the service will be unusable
+for everyone storing attachments, etc.<br /><br /></li>
+
+<li>Directly related to the previous point: in order to do synchronization, the server needs
+to be able to read and understand databases, i.e. some dedicated KeePass server
+would need to be written. While the transport way could be secure HTTPS, the server
+certainly has some user data as plain text in memory for some time. One needs
+to be very careful here. What to do if the server gets compromised? The security
+implications would be horrible, if an attacker could read any user data.<br /><br /></li>
+
+<li>How to avoid server compromises? If a normal Internet server is compromised,
+the security implications are minimal: in the worst case all user accounts and data for this
+website are lost. But with a KeePass server, whole identities would be lost. An attacker
+couldn't only impersonate someone on this particular server, but on the complete Internet
+and real world, depending on what is stored in the databases.<br />
+<br />
+Therefore, banking-level security systems would be required for a KeePass server.
+Keeping PHP / ASP / Linux / Windows (or whatever will be used) up-to-date definitely
+is not enough here.<br />
+<br /></li>
+
+<li>Basically you offer people webspace for their databases, therefore the service
+obviously will cost something. By charging people, they expect reliability and you
+need to make up-time guarantees. Therefore, at least 2 servers are required (by
+different hosters), which need to be synchronized.</li>
+</ul>
+
+<p>Summary: a centralized Internet server currently is out of range. If someone wants
+to start a company providing such a service, feel free to use KeePass as base
+application (of course respect the Open Source terms).</p>
+
+<p>But what can and probably will be done later is a local intranet KeePass server (for
+companies for example).
+Employees could log in to the company's password server and use it. But a centralized Internet
+server &#8211; no chance.</p>
+
+</body></html>
+

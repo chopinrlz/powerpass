@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<meta http-equiv="expires" content="0" />
+	<meta http-equiv="cache-control" content="no-cache" />
+	<meta http-equiv="pragma" content="no-cache" />
+
+	<meta name="author" content="Dominik Reichl" />
+
+	
+	
+
+	<meta name="DC.title" content="Master Key - KeePass" />
+	<meta name="DC.creator" content="Dominik Reichl" />
+	<meta name="DC.type" content="Text" />
+	<meta name="DC.format" content="text/html" />
+	<meta name="DC.language" content="en" />
+	<meta name="DC.rights" content="Copyright (C) 2003-2023 Dominik Reichl" />
+
+	<meta name="robots" content="index, follow" />
+
+	<title>Master Key - KeePass</title>
+	<base target="_self" />
+	<link rel="stylesheet" type="text/css" href="../../default.css" />
+
+	
+	<style type="text/css">
+	/* <![CDATA[ */
+	table.flagstbl tr th:nth-of-type(1), table.flagstbl tr th:nth-of-type(2),
+	table.flagstbl tr td:nth-of-type(1), table.flagstbl tr td:nth-of-type(2) {
+		text-align: right;
+	}
+	/* ]]> */
+	</style>
+
+</head>
+<body>
+
+
+
+
+
+<table class="sectionheader"><tr>
+<td><img src="../images/b64x64_kgpg.png" alt="" /></td>
+<td><h1>Master Key</h1>
+<p>Details about components of a master key.</p></td>
+</tr></table>
+
+<ul>
+<li><a href="#password">Master Password</a></li>
+<li><a href="#keyfiles">Key File</a></li>
+<li><a href="#winuser">Windows User Account</a></li>
+<li><a href="#pwmin">For Administrators: Specifying Minimum Properties of
+Master Keys</a></li>
+</ul>
+
+<hr />
+
+<p>Your KeePass database file is encrypted using a master key.
+This master key can consist of multiple components:
+a master password, a key file and/or a key that is protected
+using the current Windows user account.</p>
+
+<p>For opening a database file, <em>all</em> components of the
+master key are required.</p>
+
+<p>If you forget/lose any of the master key components (or forget the
+composition), all data stored in the database is lost.
+There is no backdoor and no universal key that can open your database.</p>
+
+<br />
+
+<a name="password"></a>
+<h2 class="sectiontitle"><img src="../images/b16x16_password.png" alt="" />
+Master Password</h2>
+
+<p>If you use a master password, you only have to remember one password or
+passphrase (which should be good!) to open your database.</p>
+
+<p>KeePass features a protection against brute-force and dictionary attacks;
+see the <a href="security.html#secdictprotect">security</a> help page
+for details.</p>
+
+<br />
+
+<a name="keyfiles"></a>
+<h2 class="sectiontitle"><img src="../images/b16x16_file_locked.png" alt="" />
+Key File</h2>
+
+<p>A key file is a file that contains a key (and possibly additional data,
+e.g. a hash that allows to verify the integrity of the key).
+The file extension typically is 'keyx' or 'key'.</p>
+
+<p>A key file must not be modified, otherwise you cannot open your database
+anymore. If you want to use a different key file, open the dialog for
+changing the master key (via 'File' &rarr; 'Change Master Key')
+and create/select the new key file.</p>
+
+<p><b>Two-factor protection.</b>
+A key file is something that you must <em>have</em> in order to be able
+to open the database
+(in contrast to a master password, which you must <em>know</em>).
+If you use both a key file and a master password, you have a two-factor
+protection: possession and knowledge.</p>
+
+<p><b>Location.</b>
+As mentioned above, the idea of a key file is that you <em>have</em>
+something. If an attacker obtains both your database file and your
+key file, then the key file provides no protection.
+Therefore, the two files must be stored in different locations.
+For example, you could store the key file on a separate USB stick.</p>
+
+<p><b>Hiding the location.</b>
+The key file <em>content</em> must be kept secret, not its location
+(file path/name).
+Trying to hide the key file (e.g. by storing it among
+a thousand other files, in the hope that an attacker does not know which
+file is the correct one) typically does not increase the security, because
+it is easy to find out the correct file (e.g. by inspecting the last access
+times of files, lists of recently used files of the operating system,
+file system auditing logs, anti-virus software logs, etc.).
+KeePass has an option for remembering the paths of key files,
+which is turned on by default; turning it off typically just decreases
+the usability without increasing the security.</p>
+
+<p><b>Backup.</b>
+You should create a backup of your key file (onto an independent data
+storage device).
+If your key file is an XML file (which is the default), you can also create
+a backup on paper (KeePass 2.x provides a command for printing a key file
+backup in the menu 'File' &rarr; 'Print').
+In any case, the backup should be stored in a secure location, where only
+you and possibly a few other people that you trust have access to.
+More details about backing up a key file can be found in the
+<a href="https://abp-keepass.sourceforge.net/FAQ.html" target="_blank">ABP FAQ</a>.</p>
+
+<p><b>Formats.</b>
+KeePass supports the following key file formats:</p>
+<ul class="withspc">
+<li><b>XML (recommended, default).</b>
+There is an XML format for key files.
+KeePass 2.x uses this format by default, i.e. when creating a key file
+in the master key dialog, an XML key file is created.
+The syntax and the semantics of the XML format allow to detect certain
+corruptions (especially such caused by faulty hardware or transfer problems),
+and a hash (in XML key files version 2.0 or higher) allows to
+verify the integrity of the key.
+This format is resistant to most encoding and new-line character changes
+(which is useful for instance when the user is opening and saving the
+key file or when transferring it from/to a server).
+Such a key file can be printed (as a backup on paper),
+and comments can be added in the file (with the usual XML syntax:
+<code>&lt;!-- ... --&gt;</code>).
+It is the most flexible format; new features can be added easily
+in the future.</li>
+
+<li><b>32 bytes.</b>
+If the key file contains exactly 32 bytes, these are used as
+a 256-bit cryptographic key.
+This format requires the least disk space.</li>
+
+<li><b>Hexadecimal.</b>
+If the key file contains exactly 64 hexadecimal characters
+(0-9 and A-F, in UTF-8/ASCII encoding, one line, no spaces),
+these are decoded to a 256-bit cryptographic key.</li>
+
+<li><b>Hashed.</b>
+If a key file does not match any of the formats above,
+its content is hashed using a cryptographic hash function
+in order to build a key (typically a 256-bit key with SHA-256).
+This allows to use arbitrary files as key files.</li>
+</ul>
+
+<p><b>Reuse.</b>
+You can use one key file for multiple database files.
+This can be convenient, but please keep in mind that when an
+attacker obtains your key file, you have to change the master keys
+of all database files protected with this key file.</p>
+
+
+
+
+
+
+In order to reuse an existing key file, click on the 'Browse' button
+in the master key creation dialog.
+
+
+<br /><br />
+
+<a name="winuser"></a>
+<h2 class="sectiontitle"><img src="../images/b16x16_kdmconfig.png" alt="" />
+Windows User Account</h2>
+
+<br />
+
+
+
+
+
+
+KeePass can make the database dependent on the current Windows user
+account. If you enable this option, you can only open the database when
+you are logged in as the same Windows user when creating the database.<br />
+<br />
+<img src="../images/b16x16_warning.png" class="textimg" alt="Warning" />
+Be very careful with using this option. If your Windows user account
+gets deleted, you won't be able to open your KeePass database anymore.
+Also, when using this option at home and your computer breaks (hard disk
+damaged), it is not
+enough to just create a new Windows account on the new installation with the
+same name and password;
+you need to copy the <i>complete</i> account (i.e. SID, ...). This is not
+a simple task, so if you don't know how to do this, it is highly recommended
+that you don't enable this option.
+Detailed instructions how to recover a Windows user account can be found here:
+'<a href="https://sourceforge.net/p/keepass/wiki/Recover%20Windows%20User%20Account%20Credentials/"
+target="_blank">Recover Windows User Account Credentials</a>'
+(a short technical tutorial can be found in a Microsoft TechNet article:
+<!-- https://technet.microsoft.com/en-us/library/ee681624.aspx -->
+<!-- https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-7/ee681624(v=ws.10) -->
+'<a href="https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-7/ee681624(v=ws.10)"
+target="_blank">How to recover a Vault corrupted by lost DPAPI keys</a>').<br />
+<br />
+You can change the password of the Windows user account freely;
+this does not affect the KeePass database.
+Note that <em>changing</em> the password (e.g. a user using the Control Panel
+or pressing <kbd><kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>Del</kbd></kbd>
+and selecting 'Change Password') and
+<em>resetting</em> it to a new one (e.g. an administrator using a
+<code>NET USER <i>&lt;User&gt;</i> <i>&lt;NewPassword&gt;</i></code>
+command) are two different things.
+After <em>changing</em> your password, you can still open your KeePass database.
+When <em>resetting</em> the password to a new one, access usually is not possible
+anymore (because the user's DPAPI keys are lost), but there are exceptions
+(for example when the user is in a domain, Windows can retrieve the user's DPAPI keys
+from a domain controller, or a home user can use a previously created
+Password Reset Disk).
+Details can be found in the MSDN article
+<!-- https://msdn.microsoft.com/en-us/library/ms995355.aspx -->
+<!-- https://docs.microsoft.com/en-us/previous-versions/ms995355(v=msdn.10) -->
+'<a href="https://learn.microsoft.com/en-us/previous-versions/ms995355(v=msdn.10)"
+target="_blank">Windows Data Protection</a>' and in the support article
+<!-- https://support.microsoft.com/en-us/kb/309408 -->
+<!-- https://support.microsoft.com/en-us/help/309408 -->
+<!-- https://support.microsoft.com/en-us/help/309408/how-to-troubleshoot-the-data-protection-api-dpapi -->
+'<a href="https://web.archive.org/web/20160322171305/https://support.microsoft.com/en-us/kb/309408"
+target="_blank" rel="nofollow">How to troubleshoot the Data Protection API (DPAPI)</a>'.<br />
+<br />
+If you decide to use this option, it is highly recommended not to rely
+on it exclusively, but to additionally use one of the other two options (password
+or key file).<br />
+<br />
+<i>Protection using user accounts is unsupported on Windows 98 / ME.</i>
+
+
+<br /><br />
+
+<a name="pwmin"></a>
+<h2 class="sectiontitle"><img src="../images/b16x16_kdmconfig.png" alt="" />
+For Administrators: Specifying Minimum Properties of Master Keys</h2>
+
+<p>Administrators can specify a minimum length
+and/or the minimum estimated quality that master passwords must have in
+order to be accepted. You can tell KeePass
+to check these two minimum requirements by adding/editing
+appropriate definitions in the
+<a href="configuration.html">INI/XML configuration file</a>.</p>
+
+
+
+
+
+
+The value of the
+<code>Security/MasterPassword/MinimumLength</code> node specifies
+the minimum master password length (in characters). For example, by setting
+it to <code>10</code>, KeePass will only accept
+master passwords that consist of at least 10 characters.<br />
+<br />
+The value of the
+<code>Security/MasterPassword/MinimumQuality</code> node specifies
+the minimum estimated quality (in bits) that master passwords must have.
+For example, by setting it to <code>80</code>, only master passwords
+with an estimated quality of at least 80 bits will be accepted.<br />
+<br />
+The <code>Security/MasterKeyExpiryRec</code> and <code>Security/MasterKeyExpiryForce</code>
+nodes can be set to an XSD date or an XSD duration (see
+<a href="https://www.w3schools.com/xml/schema_dtypes_date.asp"
+target="_blank">XSD Date and Time Data Types</a>).
+If the master key has not been changed since the specified date or
+if the time span between now and the last master key change exceeds
+the specified duration, KeePass recommends/forces to change it.
+These settings apply to all databases that are opened with this
+KeePass instance; a master key expiry can also be configured for
+each database individually (in 'File' &rarr; 'Database Settings' &rarr;
+tab 'Advanced').<br />
+<br />
+By specifying <code>KeyCreationFlags</code> and/or <code>KeyPromptFlags</code>
+(in the <code>UI</code> node), you can force states (enabled, disabled,
+checked, unchecked) of key source controls in the master key creation and
+prompt dialogs. These values can be bitwise combinations of one or more of
+the following flags:<br />
+<br />
+<table class="tablebox75 flagstbl">
+<tr><th>Flag (Hex)</th><th>Flag (Dec)</th>
+<th>Description</th></tr>
+<tr><td>0x0</td><td>0</td>
+<td>Don't force any states (default).</td></tr>
+<tr><td>0x1</td><td>1</td>
+<td>Enable password.</td></tr>
+<tr><td>0x2</td><td>2</td>
+<td>Enable key file.</td></tr>
+<tr><td>0x4</td><td>4</td>
+<td>Enable user account.</td></tr>
+<tr><td>0x8</td><td>8</td>
+<td>Enable 'hide password' button.</td></tr>
+<tr><td>0x100</td><td>256</td>
+<td>Disable password.</td></tr>
+<tr><td>0x200</td><td>512</td>
+<td>Disable key file.</td></tr>
+<tr><td>0x400</td><td>1024</td>
+<td>Disable user account.</td></tr>
+<tr><td>0x800</td><td>2048</td>
+<td>Disable 'hide password' button.</td></tr>
+<tr><td>0x10000</td><td>65536</td>
+<td>Check password.</td></tr>
+<tr><td>0x20000</td><td>131072</td>
+<td>Check key file.</td></tr>
+<tr><td>0x40000</td><td>262144</td>
+<td>Check user account.</td></tr>
+<tr><td>0x80000</td><td>524288</td>
+<td>Check 'hide password' option/button.</td></tr>
+<tr><td>0x1000000</td><td>16777216</td>
+<td>Uncheck password.</td></tr>
+<tr><td>0x2000000</td><td>33554432</td>
+<td>Uncheck key file.</td></tr>
+<tr><td>0x4000000</td><td>67108864</td>
+<td>Uncheck user account.</td></tr>
+<tr><td>0x8000000</td><td>134217728</td>
+<td>Uncheck 'hide password' option/button.</td></tr>
+</table>
+
+<br />
+The values of <code>KeyCreationFlags</code> and <code>KeyPromptFlags</code>
+must be specified in decimal notation.<br />
+<br />
+For example, if you want to enforce using the user account option, you could
+check and disable the control (such that the user can't uncheck it anymore)
+by specifying 263168 as value (0x40000 + 0x400 = 0x40400 = 263168).
+
+
+</body></html>
+

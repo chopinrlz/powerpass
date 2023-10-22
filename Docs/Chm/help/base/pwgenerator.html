@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<meta http-equiv="expires" content="0" />
+	<meta http-equiv="cache-control" content="no-cache" />
+	<meta http-equiv="pragma" content="no-cache" />
+
+	<meta name="author" content="Dominik Reichl" />
+
+	
+	
+
+	<meta name="DC.title" content="Password Generator - KeePass" />
+	<meta name="DC.creator" content="Dominik Reichl" />
+	<meta name="DC.type" content="Text" />
+	<meta name="DC.format" content="text/html" />
+	<meta name="DC.language" content="en" />
+	<meta name="DC.rights" content="Copyright (C) 2003-2023 Dominik Reichl" />
+
+	<meta name="robots" content="index, follow" />
+
+	<title>Password Generator - KeePass</title>
+	<base target="_self" />
+	<link rel="stylesheet" type="text/css" href="../../default.css" />
+
+	
+</head>
+<body>
+
+
+
+
+<table class="sectionheader"><tr>
+<td><img src="../images/b64x64_kgpg.png" alt="" /></td>
+<td><h1>Password Generator</h1>
+<p>Details about the built-in password generator of KeePass.</p></td>
+</tr></table>
+
+<ul>
+<li><a href="#charset">Generation Based on Character Sets</a></li>
+<li><a href="#pattern">Generation Based on Patterns</a></li>
+<li><a href="#rules">Generating Passwords that Follow Rules</a></li>
+<li><a href="#secreduc">Security-Reducing Options</a></li>
+<li><a href="#profiles">Creating and Using Password Generator Profiles</a></li>
+<li><a href="#configauto">Configuring Settings of Automatically Generated Passwords for New Entries</a></li>
+</ul>
+
+<br />
+
+<a name="charset"></a>
+<h2 class="sectiontitle"><img src="../images/b16x16_help.png" alt="" />
+Generation Based on Character Sets</h2>
+
+<p>This password generation method is the recommended way to generate random passwords.
+Other methods (pattern-based generation, ...) should only be used if passwords must
+follow special rules or fulfill certain conditions.</p>
+
+<p>Generation based on a character set is very simple. You simply let KeePass know
+which characters can be used (e.g. upper-case letters, digits, ...) and KeePass will
+randomly pick characters out of the set.</p>
+
+<p><b>Defining a character set:</b><br />
+The character set can be defined directly in the password generator window. For convenience,
+KeePass offers adding commonly used ranges of characters to the set. This is done by
+ticking the appropriate check box. Additionally to these predefined character ranges, you
+can specify characters manually: all characters that you enter in the <i>'Also include the
+following characters'</i> text box will be directly added to the character set.</p>
+
+<p>The characters that you enter in the <i>'Also include the following characters'</i>
+text box are included in the character set from which the password generator randomly
+chooses characters from.
+This means that these additional characters are <em>allowed</em> to appear in the
+generated passwords, but they are not <em>forced</em> to.
+If you want to force that some characters appear in the generated passwords,
+you have to use the pattern-based generation.</p>
+
+<p><b>Character sets are sets:</b><br />
+In mathematical terms, character sets are sets, not vectors. This means that characters
+cannot be added twice to the set. Either a character is in the set or it is not.</p>
+
+<p>For example, if you enter <i>'AAAAB'</i> into the additional characters box, this is
+exactly the same set as <i>'AB'</i>. <i>'A'</i> will <i>not</i> be 4 times as likely as <i>'B'</i>!
+If you need to follow rules like <i>'character A is more likely than B'</i>, you must
+use <a href="#rules">pattern-based generation + permuting password characters</a>.</p>
+
+<p>KeePass will 'optimize' your character set by removing all duplicate characters. If
+you'd enter the character set <i>'AAAAB'</i> into the additional characters box,
+close and reopen the password generator, it'll show the shorter character set <i>'AB'</i>.
+Similarly, if you tick the <i>'Digits'</i> check box and enter <i>'3'</i> into the
+additional box, the <i>'3'</i> will be ignored because it is already included in the
+<i>'Digits'</i> character range.</p>
+
+<p><b>Supported characters:</b><br />
+All <a href="https://www.unicode.org/" target="_blank">Unicode</a>
+characters in the ranges [U+0001, U+D7FF] and [U+E000, U+FFFF]
+except { U+0009 / '\t', U+000A / '\n', U+000D / '\r' } are supported.
+Characters in the range [U+010000, U+10FFFF] (which need to be encoded
+in UTF-16 using surrogate pairs from [0xD800, 0xDFFF]) are not supported.
+Subsequent processing of passwords may have further limitations
+(for example, the character U+FFFF is forbidden in XML/KDBX files
+and will be replaced or removed).</p>
+
+<br />
+
+<a name="pattern"></a>
+<h2 class="sectiontitle"><img src="../images/b16x16_help.png" alt="" />
+Generation Based on Patterns</h2>
+
+<p>The password generator can create passwords using patterns. A pattern is a
+string defining the layout of the new password. The following placeholders
+are supported:</p>
+
+<table class="tablebox">
+<tr><th>Placeholder</th>
+<th>Type</th>
+<th>Character Set</th></tr>
+
+<tr><td><code>a</code></td>
+<td>Lower-Case Alphanumeric</td>
+<td>abcdefghijklmnopqrstuvwxyz 0123456789</td></tr>
+
+<tr><td><code>A</code></td>
+<td>Mixed-Case Alphanumeric</td>
+<td>ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 0123456789</td></tr>
+
+<tr><td><code>U</code></td>
+<td>Upper-Case Alphanumeric</td>
+<td>ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789</td></tr>
+
+<tr><td><code>d</code></td>
+<td>Digit</td>
+<td>0123456789</td></tr>
+
+<tr><td><code>h</code></td>
+<td>Lower-Case Hex Character</td>
+<td>0123456789 abcdef</td></tr>
+
+<tr><td><code>H</code></td>
+<td>Upper-Case Hex Character</td>
+<td>0123456789 ABCDEF</td></tr>
+
+<tr><td><code>l</code></td>
+<td>Lower-Case Letter</td>
+<td>abcdefghijklmnopqrstuvwxyz</td></tr>
+
+<tr><td><code>L</code></td>
+<td>Mixed-Case Letter</td>
+<td>ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz</td></tr>
+
+<tr><td><code>u</code></td>
+<td>Upper-Case Letter</td>
+<td>ABCDEFGHIJKLMNOPQRSTUVWXYZ</td></tr>
+
+<tr><td><code>v</code></td>
+<td>Lower-Case Vowel</td>
+<td>aeiou</td></tr>
+
+<tr><td><code>V</code></td>
+<td>Mixed-Case Vowel</td>
+<td>AEIOU aeiou</td></tr>
+
+<tr><td><code>Z</code></td>
+<td>Upper-Case Vowel</td>
+<td>AEIOU</td></tr>
+
+<tr><td><code>c</code></td>
+<td>Lower-Case Consonant</td>
+<td>bcdfghjklmnpqrstvwxyz</td></tr>
+
+<tr><td><code>C</code></td>
+<td>Mixed-Case Consonant</td>
+<td>BCDFGHJKLMNPQRSTVWXYZ bcdfghjklmnpqrstvwxyz</td></tr>
+
+<tr><td><code>z</code></td>
+<td>Upper-Case Consonant</td>
+<td>BCDFGHJKLMNPQRSTVWXYZ</td></tr>
+
+<tr><td><code>p</code></td>
+<td>Punctuation</td>
+<td>,.;:</td></tr>
+
+<tr><td><code>b</code></td>
+<td>Bracket</td>
+<td>()[]{}&lt;&gt;</td></tr>
+
+<tr><td><code>s</code></td>
+<td>Printable 7-Bit Special Character</td>
+<td>!&quot;#$%&amp;'()*+,-./:;&lt;=&gt;?@[\]^_&#96;{|}~</td></tr>
+
+<tr><td><code>S</code></td>
+<td>Printable 7-Bit ASCII</td>
+<td>A-Z, a-z, 0-9, !&quot;#$%&amp;'()*+,-./:;&lt;=&gt;?@[\]^_&#96;{|}~</td></tr>
+
+<tr><td><code>x</code></td>
+<td><a href="https://en.wikipedia.org/wiki/Latin-1_Supplement_(Unicode_block)"
+target="_blank">Latin-1 Supplement</a></td>
+<td>Range [U+00A1, U+00FF] except U+00AD:<br />
+&#xA1;&#xA2;&#xA3;&#xA4;&#xA5;&#xA6;&#xA7;&#xA8;&#xA9;&#xAA;&#xAB;&#xAC;&#xAE;&#xAF;
+&#xB0;&#xB1;&#xB2;&#xB3;&#xB4;&#xB5;&#xB6;&#xB7;&#xB8;&#xB9;&#xBA;&#xBB;&#xBC;&#xBD;&#xBE;&#xBF;
+&#xC0;&#xC1;&#xC2;&#xC3;&#xC4;&#xC5;&#xC6;&#xC7;&#xC8;&#xC9;&#xCA;&#xCB;&#xCC;&#xCD;&#xCE;&#xCF;
+&#xD0;&#xD1;&#xD2;&#xD3;&#xD4;&#xD5;&#xD6;&#xD7;&#xD8;&#xD9;&#xDA;&#xDB;&#xDC;&#xDD;&#xDE;&#xDF;
+&#xE0;&#xE1;&#xE2;&#xE3;&#xE4;&#xE5;&#xE6;&#xE7;&#xE8;&#xE9;&#xEA;&#xEB;&#xEC;&#xED;&#xEE;&#xEF;
+&#xF0;&#xF1;&#xF2;&#xF3;&#xF4;&#xF5;&#xF6;&#xF7;&#xF8;&#xF9;&#xFA;&#xFB;&#xFC;&#xFD;&#xFE;&#xFF;</td></tr>
+
+<tr><td><code>&#92;</code></td>
+<td>Escape (Fixed Char)</td>
+<td>Use following character as is.</td></tr>
+
+<tr><td><code>{<em>n</em>}</code></td>
+<td>Escape (Repeat)</td>
+<td>Repeat the previous placeholder <em>n</em> times.</td></tr>
+
+<tr><td><code>[<i>...</i>]</code></td>
+<td>Custom Char Set</td>
+<td>Define a custom character set.</td></tr>
+
+</table>
+
+<p>The <b>&#92;</b> placeholder is special: it's an escape character. The next character that follows
+the <b>&#92;</b> is written directly into the generated password. If you want a <code>&#92;</code> in your
+password at a specific place, you have to write <code>&#92;&#92;</code>.</p>
+
+<p>Using the <b>{<i>n</i>}</b> code you can define how many times the previous placeholder
+should occur. The <b>{ }</b> operator duplicates placeholders, not generated characters. Examples:<br />
+&raquo; <code>d{4}</code> is equivalent to <code>dddd</code>,<br />
+&raquo; <code>dH{4}a</code> is equivalent to <code>dHHHHa</code> and<br />
+&raquo; <code>Hda{1}dH</code> is equivalent to <code>HdadH</code>.</p>
+
+<p>The <b>[<i>...</i>]</b> notation can be used to define a custom character set, from which
+the password generator will pick one character randomly. All characters between the '<b>[</b>'
+and '<b>]</b>' brackets follow the same rules as the placeholders above.
+The '<b>^</b>' character removes the next placeholders from the character set.
+Examples:<br />
+&raquo; <code>[dp]</code> generates exactly 1 random character out of the set
+digits + punctuation,<br />
+&raquo; <code>[d&#92;m&#92;@^&#92;3]{5}</code> generates 5 characters out of the set &quot;012456789m@&quot;,<br />
+&raquo; <code>[u&#92;_][u&#92;_]</code> generates 2 characters out of the set upper-case + '_'.</p>
+
+<p><b>More examples:</b></p>
+
+<p><code>ddddd</code><br />
+Generates for example: 41922, 12733, 43960, 07660, 12390, 74680, ...</p>
+
+<p><code>&#92;H&#92;e&#92;x&#92;:&#92; HHHHHH</code><br />
+Generates for example: 'Hex: 13567A', 'Hex: A6B99D', 'Hex: 02243C', ...</p>
+
+<p><b>Common password patterns:</b></p>
+
+<table class="tablebox">
+<tr><th>Name</th>
+<th>Pattern</th></tr>
+
+<tr><td>Hex Key - 40-Bit</td>
+<td><code>H{10}</code></td></tr>
+
+<tr><td>Hex Key - 128-Bit</td>
+<td><code>H{32}</code></td></tr>
+
+<tr><td>Hex Key - 256-Bit</td>
+<td><code>H{64}</code></td></tr>
+
+<tr><td>MAC Address</td>
+<td><code>HH\-HH\-HH\-HH\-HH\-HH</code></td></tr>
+
+<!-- <tr><td>E-Mail Address</td>
+<td><code>LA{11}\@LA{5}\.\c\o\m</code></td></tr> -->
+
+</table>
+
+<br /><br />
+
+<a name="rules"></a>
+<h2 class="sectiontitle"><img src="../images/b16x16_help.png" alt="" />
+Generating Passwords that Follow Rules</h2>
+
+<p>Below are a few examples how the pattern generation feature can be used to generate
+passwords that follow certain rules.</p>
+
+<p><i>Important! For all of the following examples you must enable the 'Randomly permute
+characters of password' option!</i></p>
+
+<table class="tablebox">
+<colgroup><col style="width: 75%;" /><col style="width: 25%;" /></colgroup>
+<tr><th>Rule</th>
+<th>Pattern</th></tr>
+
+<tr><td>Must consist of 2 upper-case letters, 2 lower-case letters and 2 digits.</td>
+<td><code>uulldd</code></td></tr>
+
+<tr><td>Must consist of 9 digits and 1 letter.</td>
+<td><code>d{9}L</code></td></tr>
+
+<tr><td>Must consist of 10 alphanumeric characters, where at least 1 is
+a letter and at least 1 is a digit.</td>
+<td><code>LdA{8}</code></td></tr>
+
+<tr><td>Must consist of 10 alphanumeric characters, where at least 2 are
+upper-case letters and at least 2 are lower-case letters.</td>
+<td><code>uullA{6}</code></td></tr>
+
+<tr><td>Must consist of 9 characters of the set &quot;ABCDEF&quot; and
+an '@' symbol.</td>
+<td><code>\@[\A\B\C\D\E\F]{9}</code></td></tr>
+
+</table>
+
+<br /><br />
+
+<a name="secreduc"></a>
+<h2 class="sectiontitle"><img src="../images/b16x16_help.png" alt="" />
+Security-Reducing Options</h2>
+
+<p>The password generator supports several options like <i>'Each character must occur at most once'</i>,
+<i>'Exclude look-alike characters'</i> (<code>O0</code>, <code>Il1|</code>)
+and a field to explicitly specify characters that should not appear in generated passwords.</p>
+
+<p>These options are reducing the security of generated passwords. You should
+only enable them if you are forced to follow such rules by the website/application,
+for which you are generating the password.</p>
+
+<p>The options can be found in the <i>'Advanced'</i> dialog / tab page.</p>
+
+
+
+
+
+
+<img src="../images/pwgen_adv_excltab.png" class="floatrightws" alt="Tab Control" />
+If you enable a security-reducing option, an exclamation mark (!)<br />
+is appended to the <i>'Advanced'</i> tab.
+
+
+<br /><br />
+
+<a name="profiles"></a>
+<h2 class="sectiontitle"><img src="../images/b16x16_help.png" alt="" />
+Creating and Using Password Generator Profiles</h2>
+
+<p>Password generator options (character set, length, pattern, ...) can be saved
+as password generator profiles.</p>
+
+<p><b>Creating/modifying a profile:</b></p>
+
+<ol>
+<li>Open the <i>Password Generator</i> window.</li>
+<li>Specify all options of the new profile.</li>
+<li>Click the <img src="../images/b16x16_filesaveas.png" alt="" />
+'<i>Save as Profile</i>' button.</li>
+<li>Enter the name of the new profile, or select an existing profile name from
+the drop-down list to overwrite it. Close the dialog with <i>OK</i>.</li>
+<li>If you want to immediately create a password using the new profile,
+click <i>OK/Accept</i>. Otherwise click <i>Cancel/Close</i> (the profile is not lost;
+profile management is independent of password generation).</li>
+</ol>
+
+<p><b>Using a profile:</b><br />
+To use a profile, simply select it from the drop-down profiles list
+in the password generator window. All settings of this profile will be
+restored accordingly.</p>
+
+<a name="derive"></a>
+<p><b>Meta-profile 'Derive from previous password':</b><br />
+When this meta-profile is selected, a password is generated based on
+a character set derived from the previous password. The new password
+has the same length as the old one, and every character of the old
+password turns on the character subset that contains this character.
+For example, if the old password contains the letter 'R', then the character
+set used for generating the new password contains the range 'A' to 'Z'.<br />
+<i>Warning! This meta-profile should not be used blindly
+(i.e. without reviewing the used character set).
+The new password does not necessarily contain at least one character
+from each character subset (see '</i><a href="#charset"><i>Generation
+Based on Character Sets</i></a><i>'), thus blindly generating new passwords
+with this meta-profile can result in a quality degradation of the
+effectively used profile.</i></p>
+
+<br />
+
+<a name="configauto"></a>
+<h2 class="sectiontitle"><img src="../images/b16x16_help.png" alt="" />
+Configuring Settings of Automatically Generated Passwords for New Entries</h2>
+
+<p>When you create a new entry, KeePass will automatically generate a random
+password for it. The properties of these generated passwords can be configured
+in the password generator dialog.</p>
+
+<p>To configure, specify the options of your choice and overwrite the
+<i>'(Automatically generated passwords for new entries)'</i> profile (see
+section above).</p>
+
+<p><b>Disabling automatically generated passwords:</b><br />
+To disable automatically generated passwords for new entries, select
+<i>'Generate using character set'</i> and specify <i>0</i> as password length.
+Overwrite the appropriate profile (see above).</p>
+
+</body></html>
+

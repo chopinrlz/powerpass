@@ -1,0 +1,1734 @@
+/*
+  KeePass Password Safe - The Open-Source Password Manager
+  Copyright (C) 2003-2023 Dominik Reichl <dominik.reichl@t-online.de>
+
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+*/
+
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Drawing;
+using System.IO;
+using System.IO.Compression;
+using System.Security.Cryptography;
+using System.Text;
+using System.Windows.Forms;
+
+using KeePass.App;
+using KeePass.DataExchange;
+using KeePass.Forms;
+using KeePass.Resources;
+using KeePass.UI;
+using KeePass.Util.Spr;
+
+using KeePassLib;
+using KeePassLib.Collections;
+using KeePassLib.Cryptography;
+using KeePassLib.Cryptography.PasswordGenerator;
+using KeePassLib.Delegates;
+using KeePassLib.Interfaces;
+using KeePassLib.Security;
+using KeePassLib.Serialization;
+using KeePassLib.Utility;
+
+namespace KeePass.Util
+{
+	internal delegate List<object> EntryReportDelegate(PwDatabase pd,
+		IStatusLogger sl, out Action<ListView> fInit);
+
+	/// <summary>
+	/// This class contains various static functions for entry operations.
+	/// </summary>
+	public static class EntryUtil
+	{
+		/// <summary>
+		/// Save all attachments of an array of entries to a directory.
+		/// </summary>
+		/// <param name="vEntries">Array of entries whose attachments are extracted and saved.</param>
+		/// <param name="strBasePath">Directory in which the attachments are stored.</param>
+		public static void SaveEntryAttachments(PwEntry[] vEntries, string strBasePath)
+		{
+			if(vEntries == null) { Debug.Assert(false); return; }
+			if(string.IsNullOrEmpty(strBasePath)) { Debug.Assert(false); return; }
+
+			string strPath = UrlUtil.EnsureTerminatingSeparator(strBasePath, false);
+			bool bCancel = false;
+
+			foreach(PwEntry pe in vEntries)
+			{
+				foreach(KeyValuePair<string, ProtectedBinary> kvp in pe.Binaries)
+				{
+					string strFile = strPath + UrlUtil.GetSafeFileName(kvp.Key);
+
+					if(File.Exists(strFile))
+					{
+						string strMsg = KPRes.FileExistsAlready + MessageService.NewLine;
+						strMsg += strFile + MessageService.NewParagraph;
+						strMsg += KPRes.OverwriteExistingFileQuestion;
+
+						DialogResult dr = MessageService.Ask(strMsg, null,
+							MessageBoxButtons.YesNoCancel);
+
+						if(dr == DialogResult.Cancel)
+						{
+							bCancel = true;
+							break;
+						}
+						else if(dr == DialogResult.Yes)
+						{
+							try { File.Delete(strFile); }
+							catch(Exception exDel)
+							{
+								MessageService.ShowWarning(strFile, exDel);
+								continue;
+							}
+						}
+						else continue; // DialogResult.No
+					}
+
+					ProtectedBinary pb = kvp.Value;
+					byte[] pbData = pb.ReadData();
+					try { File.WriteAllBytes(strFile, pbData); }
+					catch(Exception exWrite)
+					{
+						MessageService.ShowWarning(strFile, exWrite);
+					}
+					if(pb.IsProtected) MemUtil.ZeroByteArray(pbData);
+				}
+				if(bCancel) break;
+			}
+		}
+
+		internal const string ClipFormatGroup = "Group-F"; // F = flags
+		// Old format name (<= 2.14): "KeePassEntriesCF",
+		// old format name (<= 2.22): "KeePassEntriesCX",
+		// old format name (<= 2.40): "KeePassEntries",
+		// old format name (<= 2.41): media type "vnd" + "Entries-E" // E = encrypted
+		internal const string ClipFormatEntry = "Entry-F"; // F = flags
+		internal const string ClipFormatEntries = "Entries-F"; // F = flags
+		private static readonly byte[] ClipDomainSep = new byte[] {
+			0xF8, 0x03, 0xFA, 0x51, 0x87, 0x18, 0x49, 0x5D };
+
+		private static void CopyDataToClipboard(byte[] pbData, string strFormat,
+			IntPtr hOwner, bool bEncrypt)
+		{
+			if(bEncrypt)
+				pbData = CryptoUtil.ProtectData(pbData, ClipDomainSep,
+					DataProtectionScope.CurrentUser);
+
+			byte[] pbC = new byte[4 + pbData.Length];
+			MemUtil.UInt32ToBytesEx((bEncrypt ? 1U : 0U), pbC, 0); // Flags
+			Array.Copy(pbData, 0, pbC, 4, pbData.Length);
+
+			ClipboardUtil.Copy(pbC, strFormat, true, hOwner);
+		}
+
+		internal static void CopyGroupToClipboard(PwDatabase pd, PwGroup pg,
+			IntPtr hOwner, bool bEncrypt)
+		{
+			using(MemoryStream ms = new MemoryStream())
+			{
+				using(GZipStream gz = new GZipStream(ms, CompressionMode.Compress))
+				{
+					KdbxFile.WriteGroup(gz, pd, pg);
+				}
+
+				CopyDataToClipboard(ms.ToArray(), ClipFormatGroup, hOwner, bEncrypt);
+			}
+		}
+
+		[Obsolete]
+		public static void CopyEntriesToClipboard(PwDatabase pd, PwEntry[] vEntries)
+		{
+			CopyEntriesToClipboard(pd, vEntries, IntPtr.Zero, true);
+		}
+
+		public static void CopyEntriesToClipboard(PwDatabase pd, PwEntry[] vEntries,
+			IntPtr hOwner)
+		{
+			CopyEntriesToClipboard(pd, vEntries, hOwner, true);
+		}
+
+		internal static void CopyEntriesToClipboard(PwDatabase pd, PwEntry[] vEntries,
+			IntPtr hOwner, bool bEncrypt)
+		{
+			if((vEntries == null) || (vEntries.Length == 0))
+			{
+				Debug.Assert(false);
+				ClipboardUtil.Clear();
+				return;
+			}
+
+			using(MemoryStream ms = new MemoryStream())
+			{
+				using(GZipStream gz = new GZipStream(ms, CompressionMode.Compress))
+				{
+					KdbxFile.WriteEntries(gz, pd, vEntries);
+				}
+
+				string strF = ((vEntries.Length >= 2) ? ClipFormatEntries : ClipFormatEntry);
+				CopyDataToClipboard(ms.ToArray(), strF, hOwner, bEncrypt);
+			}
+		}
+
+		private static byte[] GetClipboardData(string strFormat)
+		{
+			byte[] pbC = ClipboardUtil.GetData(strFormat);
+			if(pbC == null) return null;
+			if(pbC.Length < 4) { Debug.Assert(false); return null; }
+
+			uint uFlags = MemUtil.BytesToUInt32(pbC, 0);
+			byte[] pbData = MemUtil.Mid(pbC, 4, pbC.Length - 4);
+
+			if((uFlags & 1) != 0)
+				pbData = CryptoUtil.UnprotectData(pbData, ClipDomainSep,
+					DataProtectionScope.CurrentUser);
+
+			return pbData;
+		}
+
+		internal static PwGroup PasteGroupFromClipboard(PwDatabase pd,
+			PwGroup pgStorage)
+		{
+			byte[] pbData = GetClipboardData(ClipFormatGroup);
+			if(pbData == null) return null;
+
+			PwGroup pg;
+			using(MemoryStream ms = new MemoryStream(pbData, false))
+			{
+				using(GZipStream gz = new GZipStream(ms, CompressionMode.Decompress))
+				{
+					pg = KdbxFile.ReadGroup(gz, pd, true, true, true);
+					pgStorage.AddGroup(pg, true, true);
+				}
+			}
+
+			return pg;
+		}
+
+		public static void PasteEntriesFromClipboard(PwDatabase pd, PwGroup pgStorage)
+		{
+			PwObjectList<PwEntry> l;
+			PasteEntriesFromClipboard(pd, pgStorage, out l);
+		}
+
+		internal static void PasteEntriesFromClipboard(PwDatabase pd,
+			PwGroup pgStorage, out PwObjectList<PwEntry> lAdded)
+		{
+			lAdded = new PwObjectList<PwEntry>();
+
+			byte[] pbData = GetClipboardData(ClipFormatEntries);
+			if(pbData == null) pbData = GetClipboardData(ClipFormatEntry);
+			if(pbData == null) return;
+
+			using(MemoryStream ms = new MemoryStream(pbData, false))
+			{
+				using(GZipStream gz = new GZipStream(ms, CompressionMode.Decompress))
+				{
+					List<PwEntry> lEntries = KdbxFile.ReadEntries(gz, pd, true);
+					foreach(PwEntry pe in lEntries)
+					{
+						pgStorage.AddEntry(pe, true, true);
+						lAdded.Add(pe);
+					}
+				}
+			}
+		}
+
+		[Obsolete]
+		public static string FillPlaceholders(string strText, SprContext ctx)
+		{
+			return FillPlaceholders(strText, ctx, 0);
+		}
+
+		public static string FillPlaceholders(string strText, SprContext ctx,
+			uint uRecursionLevel)
+		{
+			if((ctx == null) || (ctx.Entry == null)) return strText;
+
+			string str = strText;
+
+			if((ctx.Flags & SprCompileFlags.NewPassword) != SprCompileFlags.None)
+				str = ReplaceNewPasswordPlaceholder(str, ctx, uRecursionLevel);
+
+			if((ctx.Flags & SprCompileFlags.HmacOtp) != SprCompileFlags.None)
+			{
+				str = ReplaceHmacOtpPlaceholder(str, ctx);
+				str = ReplaceTimeOtpPlaceholder(str, ctx);
+			}
+
+			if((ctx.Flags & SprCompileFlags.PickChars) != SprCompileFlags.None)
+				str = ReplacePickField(str, ctx);
+
+			return str;
+		}
+
+		private static string ReplaceNewPasswordPlaceholder(string strText,
+			SprContext ctx, uint uRecursionLevel)
+		{
+			PwEntry pe = ctx.Entry;
+			PwDatabase pd = ctx.Database;
+			if((pe == null) || (pd == null)) return strText;
+
+			string str = strText;
+
+			const string strNewPwStart = "{NEWPASSWORD";
+			if(str.IndexOf(strNewPwStart, StrUtil.CaseIgnoreCmp) < 0) return str;
+
+			string strGen = null;
+
+			int iStart;
+			List<string> lParams;
+			while(SprEngine.ParseAndRemovePlhWithParams(ref str, ctx, uRecursionLevel,
+				strNewPwStart + ":", out iStart, out lParams, true))
+			{
+				if(strGen == null) strGen = GeneratePassword(lParams, ctx);
+
+				string strIns = SprEngine.TransformContent(strGen, ctx);
+				str = str.Insert(iStart, strIns);
+			}
+
+			const string strNewPwPlh = strNewPwStart + "}";
+			if(str.IndexOf(strNewPwPlh, StrUtil.CaseIgnoreCmp) >= 0)
+			{
+				if(strGen == null) strGen = GeneratePassword(null, ctx);
+
+				string strIns = SprEngine.TransformContent(strGen, ctx);
+				str = StrUtil.ReplaceCaseInsensitive(str, strNewPwPlh, strIns);
+			}
+
+			if(strGen != null)
+			{
+				pe.CreateBackup(pd);
+
+				ProtectedString psGen = new ProtectedString(
+					pd.MemoryProtection.ProtectPassword, strGen);
+				pe.Strings.Set(PwDefs.PasswordField, psGen);
+
+				pe.Touch(true, false);
+				pd.Modified = true;
+			}
+			else { Debug.Assert(false); }
+
+			return str;
+		}
+
+		private static string GeneratePassword(List<string> lParams, SprContext ctx)
+		{
+			string strProfile = (((lParams != null) && (lParams.Count != 0)) ?
+				lParams[0] : null);
+			PwEntry peCtx = ((ctx != null) ? ctx.Entry : null);
+			PwDatabase pdCtx = ((ctx != null) ? ctx.Database : null);
+
+			PwProfile prf = null;
+			if(strProfile == "~")
+			{
+				if(peCtx != null)
+					prf = PwProfile.DeriveFromPassword(peCtx.Strings.GetSafe(
+						PwDefs.PasswordField));
+			}
+			else if(strProfile == "#")
+			{
+				string strPattern = ((lParams.Count >= 2) ? lParams[1] : null);
+				if(!string.IsNullOrEmpty(strPattern))
+				{
+					Dictionary<string, string> dOptions = SprEngine.SplitParams(
+						(lParams.Count >= 3) ? lParams[2] : string.Empty);
+
+					prf = new PwProfile();
+					prf.GeneratorType = PasswordGeneratorType.Pattern;
+					prf.Pattern = strPattern;
+					prf.PatternPermutePassword = (SprEngine.GetParam(dOptions,
+						"r", "0") == "1");
+				}
+			}
+			else if(Program.Config.PasswordGenerator.ProfilesEnabled)
+			{
+				prf = Program.Config.PasswordGenerator.AutoGeneratedPasswordsProfile;
+
+				if(!string.IsNullOrEmpty(strProfile))
+				{
+					List<PwProfile> l = PwGeneratorUtil.GetAllProfiles(false);
+					int i = PwGeneratorUtil.FindProfile(l, strProfile, true);
+					if(i >= 0) prf = l[i];
+				}
+			}
+
+			if(prf == null) return string.Empty;
+
+			return PwGeneratorUtil.GenerateAcceptable(prf, null, peCtx, pdCtx,
+				false).ReadString();
+		}
+
+		internal const string OtpSecret = "Secret";
+		internal const string OtpSecretHex = OtpSecret + "-Hex";
+		internal const string OtpSecretBase32 = OtpSecret + "-Base32";
+		internal const string OtpSecretBase64 = OtpSecret + "-Base64";
+
+		internal const string HotpPlh = "{HMACOTP}";
+		internal const string HotpPrefix = "HmacOtp-";
+		internal const string HotpCounter = HotpPrefix + "Counter";
+
+		internal const string TotpPlh = "{TIMEOTP}";
+		internal const string TotpPrefix = "TimeOtp-";
+		internal const string TotpLength = TotpPrefix + "Length";
+		internal const string TotpPeriod = TotpPrefix + "Period";
+		internal const string TotpAlg = TotpPrefix + "Algorithm";
+
+		internal const uint TotpLengthDefault = 6;
+
+		private static byte[] GetOtpSecret(PwEntry pe, string strPrefix)
+		{
+			try
+			{
+				string str = pe.Strings.ReadSafe(strPrefix + EntryUtil.OtpSecret);
+				if(!string.IsNullOrEmpty(str))
+					return StrUtil.Utf8.GetBytes(str);
+
+				str = pe.Strings.ReadSafe(strPrefix + EntryUtil.OtpSecretHex);
+				if(!string.IsNullOrEmpty(str))
+					return MemUtil.HexStringToByteArray(str);
+
+				str = pe.Strings.ReadSafe(strPrefix + EntryUtil.OtpSecretBase32);
+				if(!string.IsNullOrEmpty(str))
+					return MemUtil.ParseBase32(str, true);
+
+				str = pe.Strings.ReadSafe(strPrefix + EntryUtil.OtpSecretBase64);
+				if(!string.IsNullOrEmpty(str))
+					return Convert.FromBase64String(str);
+			}
+			catch(Exception) { Debug.Assert(false); }
+
+			return null;
+		}
+
+		internal static void RemoveOtpSecrets(ProtectedStringDictionary d,
+			string strPrefix)
+		{
+			d.Remove(strPrefix + EntryUtil.OtpSecret);
+			d.Remove(strPrefix + EntryUtil.OtpSecretHex);
+			d.Remove(strPrefix + EntryUtil.OtpSecretBase32);
+			d.Remove(strPrefix + EntryUtil.OtpSecretBase64);
+		}
+
+		private static string ReplaceHmacOtpPlaceholder(string strText, SprContext ctx)
+		{
+			if(strText.IndexOf(EntryUtil.HotpPlh, StrUtil.CaseIgnoreCmp) < 0) return strText;
+
+			PwEntry pe = ctx.Entry;
+			PwDatabase pd = ctx.Database;
+			if((pe == null) || (pd == null)) return strText;
+
+			byte[] pbSecret = GetOtpSecret(pe, EntryUtil.HotpPrefix);
+
+			string strCounter = pe.Strings.ReadSafe(EntryUtil.HotpCounter);
+			ulong uCounter;
+			ulong.TryParse(strCounter, out uCounter);
+
+			string strValue = string.Empty;
+			if((pbSecret != null) && (pbSecret.Length != 0))
+			{
+				strValue = HmacOtp.Generate(pbSecret, uCounter, 6, false, -1);
+
+				pe.Strings.Set(EntryUtil.HotpCounter, new ProtectedString(false,
+					(uCounter + 1).ToString()));
+				pe.Touch(true, false);
+				pd.Modified = true;
+			}
+
+			return StrUtil.ReplaceCaseInsensitive(strText, EntryUtil.HotpPlh, strValue);
+		}
+
+		private static string ReplaceTimeOtpPlaceholder(string strText, SprContext ctx)
+		{
+			if(strText.IndexOf(EntryUtil.TotpPlh, StrUtil.CaseIgnoreCmp) < 0) return strText;
+
+			PwEntry pe = ctx.Entry;
+			if(pe == null) return strText;
+
+			byte[] pbSecret = GetOtpSecret(pe, EntryUtil.TotpPrefix);
+
+			string strLength = pe.Strings.ReadSafe(EntryUtil.TotpLength);
+			uint uLength;
+			uint.TryParse(strLength, out uLength);
+			if(uLength == 0) uLength = EntryUtil.TotpLengthDefault;
+
+			string strPeriod = pe.Strings.ReadSafe(EntryUtil.TotpPeriod);
+			uint uPeriod;
+			uint.TryParse(strPeriod, out uPeriod);
+
+			string strAlg = pe.Strings.ReadSafe(EntryUtil.TotpAlg);
+
+			string strValue = string.Empty;
+			if((pbSecret != null) && (pbSecret.Length != 0))
+				strValue = HmacOtp.GenerateTimeOtp(pbSecret, null, uPeriod,
+					uLength, strAlg);
+
+			return StrUtil.ReplaceCaseInsensitive(strText, EntryUtil.TotpPlh, strValue);
+		}
+
+		// https://github.com/google/google-authenticator/wiki/Key-Uri-Format
+		internal const string OtpAuthScheme = "otpauth";
+		internal static void ImportOtpAuth(PwEntry pe, string strOtpAuthUri,
+			PwDatabase pd)
+		{
+			if(pe == null) { Debug.Assert(false); return; }
+			if(string.IsNullOrEmpty(strOtpAuthUri)) return;
+
+			Uri uri = new Uri(strOtpAuthUri);
+			string strScheme = (uri.Scheme ?? string.Empty);
+			if(!strScheme.Equals(OtpAuthScheme, StrUtil.CaseIgnoreCmp))
+				throw new FormatException();
+
+			string[] vSeg = (uri.Segments ?? MemUtil.EmptyArray<string>());
+
+			string strLabel = string.Empty;
+			if(vSeg.Length >= 2)
+			{
+				strLabel = (vSeg[1] ?? string.Empty);
+				if(strLabel.EndsWith("/"))
+					strLabel = strLabel.Substring(0, strLabel.Length - 1);
+				strLabel = Uri.UnescapeDataString(strLabel).Trim();
+
+				if(!string.IsNullOrEmpty(strLabel))
+				{
+					string strAccount = strLabel, strIssuer = string.Empty;
+					int iSep = strLabel.IndexOf(':');
+					if(iSep >= 0)
+					{
+						strIssuer = strLabel.Substring(0, iSep).Trim();
+						strAccount = strLabel.Substring(iSep + 1).Trim();
+					}
+
+					ImportUtil.AppendToField(pe, PwDefs.TitleField, strIssuer,
+						pd, null, true);
+					ImportUtil.AppendToField(pe, PwDefs.UserNameField, strAccount,
+						pd, null, true);
+				}
+			}
+
+			Dictionary<string, string> d = UrlUtil.ParseQuery(uri.Query);
+
+			string strIssuerP;
+			d.TryGetValue("issuer", out strIssuerP);
+			if(!string.IsNullOrEmpty(strIssuerP) &&
+				!strLabel.StartsWith(strIssuerP + ":", StrUtil.CaseIgnoreCmp))
+				ImportUtil.AppendToField(pe, PwDefs.TitleField, strIssuerP,
+					pd, null, true);
+
+			GAction<string, string, Dictionary<string, string>, bool> f =
+				delegate(string strQueryKey, string strEntryField,
+				Dictionary<string, string> dValueMap, bool bProtect)
+			{
+				string strValue;
+				d.TryGetValue(strQueryKey, out strValue);
+				if(string.IsNullOrEmpty(strValue))
+				{
+					pe.Strings.Remove(strEntryField);
+					return;
+				}
+
+				if(dValueMap != null)
+				{
+					string strValueM;
+					if(dValueMap.TryGetValue(strValue, out strValueM))
+						strValue = strValueM;
+				}
+
+				pe.Strings.Set(strEntryField, new ProtectedString(bProtect, strValue));
+			};
+
+			Dictionary<string, string> dAlgMap = new Dictionary<string, string>(
+				StrUtil.CaseIgnoreComparer)
+			{
+				{ "SHA1", HmacOtp.AlgHmacSha1 },
+				{ "SHA256", HmacOtp.AlgHmacSha256 },
+				{ "SHA512", HmacOtp.AlgHmacSha512 }
+			};
+
+			string strType = (uri.Host ?? string.Empty);
+			if(strType.Equals("hotp", StrUtil.CaseIgnoreCmp))
+			{
+				RemoveOtpSecrets(pe.Strings, EntryUtil.HotpPrefix);
+
+				f("secret", EntryUtil.HotpPrefix + EntryUtil.OtpSecretBase32, null, true);
+				f("counter", EntryUtil.HotpCounter, null, false);
+			}
+			else if(strType.Equals("totp", StrUtil.CaseIgnoreCmp))
+			{
+				RemoveOtpSecrets(pe.Strings, EntryUtil.TotpPrefix);
+
+				f("secret", EntryUtil.TotpPrefix + EntryUtil.OtpSecretBase32, null, true);
+				f("digits", EntryUtil.TotpLength, null, false);
+				f("period", EntryUtil.TotpPeriod, null, false);
+				f("algorithm", EntryUtil.TotpAlg, dAlgMap, false);
+			}
+			else throw new FormatException();
+		}
+
+		private static string ReplacePickField(string strText, SprContext ctx)
+		{
+			string str = strText;
+			PwEntry pe = ((ctx != null) ? ctx.Entry : null);
+			PwDatabase pd = ((ctx != null) ? ctx.Database : null);
+
+			while(true)
+			{
+				const string strPlh = @"{PICKFIELD}";
+				int p = str.IndexOf(strPlh, StrUtil.CaseIgnoreCmp);
+				if(p < 0) break;
+
+				string strRep = string.Empty;
+
+				List<FpField> l = new List<FpField>();
+				string strGroup;
+
+				if(pe != null)
+				{
+					strGroup = KPRes.Entry + " - " + KPRes.StandardFields;
+
+					Debug.Assert(PwDefs.GetStandardFields().Count == 5);
+					l.Add(new FpField(KPRes.Title, pe.Strings.GetSafe(PwDefs.TitleField),
+						strGroup));
+					l.Add(new FpField(KPRes.UserName, pe.Strings.GetSafe(PwDefs.UserNameField),
+						strGroup));
+					l.Add(new FpField(KPRes.Password, pe.Strings.GetSafe(PwDefs.PasswordField),
+						strGroup));
+					l.Add(new FpField(KPRes.Url, pe.Strings.GetSafe(PwDefs.UrlField),
+						strGroup));
+					l.Add(new FpField(KPRes.Notes, pe.Strings.GetSafe(PwDefs.NotesField),
+						strGroup));
+
+					strGroup = KPRes.Entry + " - " + KPRes.CustomFields;
+					foreach(KeyValuePair<string, ProtectedString> kvp in pe.Strings)
+					{
+						if(PwDefs.IsStandardField(kvp.Key)) continue;
+
+						l.Add(new FpField(kvp.Key, kvp.Value, strGroup));
+					}
+
+					PwGroup pg = pe.ParentGroup;
+					if(pg != null)
+					{
+						strGroup = KPRes.Group;
+
+						l.Add(new FpField(KPRes.Name, new ProtectedString(
+							false, pg.Name), strGroup));
+
+						if(pg.Notes.Length > 0)
+							l.Add(new FpField(KPRes.Notes, new ProtectedString(
+								false, pg.Notes), strGroup));
+					}
+				}
+
+				if(pd != null)
+				{
+					strGroup = KPRes.Database;
+
+					if(pd.Name.Length != 0)
+						l.Add(new FpField(KPRes.Name, new ProtectedString(
+							false, pd.Name), strGroup));
+					l.Add(new FpField(KPRes.FileOrUrl, new ProtectedString(
+						false, pd.IOConnectionInfo.Path), strGroup));
+				}
+
+				FpField fpf = FieldPickerForm.ShowAndRestore(KPRes.PickField,
+					KPRes.PickFieldDesc, l);
+				if(fpf != null) strRep = fpf.Value.ReadString();
+
+				strRep = SprEngine.Compile(strRep, ctx.WithoutContentTransformations());
+				strRep = SprEngine.TransformContent(strRep, ctx);
+
+				str = str.Remove(p, strPlh.Length);
+				str = str.Insert(p, strRep);
+			}
+
+			return str;
+		}
+
+		public static bool EntriesHaveSameParent(PwObjectList<PwEntry> v)
+		{
+			if(v == null) { Debug.Assert(false); return true; }
+			if(v.UCount == 0) return true;
+
+			PwGroup pg = v.GetAt(0).ParentGroup;
+			foreach(PwEntry pe in v)
+			{
+				if(pe.ParentGroup != pg) return false;
+			}
+
+			return true;
+		}
+
+		public static void ReorderEntriesAsInDatabase(PwObjectList<PwEntry> v,
+			PwDatabase pd)
+		{
+			if((v == null) || (pd == null)) { Debug.Assert(false); return; }
+			if(pd.RootGroup == null) { Debug.Assert(false); return; } // DB must be open
+
+			PwObjectList<PwEntry> vRem = v.CloneShallow();
+			v.Clear();
+
+			EntryHandler eh = delegate(PwEntry pe)
+			{
+				int p = vRem.IndexOf(pe);
+				if(p >= 0)
+				{
+					v.Add(pe);
+					vRem.RemoveAt((uint)p);
+				}
+
+				return true;
+			};
+
+			pd.RootGroup.TraverseTree(TraversalMethod.PreOrder, null, eh);
+
+			foreach(PwEntry peRem in vRem) v.Add(peRem); // Entries not found
+		}
+
+		[Obsolete]
+		public static void ExpireTanEntry(PwEntry pe)
+		{
+			ExpireTanEntryIfOption(pe, null);
+		}
+
+		[Obsolete]
+		public static bool ExpireTanEntryIfOption(PwEntry pe)
+		{
+			return ExpireTanEntryIfOption(pe, null);
+		}
+
+		/// <summary>
+		/// Test whether an entry is a TAN entry and if so, expire it, provided
+		/// that the option for expiring TANs on use is enabled.
+		/// </summary>
+		/// <param name="pe">Entry.</param>
+		/// <returns>If the entry has been modified, the return value is
+		/// <c>true</c>, otherwise <c>false</c>.</returns>
+		public static bool ExpireTanEntryIfOption(PwEntry pe, PwDatabase pdContext)
+		{
+			if(pe == null) throw new ArgumentNullException("pe");
+			// pdContext may be null
+			if(!PwDefs.IsTanEntry(pe)) return false; // No assert
+
+			if(Program.Config.Defaults.TanExpiresOnUse)
+			{
+				pe.ExpiryTime = DateTime.UtcNow;
+				pe.Expires = true;
+				pe.Touch(true);
+				if(pdContext != null) pdContext.Modified = true;
+				return true;
+			}
+
+			return false;
+		}
+
+		public static string CreateSummaryList(PwGroup pgItems, bool bStartWithNewPar)
+		{
+			List<PwEntry> l = pgItems.GetEntries(true).CloneShallowToList();
+			string str = CreateSummaryList(pgItems, l.ToArray());
+
+			if((str.Length == 0) || !bStartWithNewPar) return str;
+			return (MessageService.NewParagraph + str);
+		}
+
+		public static string CreateSummaryList(PwGroup pgSubGroups, PwEntry[] vEntries)
+		{
+			int nMaxEntries = 10;
+			string strSummary = string.Empty;
+
+			if(pgSubGroups != null)
+			{
+				PwObjectList<PwGroup> vGroups = pgSubGroups.GetGroups(true);
+				if(vGroups.UCount > 0)
+				{
+					StringBuilder sbGroups = new StringBuilder();
+					sbGroups.Append("- ");
+					uint uToList = Math.Min(3U, vGroups.UCount);
+					for(uint u = 0; u < uToList; ++u)
+					{
+						if(sbGroups.Length > 2) sbGroups.Append(", ");
+						sbGroups.Append(vGroups.GetAt(u).Name);
+					}
+					if(uToList < vGroups.UCount) sbGroups.Append(", ...");
+					strSummary += sbGroups.ToString(); // New line below
+
+					nMaxEntries -= 2;
+				}
+			}
+
+			int nSummaryShow = Math.Min(nMaxEntries, vEntries.Length);
+			if(nSummaryShow == (vEntries.Length - 1)) --nSummaryShow; // Plural msg
+
+			for(int iSumEnum = 0; iSumEnum < nSummaryShow; ++iSumEnum)
+			{
+				if(strSummary.Length > 0) strSummary += MessageService.NewLine;
+
+				PwEntry pe = vEntries[iSumEnum];
+				strSummary += ("- " + StrUtil.CompactString3Dots(
+					pe.Strings.ReadSafe(PwDefs.TitleField), 39));
+				if(PwDefs.IsTanEntry(pe))
+				{
+					string strTanIdx = pe.Strings.ReadSafe(PwDefs.UserNameField);
+					if(!string.IsNullOrEmpty(strTanIdx))
+						strSummary += (@" (#" + strTanIdx + @")");
+				}
+			}
+			if(nSummaryShow != vEntries.Length)
+				strSummary += (MessageService.NewLine + "- " +
+					KPRes.MoreEntries.Replace(@"{PARAM}", (vEntries.Length -
+					nSummaryShow).ToString()));
+
+			return strSummary;
+		}
+
+		internal static int CompareLastMod(PwEntry a, PwEntry b)
+		{
+			return TimeUtil.CompareLastMod(a, b, true);
+		}
+
+		internal static int CompareLastModReverse(PwEntry a, PwEntry b)
+		{
+			return TimeUtil.CompareLastMod(b, a, true); // Descending
+		}
+
+		public static DateTime GetLastPasswordModTime(PwEntry pe)
+		{
+			bool bOrEarlier;
+			return GetLastPasswordModTime(pe, out bOrEarlier);
+		}
+
+		private static DateTime GetLastPasswordModTime(PwEntry pe, out bool bOrEarlier)
+		{
+			bOrEarlier = true;
+			if(pe == null) { Debug.Assert(false); return TimeUtil.ToUtc(DateTime.Today, false); }
+
+			List<PwEntry> l = new List<PwEntry>(pe.History);
+			l.Sort(EntryUtil.CompareLastMod);
+
+			// Decrypt the current password only once
+			byte[] pbC = pe.Strings.GetSafe(PwDefs.PasswordField).ReadUtf8();
+			DateTime dt = pe.LastModificationTime;
+
+			for(int i = l.Count - 1; i >= 0; --i)
+			{
+				PwEntry peH = l[i];
+
+				byte[] pbH = peH.Strings.GetSafe(PwDefs.PasswordField).ReadUtf8();
+				bool bSame = MemUtil.ArraysEqual(pbH, pbC);
+				MemUtil.ZeroByteArray(pbH);
+
+				if(!bSame) { bOrEarlier = false; break; }
+				dt = peH.LastModificationTime;
+			}
+
+			MemUtil.ZeroByteArray(pbC);
+			return dt;
+		}
+
+		internal static string GetLastPasswordModTime(PwEntry pe, bool bAppendOrEarlier,
+			bool bAppendHistoryBased)
+		{
+			StringBuilder sb = new StringBuilder();
+			bool bOrEarlier;
+
+			sb.Append(TimeUtil.ToDisplayString(GetLastPasswordModTime(pe, out bOrEarlier)));
+
+			if(bAppendOrEarlier && bOrEarlier)
+			{
+				sb.Append(' ');
+				sb.Append(KPRes.OrEarlier);
+			}
+
+			if(bAppendHistoryBased)
+			{
+				sb.Append(" (");
+				sb.Append(KPRes.HistoryBased);
+				sb.Append(')');
+			}
+
+			return sb.ToString();
+		}
+
+		private static int CompareListSizeDesc(List<PwEntry> x, List<PwEntry> y)
+		{
+			if(x == null) { Debug.Assert(false); return ((y == null) ? 0 : -1); }
+			if(y == null) { Debug.Assert(false); return 1; }
+
+			return y.Count.CompareTo(x.Count); // Descending
+		}
+
+		internal static List<object> FindDuplicatePasswords(PwDatabase pd,
+			IStatusLogger sl, out Action<ListView> fInit)
+		{
+			fInit = delegate(ListView lv)
+			{
+				int w = lv.ClientSize.Width - UIUtil.GetVScrollBarWidth();
+				int wf = w / 4;
+				int di = Math.Min(UIUtil.GetSmallIconSize().Width, wf);
+
+				lv.Columns.Add(KPRes.Title, wf + di);
+				lv.Columns.Add(KPRes.UserName, wf);
+				lv.Columns.Add(KPRes.Password, wf);
+				lv.Columns.Add(KPRes.Group, wf - di);
+
+				UIUtil.SetDisplayIndices(lv, new int[] { 1, 2, 3, 0 });
+			};
+
+			List<List<PwEntry>> lDups = FindDuplicatePasswordsEx(pd, sl);
+			if(lDups == null) return null;
+
+			List<object> lResults = new List<object>();
+			DateTime dtNow = DateTime.UtcNow;
+
+			foreach(List<PwEntry> l in lDups)
+			{
+				PwGroup pg = new PwGroup(true, true);
+				pg.IsVirtual = true;
+
+				ListViewGroup lvg = new ListViewGroup(KPRes.DuplicatePasswordsGroup);
+				lvg.Tag = pg;
+				lResults.Add(lvg);
+
+				foreach(PwEntry pe in l)
+				{
+					pg.AddEntry(pe, false, false);
+
+					string strGroup = string.Empty;
+					if(pe.ParentGroup != null)
+						strGroup = pe.ParentGroup.GetFullPath(true, false);
+
+					ListViewItem lvi = new ListViewItem(pe.Strings.ReadSafe(
+						PwDefs.TitleField));
+					lvi.SubItems.Add(pe.Strings.ReadSafe(PwDefs.UserNameField));
+					lvi.SubItems.Add(pe.Strings.ReadSafe(PwDefs.PasswordField));
+					lvi.SubItems.Add(strGroup);
+
+					lvi.ImageIndex = UIUtil.GetEntryIconIndex(pd, pe, dtNow);
+					lvi.Tag = pe;
+
+					LvfItem lvfi = new LvfItem(lvi);
+					lvfi.SubItems[2].Flags |= LvfiFlags.Sensitive;
+
+					lResults.Add(lvfi);
+				}
+			}
+
+			return lResults;
+		}
+
+		private static List<List<PwEntry>> FindDuplicatePasswordsEx(PwDatabase pd,
+			IStatusLogger sl)
+		{
+			if((pd == null) || !pd.IsOpen) { Debug.Assert(false); return null; }
+			PwGroup pg = pd.RootGroup;
+			if(pg == null) { Debug.Assert(false); return null; }
+
+			ulong cEntries = pg.GetEntriesCount(true);
+			ulong cEntriesDone = 0;
+			Dictionary<string, List<PwEntry>> d =
+				new Dictionary<string, List<PwEntry>>();
+
+			EntryHandler eh = delegate(PwEntry pe)
+			{
+				if((sl != null) && (cEntries != 0))
+				{
+					uint u = (uint)((cEntriesDone * 100UL) / cEntries);
+					if(!sl.SetProgress(u)) return false;
+					++cEntriesDone;
+				}
+
+				if(!pe.GetSearchingEnabled()) return true;
+
+				SprContext ctx = new SprContext(pe, pd, SprCompileFlags.NonActive);
+				string str = SprEngine.Compile(pe.Strings.ReadSafe(
+					PwDefs.PasswordField), ctx);
+				if(str.Length != 0)
+				{
+					List<PwEntry> l;
+					if(d.TryGetValue(str, out l)) l.Add(pe);
+					else d[str] = new List<PwEntry> { pe };
+				}
+
+				return true;
+			};
+
+			if(!pg.TraverseTree(TraversalMethod.PreOrder, null, eh))
+				return null;
+
+			List<List<PwEntry>> lRes = new List<List<PwEntry>>();
+			foreach(List<PwEntry> l in d.Values)
+			{
+				if(l.Count <= 1) continue;
+				lRes.Add(l);
+			}
+			lRes.Sort(EntryUtil.CompareListSizeDesc);
+
+			return lRes;
+		}
+
+		private sealed class EuxSimilarPasswords
+		{
+			public readonly PwEntry EntryA;
+			public readonly PwEntry EntryB;
+			public readonly float Similarity;
+
+			public EuxSimilarPasswords(PwEntry peA, PwEntry peB, float fSimilarity)
+			{
+				if(peA == null) throw new ArgumentNullException("peA");
+				if(peB == null) throw new ArgumentNullException("peB");
+
+				this.EntryA = peA;
+				this.EntryB = peB;
+				this.Similarity = fSimilarity;
+			}
+		}
+
+		internal static List<object> FindSimilarPasswordsP(PwDatabase pd,
+			IStatusLogger sl, out Action<ListView> fInit)
+		{
+			fInit = delegate(ListView lv)
+			{
+				int w = lv.ClientSize.Width - UIUtil.GetVScrollBarWidth();
+				int wf = w / 4;
+				int di = Math.Min(UIUtil.GetSmallIconSize().Width, wf);
+
+				lv.Columns.Add(KPRes.Title, wf + di);
+				lv.Columns.Add(KPRes.UserName, wf);
+				lv.Columns.Add(KPRes.Password, wf);
+				lv.Columns.Add(KPRes.Group, wf - di);
+
+				UIUtil.SetDisplayIndices(lv, new int[] { 1, 2, 3, 0 });
+			};
+
+			List<EuxSimilarPasswords> l = FindSimilarPasswordsPEx(pd, sl);
+			if(l == null) return null;
+
+			List<object> lResults = new List<object>();
+			DateTime dtNow = DateTime.UtcNow;
+
+			foreach(EuxSimilarPasswords sp in l)
+			{
+				PwGroup pg = new PwGroup(true, true);
+				pg.IsVirtual = true;
+
+				float fSim = sp.Similarity * 100.0f;
+				string strLvg = KPRes.SimilarPasswordsGroup.Replace(
+					@"{PARAM}", fSim.ToString("F02") + @"%");
+				ListViewGroup lvg = new ListViewGroup(strLvg);
+				lvg.Tag = pg;
+				lResults.Add(lvg);
+
+				for(int i = 0; i < 2; ++i)
+				{
+					PwEntry pe = ((i == 0) ? sp.EntryA : sp.EntryB);
+					pg.AddEntry(pe, false, false);
+
+					string strGroup = string.Empty;
+					if(pe.ParentGroup != null)
+						strGroup = pe.ParentGroup.GetFullPath(true, false);
+
+					ListViewItem lvi = new ListViewItem(pe.Strings.ReadSafe(
+						PwDefs.TitleField));
+					lvi.SubItems.Add(pe.Strings.ReadSafe(PwDefs.UserNameField));
+					lvi.SubItems.Add(pe.Strings.ReadSafe(PwDefs.PasswordField));
+					lvi.SubItems.Add(strGroup);
+
+					lvi.ImageIndex = UIUtil.GetEntryIconIndex(pd, pe, dtNow);
+					lvi.Tag = pe;
+
+					LvfItem lvfi = new LvfItem(lvi);
+					lvfi.SubItems[2].Flags |= LvfiFlags.Sensitive;
+
+					lResults.Add(lvfi);
+				}
+			}
+
+			return lResults;
+		}
+
+		private static bool GetEntryPasswords(PwGroup pg, PwDatabase pd,
+			IStatusLogger sl, uint uPrePct, List<PwEntry> lEntries,
+			List<string> lPasswords, bool bExclTans)
+		{
+			ulong cEntries = pg.GetEntriesCount(true);
+			ulong cEntriesDone = 0;
+
+			EntryHandler eh = delegate(PwEntry pe)
+			{
+				if((sl != null) && (cEntries != 0))
+				{
+					uint u = (uint)((cEntriesDone * uPrePct) / cEntries);
+					if(!sl.SetProgress(u)) return false;
+					++cEntriesDone;
+				}
+
+				if(!pe.GetSearchingEnabled()) return true;
+				if(bExclTans && PwDefs.IsTanEntry(pe)) return true;
+
+				SprContext ctx = new SprContext(pe, pd, SprCompileFlags.NonActive);
+				string str = SprEngine.Compile(pe.Strings.ReadSafe(
+					PwDefs.PasswordField), ctx);
+				if(str.Length != 0)
+				{
+					lEntries.Add(pe);
+					lPasswords.Add(str);
+				}
+
+				return true;
+			};
+
+			return pg.TraverseTree(TraversalMethod.PreOrder, null, eh);
+		}
+
+		private static List<EuxSimilarPasswords> FindSimilarPasswordsPEx(
+			PwDatabase pd, IStatusLogger sl)
+		{
+			if((pd == null) || !pd.IsOpen) { Debug.Assert(false); return null; }
+			PwGroup pg = pd.RootGroup;
+			if(pg == null) { Debug.Assert(false); return null; }
+
+			const uint uPrePct = 33;
+			const long cPostPct = 67;
+
+			List<PwEntry> lEntries = new List<PwEntry>();
+			List<string> lPasswords = new List<string>();
+			if(!GetEntryPasswords(pg, pd, sl, uPrePct, lEntries, lPasswords, true))
+				return null;
+
+			Debug.Assert(TextSimilarity.LevenshteinDistance("Columns", "Comments") == 4);
+			Debug.Assert(TextSimilarity.LevenshteinDistance("File/URL", "Field Value") == 8);
+
+			int n = lEntries.Count;
+			long cTotal = ((long)n * (long)(n - 1)) / 2L;
+			long cDone = 0;
+
+			List<EuxSimilarPasswords> l = new List<EuxSimilarPasswords>();
+			for(int i = 0; i < (n - 1); ++i)
+			{
+				string strA = lPasswords[i];
+				Debug.Assert(strA.Length != 0);
+
+				for(int j = i + 1; j < n; ++j)
+				{
+					string strB = lPasswords[j];
+
+					if(strA != strB)
+						l.Add(new EuxSimilarPasswords(lEntries[i], lEntries[j], 1.0f -
+							((float)TextSimilarity.LevenshteinDistance(strA, strB) /
+							(float)Math.Max(strA.Length, strB.Length))));
+
+					if(sl != null)
+					{
+						++cDone;
+
+						uint u = uPrePct + (uint)((cDone * cPostPct) / cTotal);
+						if(!sl.SetProgress(u)) return null;
+					}
+				}
+			}
+			Debug.Assert((cDone == cTotal) || (sl == null));
+
+			Comparison<EuxSimilarPasswords> fCmp = delegate(EuxSimilarPasswords x,
+				EuxSimilarPasswords y)
+			{
+				return y.Similarity.CompareTo(x.Similarity); // Descending
+			};
+			l.Sort(fCmp);
+
+			int ciMax = Math.Max(n / 2, 20);
+			if(l.Count > ciMax) l.RemoveRange(ciMax, l.Count - ciMax);
+
+			return l;
+		}
+
+		/* private const int FspcShowItemsPerCluster = 7;
+		internal static List<object> FindSimilarPasswordsC(PwDatabase pd,
+			IStatusLogger sl, out Action<ListView> fInit)
+		{
+			fInit = delegate(ListView lv)
+			{
+				int w = lv.ClientSize.Width - UIUtil.GetVScrollBarWidth();
+				int wf = w / 5;
+				int di = Math.Min(UIUtil.GetSmallIconSize().Width, wf);
+
+				lv.Columns.Add(KPRes.Title, wf + di);
+				lv.Columns.Add(KPRes.UserName, wf);
+				lv.Columns.Add(KPRes.Password, wf);
+				lv.Columns.Add(KPRes.Group, wf - di);
+				lv.Columns.Add(KPRes.Similarity, wf, HorizontalAlignment.Right);
+
+				UIUtil.SetDisplayIndices(lv, new int[] { 1, 2, 3, 0, 4 });
+			};
+
+			List<List<EuxSimilarPasswords>> l = FindSimilarPasswordsCEx(pd, sl);
+			if(l == null) return null;
+
+			List<object> lResults = new List<object>();
+			DateTime dtNow = DateTime.UtcNow;
+
+			foreach(List<EuxSimilarPasswords> lSp in l)
+			{
+				PwGroup pg = new PwGroup(true, true);
+				pg.IsVirtual = true;
+
+				ListViewGroup lvg = new ListViewGroup(KPRes.SimilarPasswordsGroupSh);
+				lvg.Tag = pg;
+				lResults.Add(lvg);
+
+				for(int i = 0; i < lSp.Count; ++i)
+				{
+					EuxSimilarPasswords sp = lSp[i];
+					PwEntry pe = sp.EntryB;
+					pg.AddEntry(pe, false, false);
+
+					// The group contains all cluster entries (such that they
+					// are displayed in the main window when clicking an entry),
+					// but the report dialog only shows the first few entries
+					if(i >= FspcShowItemsPerCluster) continue;
+
+					string strGroup = string.Empty;
+					if(pe.ParentGroup != null)
+						strGroup = pe.ParentGroup.GetFullPath(true, false);
+
+					ListViewItem lvi = new ListViewItem(pe.Strings.ReadSafe(
+						PwDefs.TitleField));
+					lvi.SubItems.Add(pe.Strings.ReadSafe(PwDefs.UserNameField));
+					lvi.SubItems.Add(pe.Strings.ReadSafe(PwDefs.PasswordField));
+					lvi.SubItems.Add(strGroup);
+
+					string strSim = KPRes.ClusterCenter;
+					if(i > 0) strSim = (sp.Similarity * 100.0f).ToString("F02") + @"%";
+					else { Debug.Assert(sp.Similarity == float.MaxValue); }
+					lvi.SubItems.Add(strSim);
+
+					lvi.ImageIndex = UIUtil.GetEntryIconIndex(pd, pe, dtNow);
+					lvi.Tag = pe;
+					lResults.Add(lvi);
+				}
+			}
+
+			return lResults;
+		} */
+
+		internal static List<object> FindSimilarPasswordsC(PwDatabase pd,
+			IStatusLogger sl, out Action<ListView> fInit)
+		{
+			fInit = delegate(ListView lv)
+			{
+				int wm = 4;
+				int w = lv.ClientSize.Width - UIUtil.GetVScrollBarWidth() - (3 * wm);
+				int wf = w / 12;
+				int wl = w / 4;
+				int wr = w - (3 * wl + 3 * wf);
+				int di = Math.Min(UIUtil.GetSmallIconSize().Width, wf);
+
+				lv.Columns.Add(KPRes.Title, wl + di + wr);
+				lv.Columns.Add(KPRes.UserName, wl - di);
+				lv.Columns.Add(KPRes.Password, wl);
+				lv.Columns.Add("> 90%", wf + wm, HorizontalAlignment.Right);
+				lv.Columns.Add("> 70%", wf + wm, HorizontalAlignment.Right);
+				lv.Columns.Add("> 50%", wf + wm, HorizontalAlignment.Right);
+			};
+
+			List<List<EuxSimilarPasswords>> l = FindSimilarPasswordsCEx(pd, sl);
+			if(l == null) return null;
+
+			List<object> lResults = new List<object>();
+			DateTime dtNow = DateTime.UtcNow;
+
+			float[] vSimBounds = new float[] { 0.9f, 0.7f, 0.5f };
+			int[] vSimCounts = new int[3];
+
+			foreach(List<EuxSimilarPasswords> lSp in l)
+			{
+				PwGroup pg = new PwGroup(true, true);
+				pg.IsVirtual = true;
+
+				PwEntry pe = lSp[0].EntryA; // Cluster center
+				pg.AddEntry(pe, false, false);
+
+				ListViewItem lvi = new ListViewItem(pe.Strings.ReadSafe(
+					PwDefs.TitleField));
+				lvi.SubItems.Add(pe.Strings.ReadSafe(PwDefs.UserNameField));
+				lvi.SubItems.Add(pe.Strings.ReadSafe(PwDefs.PasswordField));
+
+				Array.Clear(vSimCounts, 0, vSimCounts.Length);
+				for(int i = 1; i < lSp.Count; ++i)
+				{
+					EuxSimilarPasswords sp = lSp[i];
+					pg.AddEntry(sp.EntryB, false, false);
+
+					for(int j = 0; j < vSimCounts.Length; ++j)
+					{
+						if(sp.Similarity > vSimBounds[j]) ++vSimCounts[j];
+					}
+				}
+
+				for(int i = 0; i < vSimCounts.Length; ++i)
+					lvi.SubItems.Add(vSimCounts[i].ToString());
+
+				lvi.ImageIndex = UIUtil.GetEntryIconIndex(pd, pe, dtNow);
+				lvi.Tag = pg;
+
+				LvfItem lvfi = new LvfItem(lvi);
+				lvfi.SubItems[2].Flags |= LvfiFlags.Sensitive;
+
+				lResults.Add(lvfi);
+			}
+
+			return lResults;
+		}
+
+		private static List<List<EuxSimilarPasswords>> FindSimilarPasswordsCEx(
+			PwDatabase pd, IStatusLogger sl)
+		{
+			if((pd == null) || !pd.IsOpen) { Debug.Assert(false); return null; }
+			PwGroup pg = pd.RootGroup;
+			if(pg == null) { Debug.Assert(false); return null; }
+
+			const uint uPrePct = 33;
+			const long cPostPct = 67;
+
+			List<PwEntry> lEntries = new List<PwEntry>();
+			List<string> lPasswords = new List<string>();
+			if(!GetEntryPasswords(pg, pd, sl, uPrePct, lEntries, lPasswords, true))
+				return null;
+
+			int n = lEntries.Count;
+			long cTotal = ((long)n * (long)(n - 1)) / 2L;
+			long cDone = 0;
+			float[,] mxSim = new float[n, n];
+
+			for(int i = 0; i < (n - 1); ++i)
+			{
+				string strA = lPasswords[i];
+				Debug.Assert(strA.Length != 0);
+
+				for(int j = i + 1; j < n; ++j)
+				{
+					string strB = lPasswords[j];
+
+					float s = 0.0f;
+					if(strA != strB)
+						s = 1.0f - ((float)TextSimilarity.LevenshteinDistance(strA,
+							strB) / (float)Math.Max(strA.Length, strB.Length));
+					mxSim[i, j] = s;
+					mxSim[j, i] = s;
+
+					if(sl != null)
+					{
+						++cDone;
+
+						uint u = uPrePct + (uint)((cDone * cPostPct) / cTotal);
+						if(!sl.SetProgress(u)) return null;
+					}
+				}
+			}
+			Debug.Assert((cDone == cTotal) || (sl == null));
+
+			float[] vXSums = new float[n];
+			for(int i = 0; i < (n - 1); ++i)
+			{
+				for(int j = i + 1; j < n; ++j)
+				{
+					float s = mxSim[i, j];
+					if(s != 1.0f)
+					{
+						float x = s / (1.0f - s);
+						vXSums[i] += x;
+						vXSums[j] += x;
+					}
+					else { Debug.Assert(false); }
+				}
+			}
+
+			List<KeyValuePair<int, float>> lXSums = new List<KeyValuePair<int, float>>();
+			for(int i = 0; i < n; ++i)
+				lXSums.Add(new KeyValuePair<int, float>(i, vXSums[i]));
+			Comparison<KeyValuePair<int, float>> fCmpS = delegate(KeyValuePair<int, float> x,
+				KeyValuePair<int, float> y)
+			{
+				return y.Value.CompareTo(x.Value); // Descending
+			};
+			lXSums.Sort(fCmpS);
+
+			Comparison<EuxSimilarPasswords> fCmpE = delegate(EuxSimilarPasswords x,
+				EuxSimilarPasswords y)
+			{
+				return y.Similarity.CompareTo(x.Similarity); // Descending
+			};
+
+			List<List<EuxSimilarPasswords>> l = new List<List<EuxSimilarPasswords>>();
+			// int cgMax = Math.Min(Math.Max(n / FspcShowItemsPerCluster, 20), n);
+			int cgMax = Math.Min(Math.Max(n / 2, 20), n);
+
+			for(int i = 0; i < lXSums.Count; ++i)
+			{
+				int p = lXSums[i].Key;
+				PwEntry pe = lEntries[p];
+
+				List<EuxSimilarPasswords> lSim = new List<EuxSimilarPasswords>
+				{
+					new EuxSimilarPasswords(pe, pe, float.MaxValue)
+				};
+
+				for(int j = 0; j < n; ++j)
+				{
+					float s = mxSim[p, j];
+					Debug.Assert((j != p) || (s == 0.0f));
+
+					if(s > 0.5f)
+						lSim.Add(new EuxSimilarPasswords(pe, lEntries[j], s));
+				}
+
+				if(lSim.Count >= 2)
+				{
+					lSim.Sort(fCmpE);
+					l.Add(lSim);
+
+					if(l.Count >= cgMax) break;
+				}
+			}
+
+			return l;
+		}
+
+		internal static List<object> CreatePwQualityList(PwDatabase pd,
+			IStatusLogger sl, out Action<ListView> fInit)
+		{
+			fInit = delegate(ListView lv)
+			{
+				int w = lv.ClientSize.Width - UIUtil.GetVScrollBarWidth();
+				int wf = (int)(((long)w * 2L) / 9L);
+				int wq = w - (wf * 4);
+				int di = Math.Min(UIUtil.GetSmallIconSize().Width, wf);
+
+				lv.Columns.Add(KPRes.Title, wf + di);
+				lv.Columns.Add(KPRes.UserName, wf);
+				lv.Columns.Add(KPRes.Password, wf);
+				lv.Columns.Add(KPRes.Group, wf - di);
+				lv.Columns.Add(KPRes.Quality, wq, HorizontalAlignment.Right);
+
+				UIUtil.SetDisplayIndices(lv, new int[] { 1, 2, 3, 0, 4 });
+			};
+
+			List<KeyValuePair<PwEntry, ulong>> l = CreatePwQualityListEx(pd, sl);
+			if(l == null) return null;
+
+			List<object> lResults = new List<object>();
+			DateTime dtNow = DateTime.UtcNow;
+
+			foreach(KeyValuePair<PwEntry, ulong> kvp in l)
+			{
+				PwEntry pe = kvp.Key;
+
+				string strGroup = string.Empty;
+				if(pe.ParentGroup != null)
+					strGroup = pe.ParentGroup.GetFullPath(true, false);
+
+				ListViewItem lvi = new ListViewItem(pe.Strings.ReadSafe(
+					PwDefs.TitleField));
+				lvi.UseItemStyleForSubItems = false;
+
+				lvi.SubItems.Add(pe.Strings.ReadSafe(PwDefs.UserNameField));
+				lvi.SubItems.Add(pe.Strings.ReadSafe(PwDefs.PasswordField));
+				lvi.SubItems.Add(strGroup);
+
+				ulong q = (kvp.Value >> 32);
+				ListViewItem.ListViewSubItem lvsi = lvi.SubItems.Add(
+					KPRes.BitsEx.Replace(@"{PARAM}", q.ToString()));
+
+				try
+				{
+					float fQ = (float)Math.Min(q, 128UL) / 128.0f;
+					lvsi.BackColor = AppDefs.GetQualityColor(fQ, true);
+				}
+				catch(Exception) { Debug.Assert(false); }
+
+				lvi.ImageIndex = UIUtil.GetEntryIconIndex(pd, pe, dtNow);
+				lvi.Tag = pe;
+
+				LvfItem lvfi = new LvfItem(lvi);
+				lvfi.SubItems[2].Flags |= LvfiFlags.Sensitive;
+
+				lResults.Add(lvfi);
+			}
+
+			return lResults;
+		}
+
+		private static List<KeyValuePair<PwEntry, ulong>> CreatePwQualityListEx(
+			PwDatabase pd, IStatusLogger sl)
+		{
+			if((pd == null) || !pd.IsOpen) { Debug.Assert(false); return null; }
+			PwGroup pg = pd.RootGroup;
+			if(pg == null) { Debug.Assert(false); return null; }
+
+			ulong cEntries = pg.GetEntriesCount(true);
+			ulong cEntriesDone = 0;
+			List<KeyValuePair<PwEntry, ulong>> l = new List<KeyValuePair<PwEntry, ulong>>();
+
+			EntryHandler eh = delegate(PwEntry pe)
+			{
+				if((sl != null) && (cEntries != 0))
+				{
+					uint u = (uint)((cEntriesDone * 100UL) / cEntries);
+					if(!sl.SetProgress(u)) return false;
+				}
+				++cEntriesDone; // Also used for sorting, see below
+
+				if(!pe.GetSearchingEnabled()) return true;
+				if(!pe.QualityCheck) return true;
+				if(PwDefs.IsTanEntry(pe)) return true;
+
+				SprContext ctx = new SprContext(pe, pd, SprCompileFlags.NonActive);
+				string str = SprEngine.Compile(pe.Strings.ReadSafe(
+					PwDefs.PasswordField), ctx);
+				if(str.Length != 0)
+				{
+					ulong q = QualityEstimation.EstimatePasswordBits(str.ToCharArray());
+					l.Add(new KeyValuePair<PwEntry, ulong>(pe, (q << 32) | cEntriesDone));
+				}
+
+				return true;
+			};
+
+			if(!pg.TraverseTree(TraversalMethod.PreOrder, null, eh))
+				return null;
+
+			Comparison<KeyValuePair<PwEntry, ulong>> fCompare = delegate(
+				KeyValuePair<PwEntry, ulong> x, KeyValuePair<PwEntry, ulong> y)
+			{
+				return x.Value.CompareTo(y.Value);
+			};
+			l.Sort(fCompare);
+
+			return l;
+		}
+
+		internal static List<object> FindLargeEntries(PwDatabase pd,
+			IStatusLogger sl, out Action<ListView> fInit)
+		{
+			fInit = delegate(ListView lv)
+			{
+				int w = lv.ClientSize.Width - UIUtil.GetVScrollBarWidth();
+				int wf = w / 5;
+
+				lv.Columns.Add(KPRes.Title, wf * 2);
+				lv.Columns.Add(KPRes.UserName, wf);
+				lv.Columns.Add(KPRes.Size, wf, HorizontalAlignment.Right);
+				lv.Columns.Add(KPRes.Group, wf);
+
+				UIUtil.SetDisplayIndices(lv, new int[] { 1, 2, 3, 0 });
+			};
+
+			PwObjectList<PwEntry> lEntries = pd.RootGroup.GetEntries(true);
+			List<KeyValuePair<ulong, PwEntry>> l = new List<KeyValuePair<ulong, PwEntry>>();
+			foreach(PwEntry pe in lEntries)
+			{
+				l.Add(new KeyValuePair<ulong, PwEntry>(pe.GetSize(), pe));
+			}
+			l.Sort(EntryUtil.CompareKvpBySize);
+
+			List<object> lResults = new List<object>();
+			DateTime dtNow = DateTime.UtcNow;
+
+			foreach(KeyValuePair<ulong, PwEntry> kvp in l)
+			{
+				PwEntry pe = kvp.Value;
+
+				string strGroup = string.Empty;
+				if(pe.ParentGroup != null)
+					strGroup = pe.ParentGroup.GetFullPath(true, false);
+
+				ListViewItem lvi = new ListViewItem(pe.Strings.ReadSafe(
+					PwDefs.TitleField));
+				lvi.SubItems.Add(pe.Strings.ReadSafe(PwDefs.UserNameField));
+				lvi.SubItems.Add(StrUtil.FormatDataSizeKB(kvp.Key));
+				lvi.SubItems.Add(strGroup);
+
+				lvi.ImageIndex = UIUtil.GetEntryIconIndex(pd, pe, dtNow);
+				lvi.Tag = pe;
+				lResults.Add(lvi);
+			}
+
+			return lResults;
+		}
+
+		private static int CompareKvpBySize(KeyValuePair<ulong, PwEntry> a,
+			KeyValuePair<ulong, PwEntry> b)
+		{
+			return b.Key.CompareTo(a.Key); // Descending
+		}
+
+		internal static List<object> FindLastModEntries(PwDatabase pd,
+			IStatusLogger sl, out Action<ListView> fInit)
+		{
+			fInit = delegate(ListView lv)
+			{
+				int w = lv.ClientSize.Width - UIUtil.GetVScrollBarWidth();
+				int wfS = (w * 2) / 9, wfL = w / 3;
+				int dr = w - wfL - (3 * wfS);
+				int ds = DpiUtil.ScaleIntX(12);
+
+				lv.Columns.Add(KPRes.Title, wfL + dr - ds);
+				lv.Columns.Add(KPRes.UserName, wfS);
+				lv.Columns.Add(KPRes.LastModificationTime, wfS + ds);
+				lv.Columns.Add(KPRes.Group, wfS);
+
+				UIUtil.SetDisplayIndices(lv, new int[] { 1, 2, 3, 0 });
+			};
+
+			PwObjectList<PwEntry> lEntries = pd.RootGroup.GetEntries(true);
+			lEntries.Sort(EntryUtil.CompareLastModReverse);
+
+			List<object> lResults = new List<object>();
+			DateTime dtNow = DateTime.UtcNow;
+
+			foreach(PwEntry pe in lEntries)
+			{
+				string strGroup = string.Empty;
+				if(pe.ParentGroup != null)
+					strGroup = pe.ParentGroup.GetFullPath(true, false);
+
+				ListViewItem lvi = new ListViewItem(pe.Strings.ReadSafe(
+					PwDefs.TitleField));
+				lvi.SubItems.Add(pe.Strings.ReadSafe(PwDefs.UserNameField));
+				lvi.SubItems.Add(TimeUtil.ToDisplayString(pe.LastModificationTime));
+				// lvi.SubItems.Add("12/30/2020 02:45 AM"); // Max. width
+				lvi.SubItems.Add(strGroup);
+
+				lvi.ImageIndex = UIUtil.GetEntryIconIndex(pd, pe, dtNow);
+				lvi.Tag = pe;
+				lResults.Add(lvi);
+			}
+
+			return lResults;
+		}
+
+		private sealed class EuxHistoryItem
+		{
+			public readonly DateTime Time;
+			public readonly string Group;
+			public readonly int ImageIndex;
+			public readonly string Name;
+			public readonly string Info;
+			public readonly object Tag;
+
+			public EuxHistoryItem(DateTime dt, string strGroup, int iImage,
+				string strName, string strInfo, object oTag)
+			{
+				this.Time = dt;
+				this.Group = strGroup;
+				this.ImageIndex = iImage;
+				this.Name = strName;
+				this.Info = strInfo;
+				this.Tag = oTag;
+			}
+
+			public static int Compare(EuxHistoryItem hiA, EuxHistoryItem hiB)
+			{
+				if(hiA == null) { Debug.Assert(false); return ((hiB == null) ? 0 : -1); }
+				if(hiB == null) { Debug.Assert(false); return 1; }
+
+				return TimeUtil.Compare(hiB.Time, hiA.Time, true);
+			}
+		}
+
+		internal static List<object> FindHistoryEvents(PwDatabase pd,
+			IStatusLogger sl, out Action<ListView> fInit)
+		{
+			fInit = delegate(ListView lv)
+			{
+				int w = lv.ClientSize.Width - UIUtil.GetVScrollBarWidth();
+				int w4 = w / 4;
+				int w4R = w - (w4 * 3);
+				int wI = UIUtil.GetSmallIconSize().Width << 1;
+
+				lv.Columns.Add(KPRes.Title, w4R + wI);
+				lv.Columns.Add(KPRes.Modified, w4 + wI);
+				lv.Columns.Add(KPRes.Time, w4 - wI);
+				lv.Columns.Add(KPRes.Group, w4 - wI);
+
+				UIUtil.SetDisplayIndices(lv, new int[] { 1, 2, 3, 0 });
+			};
+
+			ulong cEntries = pd.RootGroup.GetEntriesCount(true);
+			ulong cEntriesDone = 0;
+
+			List<EuxHistoryItem> lHI = new List<EuxHistoryItem>();
+			DateTime dtNow = DateTime.UtcNow;
+
+			EntryHandler eh = delegate(PwEntry pe)
+			{
+				if((sl != null) && (cEntries != 0))
+				{
+					uint u = (uint)((cEntriesDone * 100UL) / cEntries);
+					if(!sl.SetProgress(u)) return false;
+					++cEntriesDone;
+				}
+
+				PwGroup pg = pe.ParentGroup;
+				string strGroup = ((pg != null) ? pg.GetFullPath(true, false) : string.Empty);
+
+				int iImage = UIUtil.GetEntryIconIndex(pd, pe, dtNow);
+
+				string strName = pe.Strings.ReadSafe(PwDefs.TitleField);
+
+				List<PwEntry> l = new List<PwEntry>();
+				l.AddRange(pe.History);
+				l.Add(pe);
+				l.Sort(EntryUtil.CompareLastMod);
+
+				for(int i = l.Count - 1; i >= 0; --i)
+				{
+					PwEntry peH = l[i];
+
+					string strInfo = ((i == 0) ? DiffUtil.CueNew :
+						DiffUtil.GetDiffNames(l[i - 1], pg, pd, peH, pg, pd, true));
+
+					lHI.Add(new EuxHistoryItem(peH.LastModificationTime, strGroup,
+						iImage, strName, strInfo, pe));
+				}
+
+				return true;
+			};
+			if(!pd.RootGroup.TraverseTree(TraversalMethod.PreOrder, null, eh))
+				return null;
+
+			lHI.Sort(EuxHistoryItem.Compare);
+
+			List<object> lResults = new List<object>(lHI.Count);
+
+			foreach(EuxHistoryItem hi in lHI)
+			{
+				ListViewItem lvi = new ListViewItem(hi.Name, hi.ImageIndex);
+				lvi.SubItems.Add(hi.Info);
+				lvi.SubItems.Add(TimeUtil.ToDisplayString(hi.Time));
+				// lvi.SubItems.Add("12/30/2020 02:45 AM"); // Max. width
+				lvi.SubItems.Add(hi.Group);
+
+				lvi.Tag = hi.Tag;
+
+				lResults.Add(lvi);
+			}
+			Debug.Assert(lResults.Count == lHI.Count);
+
+			return lResults;
+		}
+	}
+}
