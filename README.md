@@ -11,3 +11,20 @@ You will need:
 PowerPass comes bundled with the KeePassLib 2.55 source code which is copyright 2003-2023 Dominik Reichl <dominik.reichl@t-online.de> and is licensed under the GNU Public License 2.0. A copy of this license is included in the LICENSE file in this repository. KeePassLib has not been modified from its release version. You can use PowerPass with KeePassLib 2.55 or with your own version of KeePassLib.
 # Test Database Password
 The master password to the test database TestDatabase.kdbx is "12345" without the quotation marks.
+# Testing
+You can test the PowerPass module by running the ```Open-PowerPassTestDatabase``` cmdlet after importing the module. This cmdlet will give you a ```PSCustomObject``` with five (5) properties:
+1. Connector
+2. Keys
+3. LiteralPath
+4. Secrets
+5. StatusLogger
+## Connector
+The ```Connector``` property contains the ```KeePassLib.Serialization.IOConnectionInfo``` instance which tells KeePassLib where to find the database on the local file system.
+## Keys
+The ```Keys``` property contains the collection of keys required to open the database. In this case, for testing, it is only the one ```KeePassLib.Keys.KcpPassword``` key 12345 which is required.
+## LiteralPath
+This is a string with the literal path of the database file on disk.
+## Secrets
+This is the ```KeePassLib.PwDatabase``` instance from which you can access all the entries in the test database starting with the ```RootGroup``` property.
+## StatusLogger
+The custom ```PowerPass.StatusLogger``` instance which KeePassLib writes to as it operates on the database file.
