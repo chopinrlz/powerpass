@@ -5,7 +5,7 @@
 #
 # Generated on: 10/22/2023
 #
-# Copyright 2023 by The Daltas Group LLC. All rights reserved.
+# Copyright 2023 by The Daltas Group LLC.
 # This software is provided AS IS WITHOUT WARRANTEE.
 # You may copy, modify or distribute this software under the terms of the GNU Public License 2.0.
 
@@ -48,7 +48,7 @@ PowerShellVersion = '5.1'
 DotNetFrameworkVersion = '4.7.2'
 
 # Minimum version of the common language runtime (CLR) required by this module. This prerequisite is valid for the PowerShell Desktop edition only.
-# ClrVersion = ''
+ClrVersion = '4.0'
 
 # Processor architecture (None, X86, Amd64) required by this module
 # ProcessorArchitecture = ''
