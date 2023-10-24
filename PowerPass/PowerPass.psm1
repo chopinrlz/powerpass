@@ -34,6 +34,7 @@ function Open-PowerPassTestDatabase {
         Connector = [KeePassLib.Serialization.IOConnectionInfo]::FromPath( $script:PowerPass.TestDatabasePath )
         Keys = New-Object "KeePassLib.Keys.CompositeKey"
     }
+    $database.StatusLogger.Echo = $true
     $passwordKey = New-Object -TypeName "KeePassLib.Keys.KcpPassword" -ArgumentList @('12345')
     $database.Keys.AddUserKey( $passwordKey )
     $database.Secrets.Open( $database.Connector, $database.Keys, $database.StatusLogger )
