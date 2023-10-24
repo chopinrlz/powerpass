@@ -113,5 +113,5 @@ if( -not (Test-Path $targetLocation) ) {
 if( -not (Test-Path $targetLocation) ) {
     throw "Failed to create deployment folder, $modulesRoot is not writable"
 }
-$itemsToDeploy = @("LICENSE","TestDatabase.kdbx","KeePassLib.dll","PowerPass\PowerPass.ps1","PowerPass\PowerPass.psd1","PowerPass\PowerPass.psm1",".\PowerPass\StatusLogger.cs")
+$itemsToDeploy = @("LICENSE","TestDatabase.kdbx","KeePassLib.dll","PowerPass\PowerPass.ps1","PowerPass\PowerPass.psd1","PowerPass\PowerPass.psm1",".\PowerPass\StatusLogger.cs",".\PowerPass\Extensions.cs")
 $itemsToDeploy | Copy-Item -Destination $targetLocation -Force
