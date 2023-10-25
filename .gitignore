@@ -1,1 +1,4 @@
-KeePassLib.dll
+/KeePassLib.dll
+/PowerPassTests/DatabaseWithKeyFileAndUserAccount.kdbx
+/PowerPassTests/DatabaseWithPasswordAndUserAccount.kdbx
+/PowerPassTests/DatabaseWithPasswordUserAccountAndKeyFile.kdbx
