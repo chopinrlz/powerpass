@@ -75,6 +75,59 @@ function Open-PowerPassTestDatabase {
 # ------------------------------------------------------------------------------------------------------------- #
 
 function Open-PowerPassDatabase {
+    <#
+        .SYNOPSIS
+        Opens a PowerPass database from a KeePass file.
+        .DESCRIPTION
+        This cmdlet will open a KeePass database file from the given path using the keys specified by the given
+        parameters. This cmdlet will then create a PSCustomObject containing the KeePass database in-memory
+        along with the metadata about the database including its location on disk, log events from KeePass, and
+        the collection of keys required to open it. You can then pipe or pass the output of this cmdlet to the
+        Get-PowerPassSecret cmdlet to extract the encrypted secrets.
+        .PARAMETER Path
+        The path on disk to the KeePass file.
+        .PARAMETER MasterPassword
+        If the KeePass database uses a master password, include that here.
+        .PARAMETER KeyFile
+        If the KeePass database uses a key file, include the path to the key file here.
+        .PARAMETER WindowsUserAccount
+        If the KeePass database uses the Windows user account, include this switch.
+        .INPUTS
+        This cmdlet does not take any pipeline input.
+        .OUTPUTS
+        This cmdlet outputs a PowerPass object containing the KeePass database secrets. Pipe or pass this to
+        Get-PowerPassSecret to extract the secrets from the database.
+        .EXAMPLE
+        #
+        # This example shows how to open a KeePass database which uses a master password as a key
+        # NOTE: This method is inherently insecure if you embed the password for the database into
+        #       your PowerShell script itself. It is more secure to fetch a secure string from a
+        #       separate location or use PowerPass to store this secret in your protected user
+        #       profile directory, or in a separate KeePass database protected with your Windows
+        #       user account.
+        #
+
+        $pw = ConvertTo-SecureString -String "databasePasswordHere" -AsPlainText -Force
+        $db = Open-PowerPassDatabase -Path "C:\Secrets\MyKeePassDatabase.kdbx" -MasterPassword $pw
+
+        #
+        # This example shows how to open a KeePass database which uses a key file.
+        # NOTE: You should always store the key file in a safe place like your user profile folder
+        #       which can only be accessed by yourself and any local administrators on the computer.
+        #
+
+        $db = Open-PowerPassDatabase -Path "C:\Secrets\MyKeePassDatabase.kdbx" -KeyFile "C:\Users\me\Documents\DatabaseKeyFile.keyx"
+
+        #
+        # This example shows how to open a KeePass database which uses your Windows user account.
+        # Securing a KeePass file with your Windows user account provides a very secure method for
+        # storing secrets because they can only be accessed by you on the local machine and no one
+        # else, not even local administrators or domain administrators. This method is recommended
+        # for storing passwords to other KeePass databases.
+        #
+
+        $db = Open-PowerPassDatabase -Path "C:\Secrets\MyKeePassDatabase.kdbx" -WindowsUserAccount
+    #>
     param (
         [Parameter(Mandatory = $true)]
         [string]
@@ -134,19 +187,38 @@ function Open-PowerPassDatabase {
 # ------------------------------------------------------------------------------------------------------------- #
 
 function Get-PowerPassSecret {
+    <#
+        .SYNOPSIS
+        Retrieves secrets from a PowerPass database.
+        .DESCRIPTION
+        This cmdlet will extract and decrypt the secrets stored in a PowerPass database which was opened using
+        the Open-PowerPassDatabase cmdlet. An optional Match parameter can be specified to limit the secrets found
+        to those which match the query, or which match the text exactly.
+        .INPUTS
+        This cmdlet will accept the output from Open-PowerPassDatabase as pipeline input.
+        .OUTPUTS
+        This cmdlet will output all, or each matching secret in the PowerPass database.
+        .PARAMETER Database
+        The PowerPass database opened using Open-PowerPassDatabase. This can be passed via pipeline.
+        .PARAMETER Match
+        An optional match filter. If this is specified, this cmdlet will only output secrets where the Title
+        matches this filter. Use * for wildcards, use ? for single characters, or specify an exact Title for
+        an exact match. If this is not specified, all secrets will be returned.
+        .PARAMETER PlainTextPasswords
+        An optional switch which will cause this cmdlet to output secrets with plain-text passwords. By default,
+        passwords are returned as SecureString objects.
+    #>
     param(
         [Parameter(Mandatory = $true, ValueFromPipeline = $true, Position = 0)]
         [PSCustomObject]
         $Database,
-        [Parameter(Mandatory = $true)]
         [string]
-        $Title
+        $Match,
+        [switch]
+        $PlainTextPasswords
     )
     if ( -not $Database ) {
         throw "No database specified"
-    }
-    if ( [String]::IsNullOrEmpty($Title) ) {
-        throw "No title specified"
     }
     $secrets = $Database.Secrets
     if ( -not $secrets ) {
@@ -156,7 +228,19 @@ function Get-PowerPassSecret {
     if ( -not $rootGroup ) {
         throw "Secrets does not contain a RootGroup property"
     }
-    Search-PowerPassSecret -Group $rootGroup -Title $Title
+    if( $Match ) {
+        if( $PlainTextPasswords ) {
+            Search-PowerPassSecret -Group $rootGroup -Pattern $Match -PlainTextPasswords
+        } else {
+            Search-PowerPassSecret -Group $rootGroup -Pattern $Match
+        }
+    } else {
+        if( $PlainTextPasswords ) {
+            Search-PowerPassSecret -Group $rootGroup -Pattern "*" -PlainTextPasswords
+        } else {
+            Search-PowerPassSecret -Group $rootGroup -Pattern "*"
+        }
+    }
 }
 
 # ------------------------------------------------------------------------------------------------------------- #
@@ -164,15 +248,29 @@ function Get-PowerPassSecret {
 # ------------------------------------------------------------------------------------------------------------- #
 
 function Search-PowerPassSecret {
+    <#
+        .SYNOPSIS
+        Recursively searches a KeePassLib.PwGroup for matching secrets.
+        .DESCRIPTION
+        This cmdlet is not exposed to end-users who install the module. It is used internally by PowerPass to
+        perform a resursive search of a KeePass database for secrets which match the given pattern by Title.
+        .PARAMETER Group
+        The group to begin the search.
+        .PARAMETER Pattern
+        The search pattern.
+        .PARAMETER PlainTextPasswords
+        An optional switch to force the output of this cmdlet to include passwords in plain-text.
+    #>
     param(
+        [Parameter(Mandatory = $true)]
         [KeePassLib.PwGroup]
         $Group,
+        [Parameter(Mandatory = $true)]
         [string]
-        $Title
+        $Pattern,
+        [switch]
+        $PlainTextPasswords
     )
-
-    # Declare the value to write out and test later
-    $Secret = $null
 
     # Search all the entries in the current group
     foreach ( $entry in $Group.Entries ) {
@@ -190,15 +288,15 @@ function Search-PowerPassSecret {
         }
 
         # Check for a match to the entry we are searching for
-        if ( [String]::Equals($Title, $queryTitle, "Ordinal") ) {
+        if ( $queryTitle -like $Pattern ) {
 
             # Create the Secret data object
             $Secret = [PSCustomObject]@{
                 Title    = $queryTitle
-                UserName = "UserName"
-                Password = "Password"
-                URL      = "URL"
-                Notes    = "Notes"
+                UserName = [String]::Empty
+                Password = $null
+                URL      = [String]::Empty
+                Notes    = [String]::Empty
                 Expires  = [System.DateTime]::Now
             }
 
@@ -212,25 +310,40 @@ function Search-PowerPassSecret {
                         $Secret.UserName = $entryProp.Value.ReadString()
                     }
                     "Password" {
-                        $Secret.Password = $entryProp.Value.ReadString()
+                        if( $PlainTextPasswords ) {
+                            $Secret.Password = $entryProp.Value.ReadString()
+                        } else {
+                            $secPw = ConvertTo-SecureString -String ($entryProp.Value.ReadString()) -AsPlainText -Force
+                            $Secret.Password = $secPw
+                        }
+                    }
+                    "URL" {
+                        $Secret.URL = $entryProp.Value.ReadString()
+                    }
+                    "Notes" {
+                        $Secret.Notes = $entryProp.Value.ReadString()
                     }
                 }
             }
 
-            # Write to the pipeline and stop searching
+            # Check the expiration flag
+            if( $entry.Expires ) {
+                $Secret.Expires = $entry.ExpiryTime
+            } else {
+                $Secret.Expires = [DateTime]::MaxValue
+            }
+
+            # Write to the pipeline
             Write-Output $Secret
-            break
         }
     }
 
     # Search sub-groups if the entry is not found in the current group
-    if ( -not $Secret ) {
-        foreach ( $childGroup in $Group.Groups ) {
-            $result = Search-PowerPassSecret -Group $childGroup -Title $Title
-            if ( $result ) {
-                Write-Output $result
-                break
-            }
+    foreach ( $childGroup in $Group.Groups ) {
+        if( $PlainTextPasswords ) {
+            Search-PowerPassSecret -Group $childGroup -Pattern $Pattern -PlainTextPasswords
+        } else {
+            Search-PowerPassSecret -Group $childGroup -Pattern $Pattern
         }
     }
 }

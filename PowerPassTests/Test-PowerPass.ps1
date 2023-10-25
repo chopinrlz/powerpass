@@ -48,7 +48,7 @@ function Assert-Secret {
         [Parameter(ValueFromPipeline, Position = 0)]
         $Database
     )
-    $secret = Get-PowerPassSecret -Database $Database -Title "Test Entry"
+    $secret = Get-PowerPassSecret -Database $Database -Match "Test Entry" -PlainTextPasswords
     $actualPassword = $secret.Password
     Assert-Strings -StringA $script:expectedPassword -StringB $actualPassword
 }
@@ -94,3 +94,16 @@ Open-PowerPassDatabase -Path "$PSScriptRoot\DatabaseWithKeyFileAndPassword.kdbx"
 # Write-Host "Testing a Database with a Password User Account and Key File: " -NoNewline
 # $expectedPassword = "z3jZ3IhHM8bz2NGt"
 # Open-PowerPassDatabase -Path "$PSScriptRoot\DatabaseWithPasswordUserAccountAndKeyFile.kdbx" -KeyFile "$PSScriptRoot\DatabaseKeyFile.keyx" -MasterPassword $secureString -WindowsUserAccount | Assert-Secret
+
+# Test a database with multiple entries with the same Title
+Write-Host "Testing a Database with Indentical Entries" -NoNewline
+$localDb = Open-PowerPassDatabase -Path "$PSScriptRoot\DbPasswordMultiEntry.kdbx" -MasterPassword $secureString
+Get-PowerPassSecret -Database $localDb -Match "Test Entry" | Format-Table
+
+# Test a database with multiple entries using wildcards
+Write-Host "Testing a Database to get All Entries" -NoNewline
+Get-PowerPassSecret -Database $localDb | Format-Table
+
+# Test a database with multiple entries using Test and wildcards
+Write-Host "Testing a Database with Wilcard Search 'Test*'" -NoNewline
+Get-PowerPassSecret -Database $localDb -Match "Test*" | Format-Table
