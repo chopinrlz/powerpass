@@ -347,3 +347,56 @@ function Search-PowerPassSecret {
         }
     }
 }
+
+# ------------------------------------------------------------------------------------------------------------- #
+# FUNCTION: Add-PowerPassSecret
+# ------------------------------------------------------------------------------------------------------------- #
+
+function Add-PowerPassSecret {
+    param(
+        [string]
+        $Name,
+        [string]
+        $Secret,
+        [switch]
+        $Global
+    )
+    $locker = $null
+    if( $Global ) {
+        $locker = Get-PowerPassLocker -Global
+    } else {
+        $locker = Get-PowerPassLocker
+    }
+    if( -not $locker ) {
+        if( $Global ) {
+            $locker = New-PowerPassLocker -Global
+        } else {
+            $locker = New-PowerPassLocker
+        }
+    }
+    if( -not $locker ) {
+        throw "Failed to initialize the PowerPass locker"
+    }
+}
+
+# ------------------------------------------------------------------------------------------------------------- #
+# FUNCTION: Read-PowerPassSecret
+# ------------------------------------------------------------------------------------------------------------- #
+
+function Read-PowerPassSecret {
+    param(
+        [string]
+        $Name,
+        [switch]
+        $Global
+    )
+    $locker = $null
+    if( $Global ) {
+        $locker = Get-PowerPassLocker -Global
+    } else {
+        $locker = Get-PowerPassLocker
+    }
+    if( -not $locker ) {
+        Write-Output $null
+    }
+}
