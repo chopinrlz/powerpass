@@ -104,6 +104,14 @@ if( -not $database ) {
     throw "There was an error loading KeePassLib, the PwDatabase object could not be instantiated"
 }
 
+# Generate a salt for the installation
+Write-Host "Generating a salt file"
+.\Generate-Salt.ps1
+$saltPath = Join-Path -Path $PSScriptRoot -ChildPath "salt"
+if( -not (Test-Path $saltPath) ) {
+    throw "Unable to generate a salt for the installation"
+}
+
 # Deploy the module
 Write-Host "Deploying the PowerPass module"
 $targetLocation = Join-Path -Path $modulesRoot -ChildPath "PowerPass"
@@ -113,5 +121,5 @@ if( -not (Test-Path $targetLocation) ) {
 if( -not (Test-Path $targetLocation) ) {
     throw "Failed to create deployment folder, $modulesRoot is not writable"
 }
-$itemsToDeploy = @("LICENSE","TestDatabase.kdbx","KeePassLib.dll","PowerPass\PowerPass.ps1","PowerPass\PowerPass.psd1","PowerPass\PowerPass.psm1",".\PowerPass\StatusLogger.cs",".\PowerPass\Extensions.cs")
+$itemsToDeploy = @("LICENSE","TestDatabase.kdbx","KeePassLib.dll","salt","PowerPass\PowerPass.ps1","PowerPass\PowerPass.psd1","PowerPass\PowerPass.psm1",".\PowerPass\StatusLogger.cs",".\PowerPass\Extensions.cs")
 $itemsToDeploy | Copy-Item -Destination $targetLocation -Force

@@ -5,6 +5,15 @@
     You may copy, modify or distribute this software under the terms of the GNU Public License 2.0.
 #>
 
+# Setup the constants for this module
+$PowerPassEdition = "PowerPassV1"
+$PowerPassLockerFile = "powerpass.locker"
+$PowerPassSaltFile = "locker.salt"
+
+# Determine where user data should be stored
+$UserDataPath = [System.Environment]::GetFolderPath("ApplicationData")
+$UserDataFolderName = $PowerPassEdition
+
 # Setup the root module object in script scope and load all relevant properties
 $PowerPass = [PSCustomObject]@{
     KeePassLibraryPath = Join-Path -Path $PSScriptRoot -ChildPath "KeePassLib.dll"
@@ -12,10 +21,19 @@ $PowerPass = [PSCustomObject]@{
     TestDatabasePath   = Join-Path -Path $PSScriptRoot -ChildPath "TestDatabase.kdbx"
     StatusLoggerSource = Join-Path -Path $PSScriptRoot -ChildPath "StatusLogger.cs"
     ExtensionsSource   = Join-Path -Path $PSScriptRoot -ChildPath "Extensions.cs"
+    ModuleSaltFilePath = Join-Path -Path $PSScriptRoot -ChildPath "salt"
+    # These paths must always be a combination of the UserDataPath and the UserDataFolderName
+    # The cmdlets in this module assume that the user data folder for PowerPass is $UserDataPath/$UserDataFolderName
+    LockerFolderPath   = Join-Path -Path $UserDataPath -ChildPath "$UserDataFolderName"
+    LockerFilePath     = Join-Path -Path $UserDataPath -ChildPath "$UserDataFolderName/$PowerPassLockerFile"
+    LockerSaltPath     = Join-Path -Path $UserDataPath -ChildPath "$UserDataFolderName/$PowerPassSaltFile"
 }
 
 # Load the KeePassLib assembly from the module folder
 $PowerPass.KeePassLibAssembly = [System.Reflection.Assembly]::LoadFrom( $PowerPass.KeePassLibraryPath )
+
+# Load the System.Security assembly from the .NET Framework
+[System.Reflection.Assembly]::LoadWithPartialName("System.Security")
 
 # Compile and load the custom PowerPass.StatusLogger class
 Add-Type -Path $PowerPass.StatusLoggerSource -ReferencedAssemblies $PowerPass.KeePassLibraryPath
@@ -349,6 +367,16 @@ function Search-PowerPassSecret {
 }
 
 # ------------------------------------------------------------------------------------------------------------- #
+# FUNCTION: Get-PowerPassLocker
+# ------------------------------------------------------------------------------------------------------------- #
+
+function Get-PowerPassLocker {
+    Initialize-PowerPassLockerSalt
+
+    # TODO: Initialize the locker and output it to the pipeline
+}
+
+# ------------------------------------------------------------------------------------------------------------- #
 # FUNCTION: Add-PowerPassSecret
 # ------------------------------------------------------------------------------------------------------------- #
 
@@ -357,23 +385,9 @@ function Add-PowerPassSecret {
         [string]
         $Name,
         [string]
-        $Secret,
-        [switch]
-        $Global
+        $Secret
     )
-    $locker = $null
-    if( $Global ) {
-        $locker = Get-PowerPassLocker -Global
-    } else {
-        $locker = Get-PowerPassLocker
-    }
-    if( -not $locker ) {
-        if( $Global ) {
-            $locker = New-PowerPassLocker -Global
-        } else {
-            $locker = New-PowerPassLocker
-        }
-    }
+    $locker = Get-PowerPassLocker
     if( -not $locker ) {
         throw "Failed to initialize the PowerPass locker"
     }
@@ -398,5 +412,57 @@ function Read-PowerPassSecret {
     }
     if( -not $locker ) {
         Write-Output $null
+    }
+}
+
+# ------------------------------------------------------------------------------------------------------------- #
+# FUNCTION: Get-PowerPassSalt
+# ------------------------------------------------------------------------------------------------------------- #
+
+function Get-PowerPassSalt {
+    if( Test-Path $script:PowerPass.ModuleSaltFilePath ) {
+        $saltText = Get-Content -Path $script:PowerPass.ModuleSaltFilePath -Raw
+        [byte[]]$salt = $saltText -split "," | ForEach-Object {
+            [System.Convert]::ToByte( $_ )
+        }
+        Write-Output $salt
+    } else {
+        Write-Output $null
+    }
+}
+
+# ------------------------------------------------------------------------------------------------------------- #
+# FUNCTION: Initialize-PowerPassLockerSalt
+# ------------------------------------------------------------------------------------------------------------- #
+
+function Initialize-PowerPassLockerSalt {
+    $moduleSalt = Get-PowerPassSalt
+    if( -not $moduleSalt ) {
+        throw "Your PowerPass installation does not have a local salt file"
+    }
+    Initialize-PowerPassUserDataFolder
+    if( -not (Test-Path $script:LockerSaltPath) ) {
+        $saltShaker = [System.Security.Cryptography.RandomNumberGenerator]::Create()
+        $lockerSalt = [System.Byte[]]::CreateInstance( [System.Byte], 32 )
+        $saltShaker.GetBytes( $lockerSalt )
+        $encLockerSalt = [System.Security.Cryptography.ProtectedData]::Protect($lockerSalt,$moduleSalt,"CurrentUser")
+        $encLockerSaltText = $encLockerSalt -join ","
+        Out-File -InputObject $encLockerSaltText -FilePath "$($script:PowerPass.LockerSaltPath)" -Force
+    }
+    if( -not (Test-Path $script:LockerSaltPath) ) {
+        throw "Cannot write to user data path to initialize salt file"
+    }
+}
+
+# ------------------------------------------------------------------------------------------------------------- #
+# FUNCTION: Initialize-PowerPassUserDataFolder
+# ------------------------------------------------------------------------------------------------------------- #
+
+function Initialize-PowerPassUserDataFolder {
+    if( -not (Test-Path $script:PowerPass.LockerFolderPath) ) {
+        New-Item -Path $script:UserDataPath -Name $script:UserDataFolderName -ItemType Directory | Out-Null
+        if( -not (Test-Path $script:PowerPass.LockerFolderPath) ) {
+            throw "Cannot write to user data path to create data folder"
+        }
     }
 }

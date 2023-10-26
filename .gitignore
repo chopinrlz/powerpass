@@ -2,3 +2,4 @@
 /PowerPassTests/DatabaseWithKeyFileAndUserAccount.kdbx
 /PowerPassTests/DatabaseWithPasswordAndUserAccount.kdbx
 /PowerPassTests/DatabaseWithPasswordUserAccountAndKeyFile.kdbx
+/salt
