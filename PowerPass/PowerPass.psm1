@@ -7,8 +7,13 @@
 
 # Setup the constants for this module
 $PowerPassEdition = "PowerPassV1"
-$PowerPassLockerFile = "powerpass.locker"
-$PowerPassSaltFile = "locker.salt"
+$LockerFileName = "powerpass.locker"
+$LockerSaltFileName = "locker.salt"
+$KeePassLibraryFileName = "KeePassLib.dll"
+$TestDatabaseFileName = "TestDatabase.kdbx"
+$StatusLoggerSourceCode = "StatusLogger.cs"
+$ExtensionsSourceCode = "Extensions.cs"
+$ModuleSaltFileName = "powerpass.salt"
 
 # Determine where user data should be stored
 $UserDataPath = [System.Environment]::GetFolderPath("ApplicationData")
@@ -16,17 +21,17 @@ $UserDataFolderName = $PowerPassEdition
 
 # Setup the root module object in script scope and load all relevant properties
 $PowerPass = [PSCustomObject]@{
-    KeePassLibraryPath = Join-Path -Path $PSScriptRoot -ChildPath "KeePassLib.dll"
+    KeePassLibraryPath = Join-Path -Path $PSScriptRoot -ChildPath $KeePassLibraryFileName
     KeePassLibAssembly = [System.Reflection.Assembly]$null
-    TestDatabasePath   = Join-Path -Path $PSScriptRoot -ChildPath "TestDatabase.kdbx"
-    StatusLoggerSource = Join-Path -Path $PSScriptRoot -ChildPath "StatusLogger.cs"
-    ExtensionsSource   = Join-Path -Path $PSScriptRoot -ChildPath "Extensions.cs"
-    ModuleSaltFilePath = Join-Path -Path $PSScriptRoot -ChildPath "salt"
+    TestDatabasePath   = Join-Path -Path $PSScriptRoot -ChildPath $TestDatabaseFileName
+    StatusLoggerSource = Join-Path -Path $PSScriptRoot -ChildPath $StatusLoggerSourceCode
+    ExtensionsSource   = Join-Path -Path $PSScriptRoot -ChildPath $ExtensionsSourceCode
+    ModuleSaltFilePath = Join-Path -Path $PSScriptRoot -ChildPath $ModuleSaltFileName
     # These paths must always be a combination of the UserDataPath and the UserDataFolderName
     # The cmdlets in this module assume that the user data folder for PowerPass is $UserDataPath/$UserDataFolderName
     LockerFolderPath   = Join-Path -Path $UserDataPath -ChildPath "$UserDataFolderName"
-    LockerFilePath     = Join-Path -Path $UserDataPath -ChildPath "$UserDataFolderName/$PowerPassLockerFile"
-    LockerSaltPath     = Join-Path -Path $UserDataPath -ChildPath "$UserDataFolderName/$PowerPassSaltFile"
+    LockerFilePath     = Join-Path -Path $UserDataPath -ChildPath "$UserDataFolderName/$LockerFileName"
+    LockerSaltPath     = Join-Path -Path $UserDataPath -ChildPath "$UserDataFolderName/$LockerSaltFileName"
 }
 
 # Load the KeePassLib assembly from the module folder
@@ -366,14 +371,39 @@ function Search-PowerPassSecret {
     }
 }
 
+function Clear-PowerPassLocker {
+    $pathToLocker = $script:PowerPass.LockerFilePath
+    if( Test-Path $pathToLocker ) {
+        Remove-Item -Path $pathToLocker -Confirm        
+        $pathToLockerSalt = $script:PowerPass.LockerSaltPath
+        if( Test-Path $pathToLockerSalt ) {
+            Remove-Item -Path $pathToLockerSalt -Force
+        }
+    }
+}
+
 # ------------------------------------------------------------------------------------------------------------- #
 # FUNCTION: Get-PowerPassLocker
 # ------------------------------------------------------------------------------------------------------------- #
 
 function Get-PowerPassLocker {
     Initialize-PowerPassLockerSalt
-
-    # TODO: Initialize the locker and output it to the pipeline
+    Initialize-PowerPassLocker
+    $salt = Get-PowerPassLockerSalt
+    if( -not $salt ) {
+        throw "Failed to get locker, unable to get locker salt"
+    }
+    $pathToLocker = $script:PowerPass.LockerFilePath
+    if( Test-Path $pathToLocker ) {
+        $encLockerString = Get-Content -Path $pathToLocker -Raw
+        $encLockerBytes = [System.Convert]::FromBase64String($encLockerString)
+        $lockerBytes = [System.Security.Cryptography.ProtectedData]::Unprotect($encLockerBytes,$salt,"CurrentUser")
+        $lockerJson = [System.Text.Encoding]::UTF8.GetString($lockerBytes)
+        $locker = ConvertFrom-Json $lockerJson
+        Write-Output $locker
+    } else {
+        Write-Output $null
+    }
 }
 
 # ------------------------------------------------------------------------------------------------------------- #
@@ -420,11 +450,53 @@ function Read-PowerPassSecret {
 # ------------------------------------------------------------------------------------------------------------- #
 
 function Get-PowerPassSalt {
-    if( Test-Path $script:PowerPass.ModuleSaltFilePath ) {
-        $saltText = Get-Content -Path $script:PowerPass.ModuleSaltFilePath -Raw
-        [byte[]]$salt = $saltText -split "," | ForEach-Object {
+    <#
+        .SYNOPSIS
+        Gets the salt for this installation of PowerPass.
+        .INPUTS
+        This cmdlet does not take any input.
+        .OUTPUTS
+        This cmdlet outputs a byte array with the module salt for this PowerPass install. If no module salt file
+        was found, this cmdlet outputs a $null to the pipeline.
+    #>
+    $pathToSalt = $script:PowerPass.ModuleSaltFilePath
+    if( Test-Path $pathToSalt ) {
+        $saltText = Get-Content -Path $pathToSalt -Raw
+        [byte[]]$encSalt = $saltText -split "," | ForEach-Object {
             [System.Convert]::ToByte( $_ )
         }
+        $salt = [System.Security.Cryptography.ProtectedData]::Unprotect($encSalt,$null,"LocalMachine")
+        Write-Output $salt
+    } else {
+        Write-Output $null
+    }
+}
+
+# ------------------------------------------------------------------------------------------------------------- #
+# FUNCTION: Get-PowerPassLockerSalt
+# ------------------------------------------------------------------------------------------------------------- #
+
+function Get-PowerPassLockerSalt {
+    <#
+        .SYNOPSIS
+        Gets the salt for the user's locker.
+        .INPUTS
+        This cmdlet does not take any input.
+        .OUTPUTS
+        This cmdlet outputs the byte array for the user's locker salt to the pipeline. If there is no locker
+        salt file this cmdlet outputs $null to the pipeline.
+    #>
+    $moduleSalt = Get-PowerPassSalt
+    if( -not $moduleSalt ) {
+        throw "Your PowerPass installation does not have a module salt file"
+    }
+    $pathToSalt = $script:PowerPass.LockerSaltPath
+    if( Test-Path $pathToSalt ) {
+        $saltText = Get-Content -Path $pathToSalt -Raw
+        [byte[]]$encSalt = $saltText -split "," | ForEach-Object {
+            [System.Convert]::ToByte( $_ )
+        }
+        $salt = [System.Security.Cryptography.ProtectedData]::Unprotect($encSalt,$moduleSalt,"CurrentUser")
         Write-Output $salt
     } else {
         Write-Output $null
@@ -436,20 +508,32 @@ function Get-PowerPassSalt {
 # ------------------------------------------------------------------------------------------------------------- #
 
 function Initialize-PowerPassLockerSalt {
+    <#
+        .SYNOPSIS
+        Generates a salt for the user's locker if it has not been generated already.
+        .INPUTS
+        This cmdlet does not take any input.
+        .OUTPUTS
+        This cmdlet does not output anything.
+        .NOTES
+        This cmdlet will break execution with a throw if either the PowerPass module is missing its module salt
+        or if the locker salt file could not be written to the user data directory.
+    #>
     $moduleSalt = Get-PowerPassSalt
     if( -not $moduleSalt ) {
-        throw "Your PowerPass installation does not have a local salt file"
+        throw "Your PowerPass installation does not have a module salt file"
     }
     Initialize-PowerPassUserDataFolder
-    if( -not (Test-Path $script:LockerSaltPath) ) {
+    $pathToLockerSalt = $script:PowerPass.LockerSaltPath
+    if( -not (Test-Path $pathToLockerSalt) ) {
         $saltShaker = [System.Security.Cryptography.RandomNumberGenerator]::Create()
         $lockerSalt = [System.Byte[]]::CreateInstance( [System.Byte], 32 )
         $saltShaker.GetBytes( $lockerSalt )
         $encLockerSalt = [System.Security.Cryptography.ProtectedData]::Protect($lockerSalt,$moduleSalt,"CurrentUser")
         $encLockerSaltText = $encLockerSalt -join ","
-        Out-File -InputObject $encLockerSaltText -FilePath "$($script:PowerPass.LockerSaltPath)" -Force
+        Out-File -InputObject $encLockerSaltText -FilePath $pathToLockerSalt -Force
     }
-    if( -not (Test-Path $script:LockerSaltPath) ) {
+    if( -not (Test-Path $pathToLockerSalt) ) {
         throw "Cannot write to user data path to initialize salt file"
     }
 }
@@ -459,10 +543,62 @@ function Initialize-PowerPassLockerSalt {
 # ------------------------------------------------------------------------------------------------------------- #
 
 function Initialize-PowerPassUserDataFolder {
-    if( -not (Test-Path $script:PowerPass.LockerFolderPath) ) {
+    <#
+        .SYNOPSIS
+        Checks for the PowerPass data folder in the user's profile directory and creates it if it does not exist.
+        .INPUTS
+        This cmdlet does not take any input.
+        .OUTPUTS
+        This cmdlet does not output anything.
+        .NOTES
+        This cmdlet will break execution with a throw if the data folder could not be created.
+    #>
+    if( -not (Test-Path ($script:PowerPass.LockerFolderPath) ) ) {
         New-Item -Path $script:UserDataPath -Name $script:UserDataFolderName -ItemType Directory | Out-Null
-        if( -not (Test-Path $script:PowerPass.LockerFolderPath) ) {
+        if( -not (Test-Path ($script:PowerPass.LockerFolderPath)) ) {
             throw "Cannot write to user data path to create data folder"
         }
+    }
+}
+
+# ------------------------------------------------------------------------------------------------------------- #
+# FUNCTION: Initialize-PowerPassUserDataFolder
+# ------------------------------------------------------------------------------------------------------------- #
+
+function Initialize-PowerPassLocker {
+    $salt = Get-PowerPassLockerSalt
+    if( -not $salt ) {
+        throw "Failed to initialize the user's locker, unable to get the locker salt"
+    }
+    $pathToLocker = $script:PowerPass.LockerFilePath
+    if( -not (Test-Path $pathToLocker) ) {
+        $locker = [PSCustomObject]@{
+            Edition = $script:PowerPassEdition
+            Created = (Get-Date).ToUniversalTime()
+            Secrets = @()
+            Attachments = @()
+        }
+        $newSecret = [PSCustomObject]@{
+            Title = "Default"
+            UserName = "PowerPass"
+            Password = "PowerPass"
+            URL = "https://github.com/chopinrlz/powerpass"
+            Notes = "This is the default secret for the PowerPass locker."
+            Expires = [DateTime]::MaxValue
+        }
+        $newAttachment = [PSCustomObject]@{
+            FileName = "PowerPass.txt"
+            Data = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes("This is the default text file attachment."))
+        }
+        $locker.Attachments += $newAttachment
+        $locker.Secrets += $newSecret
+        $json = $locker | ConvertTo-Json
+        $data = [System.Text.Encoding]::UTF8.GetBytes($json)
+        $encData = [System.Security.Cryptography.ProtectedData]::Protect($data,$salt,"CurrentUser")
+        $encDataText = [System.Convert]::ToBase64String($encData)
+        Out-File -FilePath $pathToLocker -InputObject $encDataText -Force
+    }
+    if( -not (Test-Path $pathToLocker) ) {
+        throw "Failed to initialize the user's locker"
     }
 }
