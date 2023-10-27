@@ -72,7 +72,7 @@ ScriptsToProcess = @('PowerPass.ps1')
 # NestedModules = @()
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
-FunctionsToExport = @('Open-PowerPassTestDatabase','Open-PowerPassDatabase','Get-PowerPassSecret','Get-PowerPassLocker','Clear-PowerPassLocker')
+FunctionsToExport = @('Open-PowerPassTestDatabase','Open-PowerPassDatabase','Get-PowerPassSecret','Clear-PowerPassLocker','Write-PowerPassSecret','Read-PowerPassSecret')
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
 CmdletsToExport = @()

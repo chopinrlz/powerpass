@@ -371,14 +371,27 @@ function Search-PowerPassSecret {
     }
 }
 
+# ------------------------------------------------------------------------------------------------------------- #
+# FUNCTION: Clear-PowerPassLocker
+# ------------------------------------------------------------------------------------------------------------- #
+
 function Clear-PowerPassLocker {
-    $pathToLocker = $script:PowerPass.LockerFilePath
-    if( Test-Path $pathToLocker ) {
-        Remove-Item -Path $pathToLocker -Confirm        
-        $pathToLockerSalt = $script:PowerPass.LockerSaltPath
-        if( Test-Path $pathToLockerSalt ) {
-            Remove-Item -Path $pathToLockerSalt -Force
+    $answer = Read-Host "WARNING: You are about to DELETE your PowerPass locker. All your secrets and attachments will be erased. This CANNOT be undone. Do you want to proceed [N/y]?"
+    if( ($answer -eq "y") -or ($answer -eq "Y") ) {
+        $answer = Read-Host "CONFIRM: Please confirm again with Y or y to delete your PowerPass locker [N/y]"
+        if( ($answer -eq "y") -or ($answer -eq "Y") ) {
+            Write-Host "Deleting your PowerPass locker"
+            if( Test-Path ($script:PowerPass.LockerFilePath) ) {
+                Remove-Item -Path ($script:PowerPass.LockerFilePath) -Force
+            }
+            if( Test-Path ($script:PowerPass.LockerSaltPath) ) {
+                Remove-Item -Path ($script:PowerPass.LockerSaltPath) -Force
+            }
+        } else {
+            Write-Host "Cancelled, locker not deleted"
         }
+    } else {
+        Write-Host "Cancelled, locker not deleted"
     }
 }
 
@@ -407,19 +420,84 @@ function Get-PowerPassLocker {
 }
 
 # ------------------------------------------------------------------------------------------------------------- #
-# FUNCTION: Add-PowerPassSecret
+# FUNCTION: Write-PowerPassSecret
 # ------------------------------------------------------------------------------------------------------------- #
 
-function Add-PowerPassSecret {
+function Write-PowerPassSecret {
     param(
+        [Parameter(Mandatory=$true)]
         [string]
-        $Name,
+        $Title,
         [string]
-        $Secret
+        $UserName,
+        [string]
+        $Password,
+        [string]
+        $URL,
+        [string]
+        $Notes,
+        [DateTime]
+        $Expires = [DateTime]::MaxValue
     )
     $locker = Get-PowerPassLocker
     if( -not $locker ) {
-        throw "Failed to initialize the PowerPass locker"
+        throw "Could not create or fetch your locker"
+    }
+    $changed = $false
+    $existingSecret = $locker.Secrets | Where-Object { 'Title' -eq $Title }
+    if( $existingSecret ) {
+        if( $UserName ) {
+            $existingSecret.UserName = $UserName
+            $changed = $true
+        }
+        if( $Password ) {
+            $existingSecret.Password = $Password
+            $changed = $true
+        }
+        if( $URL ) {
+            $existingSecret.URL = $URL
+            $changed = $true
+        }
+        if( $Notes ) {
+            $existingSecret.Notes = $Notes
+            $changed = $true
+        }
+        if( $Expires -ne ($existing.Expires) ) {
+            $existingSecret.Expires = $Expires
+            $changed = $true
+        }
+    } else {
+        $changed = $true
+        $newSecret = [PSCustomObject]@{
+            Title = $Title
+            UserName = $UserName
+            Password = $Password
+            URL = $URL
+            Notes = $Notes
+            Expires = $Expires
+        }
+        $locker.Secrets += $newSecret
+    }
+    if( $changed ) {
+        $pathToLocker = $script:PowerPass.LockerFilePath
+        $json = $locker | ConvertTo-Json
+        $data = [System.Text.Encoding]::UTF8.GetBytes($json)
+        $encData = [System.Security.Cryptography.ProtectedData]::Protect($data,$salt,"CurrentUser")
+        $encDataText = [System.Convert]::ToBase64String($encData)
+        Out-File -FilePath $pathToLocker -InputObject $encDataText -Force
+    }
+}
+
+function Set-PowerPassSecureString {
+    param(
+        [Parameter(Mandatory=$true)]
+        $Secret
+    )
+    begin {
+    } process {
+        $Secret.Password = ConvertTo-SecureString -String ($Secret.Password) -AsPlainText -Force
+        Write-Output $Secret
+    } end {
     }
 }
 
@@ -430,18 +508,27 @@ function Add-PowerPassSecret {
 function Read-PowerPassSecret {
     param(
         [string]
-        $Name,
+        $Match,
         [switch]
-        $Global
+        $PlainTextPasswords
     )
-    $locker = $null
-    if( $Global ) {
-        $locker = Get-PowerPassLocker -Global
-    } else {
-        $locker = Get-PowerPassLocker
-    }
+    $locker = Get-PowerPassLocker
     if( -not $locker ) {
-        Write-Output $null
+        throw "Could not create or fetch your locker"
+    } else {
+        if( $Match ) {
+            if( $PlainTextPasswords ) {
+                $locker.Secrets | Where-Object { 'Title' -like $Match } | Write-Output
+            } else {
+                $locker.Secrets | Where-Object { 'Title' -like $Match } | Set-PowerPassSecureString
+            }
+        } else {
+            if( $PlainTextPasswords ) {
+                Write-Output $locker.Secrets
+            } else {
+                $locker.Secrets | Set-PowerPassSecureString
+            }
+        }
     }
 }
 
@@ -562,16 +649,29 @@ function Initialize-PowerPassUserDataFolder {
 }
 
 # ------------------------------------------------------------------------------------------------------------- #
-# FUNCTION: Initialize-PowerPassUserDataFolder
+# FUNCTION: Initialize-PowerPassLocker
 # ------------------------------------------------------------------------------------------------------------- #
 
 function Initialize-PowerPassLocker {
-    $salt = Get-PowerPassLockerSalt
-    if( -not $salt ) {
-        throw "Failed to initialize the user's locker, unable to get the locker salt"
-    }
+    <#
+        .SYNOPSIS
+        Creates a PowerPass locker file and encrypts it using the locker salt and the Data Protection API.
+        Does not overwrite an existing locker file.
+        .INPUTS
+        This cmdlet does not take any input.
+        .OUTPUTS
+        This cmdlet does not output anything. It writes the locker file to disk.
+        .NOTES
+        The locker file is populated with one Default secret and one default attachment named PowerPass.txt.
+        This cmdlet will halt execution with a throw if the locker salt has not been initialized, or cannot
+        be loaded, or if the locker file could not be written to the user data directory.
+    #>
     $pathToLocker = $script:PowerPass.LockerFilePath
     if( -not (Test-Path $pathToLocker) ) {
+        $salt = Get-PowerPassLockerSalt
+        if( -not $salt ) {
+            throw "Failed to initialize the user's locker, unable to get the locker salt"
+        }
         $locker = [PSCustomObject]@{
             Edition = $script:PowerPassEdition
             Created = (Get-Date).ToUniversalTime()
