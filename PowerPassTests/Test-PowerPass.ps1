@@ -6,11 +6,58 @@
 #>
 
 # First test is loading the PowerPass module
+Write-Host "Testing module import"
 Import-Module PowerPass
 $module = Get-Module | ? Name -eq "PowerPass"
 if( -not $module ) {
     throw "Failed to load PowerPass module, did you deploy it?"
 }
+
+# ------------------------------------------------------------------------------------------------------------- #
+# FUNCTION: Assert-SecretCollection
+# ------------------------------------------------------------------------------------------------------------- #
+
+function Assert-SecretCollection {
+    <#
+        .SYNOPSIS
+        Compares an array of secrets to an array of titles for said secrets in associative order.
+        .DESCRIPTION
+        To assert that a search returns the expected results from Get-PowerPassSecret we check the
+        collection of results returned, sorted in alphabetical order by Title, to the string array
+        of Titles (also sorted) for results we expect based on the test case. The Title of the first
+        search result in $Collection is compared to the first string in $Titles and so forth and
+        so on until the end of the $Titles array is reached.
+        .PARAMETER Collection
+        The collection returned from Get-PowerPassSecret sorted by Title.
+        .PARAMETER Titles
+        A string array of Titles sorted in alphabetical order to search for in Collection.
+        .OUTPUTS
+        This function does not output anything, but it writes the result of the assertion to the host.
+    #>
+    param(
+        [Parameter(Mandatory = $true)]
+        [object[]]
+        $Collection,
+        [Parameter(Mandatory = $true)]
+        [string[]]
+        $Titles
+    )
+    $assert = $true
+    $indexer = 0
+    $Titles | ForEach-Object {
+        $assert = $assert -and ( ($Collection[$indexer]).Title -eq $_ )
+        $indexer++
+    }
+    if ( $assert ) {
+        Write-Host "Assert passed"
+    } else {
+        Write-Warning "Assert failed"
+    }
+}
+
+# ------------------------------------------------------------------------------------------------------------- #
+# FUNCTION: Assert-Strings
+# ------------------------------------------------------------------------------------------------------------- #
 
 function Assert-Strings {
     <#
@@ -34,6 +81,10 @@ function Assert-Strings {
     }
 }
 
+# ------------------------------------------------------------------------------------------------------------- #
+# FUNCTION: Assert-Secret
+# ------------------------------------------------------------------------------------------------------------- #
+
 function Assert-Secret {
     <#
         .SYNOPSIS
@@ -53,57 +104,69 @@ function Assert-Secret {
     Assert-Strings -StringA $script:expectedPassword -StringB $actualPassword
 }
 
+# Notify
+Write-Host "Defining test constants"
+
+# Key file for all test cases
+$keyFilePath = "$PSScriptRoot\keepass-keyfile.keyx"
+
 # Master password for all test cases
 $secureString = ConvertTo-SecureString -String "12345" -AsPlainText -Force
 
 # Test a database which uses a password key
 Write-Host "Testing a Database with a Password: " -NoNewline
 $script:expectedPassword = "BkLQzZvxEV5Znav7"
-Open-PowerPassDatabase -Path "$PSScriptRoot\DatabaseWithPassword.kdbx" -MasterPassword $secureString | Assert-Secret
+Open-PowerPassDatabase -Path "$PSScriptRoot\kpdb-pw.kdbx" -MasterPassword $secureString | Assert-Secret
 
 # Test a database which uses a key file key
 Write-Host "Testing a Database with a Key File: " -NoNewline
 $script:expectedPassword = "C4uqg38rjAdoo1AT"
-Open-PowerPassDatabase -Path "$PSScriptRoot\DatabaseWithKeyFile.kdbx" -KeyFile "$PSScriptRoot\DatabaseKeyFile.keyx" | Assert-Secret
+Open-PowerPassDatabase -Path "$PSScriptRoot\kpdb-key.kdbx" -KeyFile $keyFilePath | Assert-Secret
 
 # Cannot be done for anyone else but yourself
 # Test a database which uses the Windows user account as the key
 # Write-Host "Testing a Database with User Account: " -NoNewline
-# $expectedPassword = "3ZUVBh2SA4pnmk5R"
-# Open-PowerPassDatabase -Path "$PSScriptRoot\DatabaseWithUserAccount.kdbx" -WindowsUserAccount | Assert-Secret
+# $expectedPassword = "AAhvNSLcjLEaSfa6"
+# Open-PowerPassDatabase -Path "$PSScriptRoot\kpdb-user.kdbx" -WindowsUserAccount | Assert-Secret
 
-# TEst a database which uses both a key file key and password key
+# Test a database which uses both a key file key and password key
 Write-Host "Testing a Database with a Key File and Password: " -NoNewline
 $expectedPassword = "trlasJhJlVuZHETS"
-Open-PowerPassDatabase -Path "$PSScriptRoot\DatabaseWithKeyFileAndPassword.kdbx" -KeyFile "$PSScriptRoot\DatabaseKeyFile.keyx" -MasterPassword $secureString | Assert-Secret
+Open-PowerPassDatabase -Path "$PSScriptRoot\kpdb-keypw.kdbx" -KeyFile $keyFilePath -MasterPassword $secureString | Assert-Secret
 
 # Cannot be done for anyone else but yourself
 # Test a database which uses both a key file key and Windows user account key
 # Write-Host "Testing a Database with a Key File and User Account: " -NoNewline
 # $expectedPassword = "LgAXW2iIjRAgczfT"
-# Open-PowerPassDatabase -Path "$PSScriptRoot\DatabaseWithKeyFileAndUserAccount.kdbx" -KeyFile "$PSScriptRoot\DatabaseKeyFile.keyx" -WindowsUserAccount | Assert-Secret
+# Open-PowerPassDatabase -Path "$PSScriptRoot\kpdb-keyuser.kdbx" -KeyFile $keyFilePath -WindowsUserAccount | Assert-Secret
 
 # Cannot be done for anyone else but yourself
 # Test a database which uses both a password key and Windows user account key
 # Write-Host "Testing a Database with a Password and User Account: " -NoNewline
 # $expectedPassword = "Bf9GZ9dM0UBt2F5c"
-# Open-PowerPassDatabase -Path "$PSScriptRoot\DatabaseWithPasswordAndUserAccount.kdbx" -MasterPassword $secureString -WindowsUserAccount | Assert-Secret
+# Open-PowerPassDatabase -Path "$PSScriptRoot\kpdb-pwuser.kdbx" -MasterPassword $secureString -WindowsUserAccount | Assert-Secret
 
 # Cannot be done for anyone else but yourself
 # Test a database which uses all three keys
 # Write-Host "Testing a Database with a Password User Account and Key File: " -NoNewline
 # $expectedPassword = "z3jZ3IhHM8bz2NGt"
-# Open-PowerPassDatabase -Path "$PSScriptRoot\DatabaseWithPasswordUserAccountAndKeyFile.kdbx" -KeyFile "$PSScriptRoot\DatabaseKeyFile.keyx" -MasterPassword $secureString -WindowsUserAccount | Assert-Secret
+# Open-PowerPassDatabase -Path "$PSScriptRoot\kpdb-pwkeyuser.kdbx" -KeyFile $keyFilePath -MasterPassword $secureString -WindowsUserAccount | Assert-Secret
 
 # Test a database with multiple entries with the same Title
-Write-Host "Testing a Database with Indentical Entries" -NoNewline
-$localDb = Open-PowerPassDatabase -Path "$PSScriptRoot\DbPasswordMultiEntry.kdbx" -MasterPassword $secureString
-Get-PowerPassSecret -Database $localDb -Match "Test Entry" | Format-Table
+Write-Host "Testing a Database with Indentical Entries: " -NoNewline
+$expectedResults = @('Test Entry','Test Entry','Test Entry')
+$localDb = Open-PowerPassDatabase -Path "$PSScriptRoot\kpdb-pwmulti.kdbx" -MasterPassword $secureString
+$actualResults = Get-PowerPassSecret -Database $localDb -Match "Test Entry"
+Assert-SecretCollection -Collection $actualResults -Titles $expectedResults
 
 # Test a database with multiple entries using wildcards
-Write-Host "Testing a Database to get All Entries" -NoNewline
-Get-PowerPassSecret -Database $localDb | Format-Table
+Write-Host "Testing a Database to get All Entries: " -NoNewline
+$expectedResults = @('Other Words in Title','Test Entry','Test Entry','Test Entry','Test User')
+$actualResults = Get-PowerPassSecret -Database $localDb | Sort-Object -Property "Title"
+Assert-SecretCollection -Collection $actualResults -Titles $expectedResults
 
 # Test a database with multiple entries using Test and wildcards
-Write-Host "Testing a Database with Wilcard Search 'Test*'" -NoNewline
-Get-PowerPassSecret -Database $localDb -Match "Test*" | Format-Table
+Write-Host "Testing a Database with Wilcard Search 'Test*': " -NoNewline
+$expectedResults = @('Test Entry','Test Entry','Test Entry','Test User')
+$actualResults = Get-PowerPassSecret -Database $localDb -Match "Test*" | Sort-Object -Property "Title"
+Assert-SecretCollection -Collection $actualResults -Titles $expectedResults

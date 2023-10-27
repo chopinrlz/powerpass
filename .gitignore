@@ -1,5 +1,7 @@
 /KeePassLib.dll
-/PowerPassTests/DatabaseWithKeyFileAndUserAccount.kdbx
-/PowerPassTests/DatabaseWithPasswordAndUserAccount.kdbx
-/PowerPassTests/DatabaseWithPasswordUserAccountAndKeyFile.kdbx
+/KeePassLib/obj/*
+/PowerPassTests/kpdb-keyuser.kdbx
+/PowerPassTests/kpdb-pwuser.kdbx
+/PowerPassTests/kpdb-pwkeyuser.kdbx
+/PowerPassTests/kpdb-user.kdbx
 /salt
