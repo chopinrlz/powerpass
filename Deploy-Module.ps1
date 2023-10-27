@@ -43,6 +43,18 @@ if( [String]::IsNullOrEmpty( $Path ) ) {
     switch( $Target ) {
         "CurrentUser" {
             $modulesRoot = Join-Path -Path $env:USERPROFILE -ChildPath "Documents\WindowsPowerShell\Modules"
+            if( -not (Test-Path $modulesRoot) ) {
+                $answer = Read-Host "Your Windows PowerShell modules folder does not exist. Would you like to create it? [Y/n]"
+                if( -not $answer ) {
+                    New-Item -Path $modulesRoot -ItemType Directory | Out-Null
+                }
+                if( ($answer -eq "y") -or ($answer -eq "Y") ) {
+                    New-Item -Path $modulesRoot -ItemType Directory | Out-Null
+                }
+                if( ($answer -eq "n") -or ($answer -eq "N") ) {
+                    $modulesRoot = Read-Host "Please type in an alternate path for deployment"
+                }
+            }
         }
         "System" {
             $modulesRoot = Join-Path $env:ProgramFiles -ChildPath "WindowsPowerShell\Modules"
