@@ -376,6 +376,16 @@ function Search-PowerPassSecret {
 # ------------------------------------------------------------------------------------------------------------- #
 
 function Clear-PowerPassLocker {
+    <#
+        .SYNOPSIS
+        Deletes all your locker secrets.
+        .DESCRIPTION
+        If you want to delete your locker secrets and start with a clean locker, you can use thie cmdlet to do so.
+        When you deploy PowerPass using the Deploy-Module.ps1 script provided with this module, it generates a
+        unique salt for this deployment which is used to encrypt your locker's salt. If you replace this salt by
+        redeploying the module, you will no longer be able to access your locker and will need to start with a
+        clean locker.
+    #>
     $answer = Read-Host "WARNING: You are about to DELETE your PowerPass locker. All your secrets and attachments will be erased. This CANNOT be undone. Do you want to proceed [N/y]?"
     if( ($answer -eq "y") -or ($answer -eq "Y") ) {
         $answer = Read-Host "CONFIRM: Please confirm again with Y or y to delete your PowerPass locker [N/y]"
@@ -400,6 +410,15 @@ function Clear-PowerPassLocker {
 # ------------------------------------------------------------------------------------------------------------- #
 
 function Get-PowerPassLocker {
+    <#
+        .SYNOPSIS
+        Retrieves the PowerPass locker for the current user from the file system and initializes it if it does
+        not already exist.
+        .OUTPUTS
+        Writes the locker to the pipeline if it exists, otherwise writes $null to the pipeline.
+        .NOTES
+        This cmdlet will stop execution with a throw if the locker salt could not be fetched.
+    #>
     Initialize-PowerPassLockerSalt
     Initialize-PowerPassLocker
     $salt = Get-PowerPassLockerSalt
@@ -424,6 +443,23 @@ function Get-PowerPassLocker {
 # ------------------------------------------------------------------------------------------------------------- #
 
 function Write-PowerPassSecret {
+    <#
+        .SYNOPSIS
+        Writes a secret into your PowerPass locker.
+        .PARAMETER Title
+        Mandatory. The Title of the secret. This is unique to your locker. If you already have a secret in your
+        locker with this Title, it will be updated, but only the parameters you specify will be updated.
+        .PARAMETER UserName
+        Optional. Sets the UserName property of the secret in your locker.
+        .PARAMETER Password
+        Optional. Sets the Password property of the secret in your locker.
+        .PARAMETER URL
+        Optional. Sets the URL property of the secret in your locker.
+        .PARAMETER Notes
+        Optional. Sets the Notes property of the secret in your locker.
+        .PARAMETER Expires
+        Optional. Sets the Expiras property of the secret in your locker.
+    #>
     param(
         [Parameter(Mandatory=$true)]
         [string]
@@ -466,6 +502,9 @@ function Write-PowerPassSecret {
             $existingSecret.Expires = $Expires
             $changed = $true
         }
+        if( $changed ) {
+            $existingSecret.Modified = (Get-Date).ToUniversalTime()
+        }
     } else {
         $changed = $true
         $newSecret = [PSCustomObject]@{
@@ -475,10 +514,16 @@ function Write-PowerPassSecret {
             URL = $URL
             Notes = $Notes
             Expires = $Expires
+            Created = (Get-Date).ToUniversalTime()
+            Modified = (Get-Date).ToUniversalTime()
         }
         $locker.Secrets += $newSecret
     }
     if( $changed ) {
+        $salt = Get-PowerPassLockerSalt
+        if( -not $salt ) {
+            throw "Error writing secret, no locker salt"
+        }
         $pathToLocker = $script:PowerPass.LockerFilePath
         $json = $locker | ConvertTo-Json
         $data = [System.Text.Encoding]::UTF8.GetBytes($json)
@@ -488,16 +533,34 @@ function Write-PowerPassSecret {
     }
 }
 
+# ------------------------------------------------------------------------------------------------------------- #
+# FUNCTION: Set-PowerPassSecureString
+# ------------------------------------------------------------------------------------------------------------- #
+
 function Set-PowerPassSecureString {
+    <#
+        .SYNOPSIS
+        Converts a PowerPass secret's password into a SecureString and writes the secret to the pipeline.
+        .PARAMETER Secret
+        The PowerPass secret. This will be output to the pipeline once the password is converted.
+        .INPUTS
+        This cmdlet takes PowerPass secrets as input.
+        .OUTPUTS
+        This cmdlet writes the PowerPass secret to the pipeline after converting the password to a SecureString.
+    #>
     param(
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory=$true,ValueFromPipeline,Position=0)]
         $Secret
     )
     begin {
+        # Start work on collection of secrets
     } process {
-        $Secret.Password = ConvertTo-SecureString -String ($Secret.Password) -AsPlainText -Force
+        if( $Secret.Password ) {
+            $Secret.Password = ConvertTo-SecureString -String ($Secret.Password) -AsPlainText -Force
+        }
         Write-Output $Secret
     } end {
+        # Complete work on collection of secrets
     }
 }
 
@@ -506,6 +569,33 @@ function Set-PowerPassSecureString {
 # ------------------------------------------------------------------------------------------------------------- #
 
 function Read-PowerPassSecret {
+    <#
+        .SYNOPSIS
+        Reads secrets from your PowerPass locker.
+        .PARAMETER Match
+        An optional filter. If specified, only secrets whose Title matches this filter are output to the pipeline.
+        .PARAMETER PlainTextPasswords
+        An optional switch which instructs PowerPass to output the passwords in plain-text. By default, all
+        passwords are output as SecureString objects.
+        .INPUTS
+        This cmdlet takes no input.
+        .OUTPUTS
+        This cmdlet outputs PowerPass secrets from your locker to the pipeline. Each secret is a PSCustomObject
+        with these properties:
+        1. Title     - the name, or title, of the secret, this value is unique to the locker
+        2. UserName  - the username field string for the secret
+        3. Password  - the password field for the secret, by default a SecureString
+        4. URL       - the URL string for the secret
+        5. Notes     - the notes string for the secret
+        6. Expires   - the expiration date for the secret, by default December 31, 9999
+        7. Created   - the date and time the secret was created in the locker
+        8. Modified  - the date and time the secret was last modified
+        .NOTES
+        When you use PowerPass for the first time, PowerPass creates a default secret in your locker with the
+        Title "Default" with all fields populated as an example of the data structure stored in the locker.
+        You can delete or change this secret by using Write-PowerPassSecret or Delete-PowerPassSecret and specifying
+        the Title of "Default".
+    #>
     param(
         [string]
         $Match,
@@ -518,9 +608,9 @@ function Read-PowerPassSecret {
     } else {
         if( $Match ) {
             if( $PlainTextPasswords ) {
-                $locker.Secrets | Where-Object { 'Title' -like $Match } | Write-Output
+                $locker.Secrets | Where-Object { $_.Title -like $Match } | Write-Output
             } else {
-                $locker.Secrets | Where-Object { 'Title' -like $Match } | Set-PowerPassSecureString
+                $locker.Secrets | Where-Object { $_.Title -like $Match } | Set-PowerPassSecureString
             }
         } else {
             if( $PlainTextPasswords ) {
@@ -549,9 +639,7 @@ function Get-PowerPassSalt {
     $pathToSalt = $script:PowerPass.ModuleSaltFilePath
     if( Test-Path $pathToSalt ) {
         $saltText = Get-Content -Path $pathToSalt -Raw
-        [byte[]]$encSalt = $saltText -split "," | ForEach-Object {
-            [System.Convert]::ToByte( $_ )
-        }
+        $encSalt = [System.Convert]::FromBase64String($saltText)
         $salt = [System.Security.Cryptography.ProtectedData]::Unprotect($encSalt,$null,"LocalMachine")
         Write-Output $salt
     } else {
@@ -580,9 +668,7 @@ function Get-PowerPassLockerSalt {
     $pathToSalt = $script:PowerPass.LockerSaltPath
     if( Test-Path $pathToSalt ) {
         $saltText = Get-Content -Path $pathToSalt -Raw
-        [byte[]]$encSalt = $saltText -split "," | ForEach-Object {
-            [System.Convert]::ToByte( $_ )
-        }
+        $encSalt = [System.Convert]::FromBase64String($saltText)
         $salt = [System.Security.Cryptography.ProtectedData]::Unprotect($encSalt,$moduleSalt,"CurrentUser")
         Write-Output $salt
     } else {
@@ -617,7 +703,7 @@ function Initialize-PowerPassLockerSalt {
         $lockerSalt = [System.Byte[]]::CreateInstance( [System.Byte], 32 )
         $saltShaker.GetBytes( $lockerSalt )
         $encLockerSalt = [System.Security.Cryptography.ProtectedData]::Protect($lockerSalt,$moduleSalt,"CurrentUser")
-        $encLockerSaltText = $encLockerSalt -join ","
+        $encLockerSaltText = [System.Convert]::ToBase64String($encLockerSalt)
         Out-File -InputObject $encLockerSaltText -FilePath $pathToLockerSalt -Force
     }
     if( -not (Test-Path $pathToLockerSalt) ) {
@@ -685,10 +771,14 @@ function Initialize-PowerPassLocker {
             URL = "https://github.com/chopinrlz/powerpass"
             Notes = "This is the default secret for the PowerPass locker."
             Expires = [DateTime]::MaxValue
+            Created = [DateTime]::Now.ToUniversalTime()
+            Modified = [DateTime]::Now.ToUniversalTime()
         }
         $newAttachment = [PSCustomObject]@{
             FileName = "PowerPass.txt"
             Data = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes("This is the default text file attachment."))
+            Created = [DateTime]::Now.ToUniversalTime()
+            Modified = [DateTime]::Now.ToUniversalTime()
         }
         $locker.Attachments += $newAttachment
         $locker.Secrets += $newSecret

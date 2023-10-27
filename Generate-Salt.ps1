@@ -18,5 +18,5 @@ $saltShaker.GetBytes( $salt )
 $encSalt = [System.Security.Cryptography.ProtectedData]::Protect($salt,$null,"LocalMachine")
 
 # Save the encrypted salt to a salt file in the byte collection format
-$saltText = $encSalt -join ","
+$saltText = [System.Convert]::ToBase64String($encSalt)
 Out-File -InputObject $saltText -FilePath "$PSScriptRoot\powerpass.salt" -Force

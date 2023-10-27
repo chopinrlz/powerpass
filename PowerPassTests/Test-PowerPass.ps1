@@ -170,3 +170,29 @@ Write-Host "Testing a Database with Wilcard Search 'Test*': " -NoNewline
 $expectedResults = @('Test Entry','Test Entry','Test Entry','Test User')
 $actualResults = Get-PowerPassSecret -Database $localDb -Match "Test*" | Sort-Object -Property "Title"
 Assert-SecretCollection -Collection $actualResults -Titles $expectedResults
+
+# Clear the Locker to Unit Test the Locker
+Write-Host "Creating a new Locker"
+Clear-PowerPassLocker
+
+# Read the Default Secret from a New Locker
+Write-Host "Testing the Default Secret in a new Locker: " -NoNewline
+$default = Read-PowerPassSecret
+if( $default.Title -eq "Default" ) {
+    Write-Host "Assert passed"
+} else {
+    Write-Warning "Assert failed"
+}
+
+# Write a New Secret into the Locker
+Write-Host "Testing Write function to Locker"
+Write-PowerPassSecret -Title "Unit Testing" -UserName "unit test user" -Password "unit test password" -URL "https://github.com/chopinrlz/powerpass" -Notes "Unit testing." -Expires (Get-Date)
+
+# Read out the new Secret
+Write-Host "Testing reading the new Secret: " -NoNewline
+$unitTesting = Read-PowerPassSecret -Match "Unit Testing"
+if( $unitTesting.Title -eq "Unit Testing" ) {
+    Write-Host "Assert passed"
+} else {
+    Write-Warning "Assert failed"
+}
