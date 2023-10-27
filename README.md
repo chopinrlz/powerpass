@@ -1,5 +1,5 @@
 # PowerPass
-A PowerShell module for secret storage and retrieval based on the KeePass 2.55 implementation. This module will allow you to fetch secrets from any KeePass database compatible with KeePass 2.55. This module is currently only compatible with Windows since KeePassLib is compiled on the .NET Framework.
+A PowerShell module for secret storage and retrieval from KeePass 2 databases or PowerPass lockers using encryption based on the Windows Data Protection API. This module will allow you to fetch secrets from any KeePass database compatible with KeePass 2.55. This module also allows you to store and retrieve secrets from a PowerPass locker file generated and encrypted automatially by this module. This module is currently only compatible with Windows since KeePassLib is compiled on the .NET Framework and the Data Protection API is a Windows-only feature. There are plans to extend this module to work cross-platform in the future with native PowerPass locker support.
 # Deployment
 PowerPass comes with a deployment script which will compile the KeePassLib and deploy the module. Clone this repository to a writeable folder on your local machine. Open Windows PowerShell 5.1 and run ```.\Deploy-Module.ps1``` to compile and deploy this module.
 ## Prerequisites
