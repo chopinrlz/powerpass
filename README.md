@@ -21,8 +21,8 @@ PowerPass is compiled from source at deployment time. You must have the C# compi
 PowerPass comes with a deployment script which will compile the KeePassLib source code, generate a PowerPass module salt (for salting Locker keys), and deploy the module. You can deploy the module to your user profile home directory for yourself, or you can deploy the module for all users (which requires administrative permissions).
 ## Step 1: Clone the Repository
 Clone this repository to a **writeable** folder on your local machine. You must run the deployment script with write permissions to the local folder in order to compile KeePassLib and generate a salt file.
-## Step 2: Run Deploy-Module.ps1
-Open Windows PowerShell 5.1 and run `.\Deploy-Module.ps1` to compile and deploy this module. This script has two parameters: `Target` and `Path`.
+## Step 2: Run Deploy-PowerPass.ps1
+Open Windows PowerShell 5.1 and run `.\Deploy-PowerPass.ps1` to compile and deploy this module. This script has two parameters: `Target` and `Path`.
 ### Parameter: Target
 The `Target` parameter can have one of two values: `CurrentUser` or `System`.
 * If you specify `CurrentUser` the module will be installed for you and deployed to your WindowsPowerShell/Modules folder in your user profile directory.
