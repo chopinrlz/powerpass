@@ -36,6 +36,9 @@ if( $PSVersionTable.PSVersion.Major -ne 5 ) {
     throw "The PowerPass module is only compatible with PowerShell 5.1."
 }
 
+# Set the working directory to $PSScriptRoot
+Set-Location $PSScriptRoot
+
 # Locate the deployment folder
 Write-Host "Locating the deployment folder"
 $modulesRoot = ""
@@ -76,10 +79,11 @@ Write-Host "Deploying to $modulesRoot"
 
 # Remove the existing KeePassLib assembly if it exists
 Write-Host "Cleaning up old builds"
-if( Test-Path "KeePassLib.dll" ) {
-    Remove-Item "KeePassLib.dll" -Force
-    if( Test-Path "KeePassLib.dll" ) {
-        throw "Could not remove KeePassLib.dll"
+$oldBuild = Join-Path -Path $PSScriptRoot -ChildPath "KeePassLib.dll"
+if( Test-Path $oldBuild ) {
+    Remove-Item $oldBuild -Force
+    if( Test-Path $oldBuild ) {
+        throw "Could not remove previous build of KeePassLib.dll"
     }
 }
 
@@ -106,21 +110,42 @@ Write-Host "Compiling KeePassLib"
 
 # Verify the compiled assembly
 Write-Host "Verifying the compiled assembly"
-if( -not (Test-Path "KeePassLib.dll") ) {
+$assemblyPath = Join-Path -Path $PSScriptRoot -ChildPath "KeePassLib.dll"
+if( -not (Test-Path $assemblyPath) ) {
     throw "KeePassLib was not compiled successfully"
 }
-$assemblyPath = Join-Path -Path $PSScriptRoot -ChildPath "KeePassLib.dll"
 [System.Reflection.Assembly]::LoadFrom( $assemblyPath ) | Out-Null
 $database = New-Object -TypeName "KeePassLib.PwDatabase"
 if( -not $database ) {
     throw "There was an error loading KeePassLib, the PwDatabase object could not be instantiated"
 }
 
+# Check for an existing salt
+Write-Host "Checking for an existing salt"
+$saltFile = Join-Path -Path $PSScriptRoot -ChildPath "powerpass.salt"
+if( Test-Path $saltFile ) {
+    Write-Warning "Salt already exists for a deployment. If you proceed, your old salt will be erased and you may lose ALL your existing locker secrets."
+    $answer = Read-Host "Do you want to proceed? [N/y]"
+    if( ($answer = 'y') -or ($answer -eq 'Y') ) {
+        Remove-Item $saltFile -Force
+        if( Test-Path $saltFile ) {
+            throw "Could not remove old salt file"
+        }
+    } else {
+        throw "Installation cancelled by user"
+    }
+}
+
 # Generate a salt for the installation
-Write-Host "Generating a salt file"
-.\Generate-Salt.ps1
-$saltPath = Join-Path -Path $PSScriptRoot -ChildPath "powerpass.salt"
-if( -not (Test-Path $saltPath) ) {
+Write-Host "Generating a salt for this deployment"
+[System.Reflection.Assembly]::LoadWithPartialName("System.Security") | Out-Null
+$saltShaker = [System.Security.Cryptography.RandomNumberGenerator]::Create()
+$salt = [System.Byte[]]::CreateInstance( [System.Byte], 32 )
+$saltShaker.GetBytes( $salt )
+$encSalt = [System.Security.Cryptography.ProtectedData]::Protect($salt,$null,"LocalMachine")
+$saltText = [System.Convert]::ToBase64String($encSalt)
+Out-File -InputObject $saltText -FilePath $saltFile -Force
+if( -not (Test-Path $saltFile) ) {
     throw "Unable to generate a salt for the installation"
 }
 
