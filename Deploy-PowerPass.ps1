@@ -77,6 +77,22 @@ if( [String]::IsNullOrEmpty( $Path ) ) {
 }
 Write-Host "Deploying to $modulesRoot"
 
+# Check for an existing salt
+Write-Host "Checking for an existing salt"
+$saltFile = Join-Path -Path $PSScriptRoot -ChildPath "powerpass.salt"
+if( Test-Path $saltFile ) {
+    Write-Warning "Salt already exists for a deployment. If you proceed, your old salt will be erased and you may lose ALL your existing locker secrets."
+    $answer = Read-Host "Do you want to proceed? [N/y]"
+    if( ($answer -eq 'y') -or ($answer -eq 'Y') ) {
+        Remove-Item $saltFile -Force
+        if( Test-Path $saltFile ) {
+            throw "Could not remove old salt file"
+        }
+    } else {
+        throw "Installation cancelled by user"
+    }
+}
+
 # Remove the existing KeePassLib assembly if it exists
 Write-Host "Cleaning up old builds"
 $oldBuild = Join-Path -Path $PSScriptRoot -ChildPath "KeePassLib.dll"
@@ -118,22 +134,6 @@ if( -not (Test-Path $assemblyPath) ) {
 $database = New-Object -TypeName "KeePassLib.PwDatabase"
 if( -not $database ) {
     throw "There was an error loading KeePassLib, the PwDatabase object could not be instantiated"
-}
-
-# Check for an existing salt
-Write-Host "Checking for an existing salt"
-$saltFile = Join-Path -Path $PSScriptRoot -ChildPath "powerpass.salt"
-if( Test-Path $saltFile ) {
-    Write-Warning "Salt already exists for a deployment. If you proceed, your old salt will be erased and you may lose ALL your existing locker secrets."
-    $answer = Read-Host "Do you want to proceed? [N/y]"
-    if( ($answer = 'y') -or ($answer -eq 'Y') ) {
-        Remove-Item $saltFile -Force
-        if( Test-Path $saltFile ) {
-            throw "Could not remove old salt file"
-        }
-    } else {
-        throw "Installation cancelled by user"
-    }
 }
 
 # Generate a salt for the installation
