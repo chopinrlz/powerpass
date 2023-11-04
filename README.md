@@ -11,7 +11,7 @@ A PowerPass Locker is an encrypted file created by PowerPass to store and retrie
 ## Documentation
 For information about PowerPass and cmdlet reference please browse the [online documentation](https://chopinrlz.github.io/powerpass).
 # Prerequisites
-## Windows PowerShell 5,1
+## Windows PowerShell 5.1
 PowerPass is designed for use with Windows PowerShell 5.1, although there is a plan to upgrade PowerPass to work cross-platform in the near future.
 ## .NET Framework 4.8.1
 PowerPass is designed to work with the latest version of the .NET Framework 4.8.1.
