@@ -1,7 +1,13 @@
 /KeePassLib.dll
 /KeePassLib/obj/*
+/powerpass.salt
 /PowerPassTests/kpdb-keyuser.kdbx
 /PowerPassTests/kpdb-pwuser.kdbx
 /PowerPassTests/kpdb-pwkeyuser.kdbx
 /PowerPassTests/kpdb-user.kdbx
-/powerpass.salt
+/PowerPassTests/locker.salt
+/PowerPassTests/powerpass.locker
+/PowerPassTests/powerpass.salt
+/PowerPassTests/test.locker
+/PowerPassTests/testlocker.salt
+/PowerPassTests/testmodule.salt

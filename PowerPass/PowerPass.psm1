@@ -385,23 +385,38 @@ function Clear-PowerPassLocker {
         unique salt for this deployment which is used to encrypt your locker's salt. If you replace this salt by
         redeploying the module, you will no longer be able to access your locker and will need to start with a
         clean locker.
+        .PARAMETER Force
+        WARNING: If you specify Force, your locker and salt will be removed WITHOUT confirmation.
     #>
-    $answer = Read-Host "WARNING: You are about to DELETE your PowerPass locker. All your secrets and attachments will be erased. This CANNOT be undone. Do you want to proceed [N/y]?"
-    if( ($answer -eq "y") -or ($answer -eq "Y") ) {
-        $answer = Read-Host "CONFIRM: Please confirm again with Y or y to delete your PowerPass locker [N/y]"
-        if( ($answer -eq "y") -or ($answer -eq "Y") ) {
-            Write-Host "Deleting your PowerPass locker"
-            if( Test-Path ($script:PowerPass.LockerFilePath) ) {
-                Remove-Item -Path ($script:PowerPass.LockerFilePath) -Force
-            }
-            if( Test-Path ($script:PowerPass.LockerSaltPath) ) {
-                Remove-Item -Path ($script:PowerPass.LockerSaltPath) -Force
+    param(
+        [switch]
+        $Force
+    )
+    if( $Force ) {
+        if( Test-Path ($script:PowerPass.LockerFilePath) ) {
+            Remove-Item -Path ($script:PowerPass.LockerFilePath) -Force
+        }
+        if( Test-Path ($script:PowerPass.LockerSaltPath) ) {
+            Remove-Item -Path ($script:PowerPass.LockerSaltPath) -Force
+        }
+    } else {
+        $answer = Read-Host "WARNING: You are about to DELETE your PowerPass locker. All your secrets and attachments will be erased. This CANNOT be undone. Do you want to proceed [N/y]?"
+        if( Test-PowerPassAnswer $answer ) {
+            $answer = Read-Host "CONFIRM: Please confirm again with Y or y to delete your PowerPass locker [N/y]"
+            if( Test-PowerPassAnswer $answer ) {
+                Write-Host "Deleting your PowerPass locker"
+                if( Test-Path ($script:PowerPass.LockerFilePath) ) {
+                    Remove-Item -Path ($script:PowerPass.LockerFilePath) -Force
+                }
+                if( Test-Path ($script:PowerPass.LockerSaltPath) ) {
+                    Remove-Item -Path ($script:PowerPass.LockerSaltPath) -Force
+                }
+            } else {
+                Write-Host "Cancelled, locker not deleted"
             }
         } else {
             Write-Host "Cancelled, locker not deleted"
         }
-    } else {
-        Write-Host "Cancelled, locker not deleted"
     }
 }
 
@@ -790,5 +805,176 @@ function Initialize-PowerPassLocker {
     }
     if( -not (Test-Path $pathToLocker) ) {
         throw "Failed to initialize the user's locker"
+    }
+}
+
+# ------------------------------------------------------------------------------------------------------------- #
+# FUNCTION: Test-PowerPassAnswer
+# ------------------------------------------------------------------------------------------------------------- #
+
+function Test-PowerPassAnswer {
+    <#
+        .SYNOPSIS
+        Tests an answer prompt from the user for a yes.
+        .PARAMETER Answer
+        The text reply from the user on the console.
+        .INPUTS
+        This cmdlet takes a string for input.
+        .OUTPUTS
+        This cmdlet outputs $true only if the string equals 'y' or 'Y', otherwise $false.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory,ValueFromPipeline,Position=0)]
+        [string]
+        $Answer
+    )
+    if( $Answer ) {
+        if( ($Answer -eq 'y') -or ($Answer -eq 'Y') ) {
+            Write-Output $true
+        } else {
+            Write-Output $false
+        }
+    } else {
+        Write-Output $false
+    }
+}
+
+# ------------------------------------------------------------------------------------------------------------- #
+# FUNCTION: Export-PowerPassLocker
+# ------------------------------------------------------------------------------------------------------------- #
+
+function Export-PowerPassLocker {
+    <#
+        .SYNOPSIS
+        Exports your PowerPass Locker file, Locker salt file, and module salt file.
+        .PARAMETER Path
+        The path where the exported files will go. This is mandatory, and this path must exist.
+        .PARAMETER LockerFileName
+        An optional name for your Locker file.
+        .PARAMETER LockerSaltFileName
+        An optional name for your Locker salt file.
+        .PARAMETER ModuleSaltFileName
+        An optional name for your module salt file.
+        .OUTPUTS
+        This cmdlet does not output to the pipeline, it copies three files to the specified Path.
+        1. powerpass.salt
+        2. locker.salt
+        3. powerpass.locker
+        .DESCRIPTION
+        You can export a PowerPass locker including the locker file, locker salt and module salt.
+        Lockers only work on the same computer under the same user profile since they are encrypted
+        with the Data Protection API under the current user scope. This means you cannot import a
+        Locker exported from another machine or from a different user profile. You should export your
+        Locker before you install a new version of PowerPass, or to back up your Locker in case you
+        lose your AppData folder or you redeploy PowerPass.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory,ValueFromPipeline,Position=0)]
+        [string]
+        $Path,
+        [string]
+        $LockerFileName,
+        [string]
+        $LockerSaltFileName,
+        [string]
+        $ModuleSaltFileName
+    )
+    if( -not (Test-Path $Path) ) {
+        throw "$Path does not exist"
+    }
+    $locker = Get-PowerPassLocker
+    if( -not $locker ) {
+        throw "Unable to initialize your locker"
+    }
+    if( -not (Test-Path ($PowerPass.ModuleSaltFilePath)) ) {
+        throw "Illegal or undefined module salt file path"
+    }
+    if( -not (Test-Path ($PowerPass.LockerSaltPath)) ) {
+        throw "Illegal or undefined locker salt file path"
+    }
+    if( $ModuleSaltFileName ) {
+        $target = Join-Path -Path $Path -ChildPath $ModuleSaltFileName
+        Copy-Item -Path $PowerPass.ModuleSaltFilePath -Destination $target
+    } else {
+        Copy-Item -Path $PowerPass.ModuleSaltFilePath -Destination $Path
+    }
+    if( $LockerSaltFileName ) {
+        $target = Join-Path -Path $Path -ChildPath $LockerSaltFileName
+        Copy-Item -Path $PowerPass.LockerSaltPath -Destination $target
+    } else {
+        Copy-Item -Path $PowerPass.LockerSaltPath -Destination $Path
+    }
+    if( $LockerFileName ) {
+        $target = Join-Path -Path $Path -ChildPath $LockerFileName
+        Copy-Item -Path $PowerPass.LockerFilePath -Destination $target
+    } else {
+        Copy-Item -Path $PowerPass.LockerFilePath -Destination $Path
+    }
+}
+
+# ------------------------------------------------------------------------------------------------------------- #
+# FUNCTION: Import-PowerPassLocker
+# ------------------------------------------------------------------------------------------------------------- #
+
+function Import-PowerPassLocker {
+    <#
+        .SYNOPSIS
+        Imports a PowerPass locker with salt files from a previous export.
+        .PARAMETER LockerFilePath
+        The path to the locker file on disk. This is mandatory.
+        .PARAMETER LockerSaltPath
+        The path fo the locker salt file on disk. This is mandatory.
+        .PARAMETER ModuleSaltPath
+        The optional path to the module salt, if you also want to restore your module salt.
+        .DESCRIPTION
+        You can import a PowerPass locker including the locker salt and module salt from an exported
+        copy. Lockers will only work on the same computer under the same user profile since they are
+        encrypted with the Data Protection API under the current user scope. This means you cannot
+        import a Locker from one machine to another or from one user to another. The most useful
+        scenario for importing your Locker back into PowerPass is if you deploy a new version
+        and want to restore your Locker secrets, or you accidentally lose your Locker secrets for
+        example of they are removed up from your AppData folder or the PowerPass module is removed
+        from your computer.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [string]
+        $LockerFilePath,
+        [Parameter(Mandatory)]
+        [string]
+        $LockerSaltPath,
+        [string]
+        $ModuleSaltPath
+    )
+    if( -not (Test-Path $LockerFilePath) ) {
+        throw "Locker file path does not exist"
+    }
+    if( -not (Test-Path $LockerSaltPath) ) {
+        throw "Locker salt file path does not exist"
+    }
+    if( $ModuleSaltPath ) {    
+        if( -not (Test-Path $ModuleSaltPath) ) {
+            throw "Module salt file path does not exist"
+        }
+    }
+    Write-Warning "You are about to OVERWRITE your existing locker. This will REPLACE ALL existing locker secrets."
+    $answer = Read-Host "Do you you want to continue? [N/y]"
+    if( Test-PowerPassAnswer $answer ) {
+        Copy-Item -Path $LockerFilePath -Destination ($PowerPass.LockerFilePath) -Force
+        Copy-Item -Path $LockerSaltPath -Destination ($PowerPass.LockerSaltPath) -Force
+    } else {
+        throw "Import cancelled by user"
+    }
+    if( $ModuleSaltPath ) {
+        Write-Warning "You are about to OVERWRITE your PowerPass module salt. This will INVALIDATE ALL existing locker secrets."
+        $answer = Read-Host "Do you you want to continue? [N/y]"
+        if( Test-PowerPassAnswer $answer ) {
+            Copy-Item -Path $ModuleSaltPath -Destination ($PowerPass.ModuleSaltFilePath) -Force
+        } else {
+            throw "Import cancelled by user"
+        }
     }
 }

@@ -172,11 +172,8 @@ $actualResults = Get-PowerPassSecret -Database $localDb -Match "Test*" | Sort-Ob
 Assert-SecretCollection -Collection $actualResults -Titles $expectedResults
 
 # Clear the Locker to Unit Test the Locker
-Write-Host "Creating a new Locker"
-Clear-PowerPassLocker
-
-# Read the Default Secret from a New Locker
 Write-Host "Testing the Default Secret in a new Locker: " -NoNewline
+Clear-PowerPassLocker -Force
 $default = Read-PowerPassSecret
 if( $default.Title -eq "Default" ) {
     Write-Host "Assert passed"
@@ -185,14 +182,98 @@ if( $default.Title -eq "Default" ) {
 }
 
 # Write a New Secret into the Locker
-Write-Host "Testing Write function to Locker"
+Write-Host "Testing Write function to Locker: " -NoNewline
 Write-PowerPassSecret -Title "Unit Testing" -UserName "unit test user" -Password "unit test password" -URL "https://github.com/chopinrlz/powerpass" -Notes "Unit testing." -Expires (Get-Date)
-
-# Read out the new Secret
-Write-Host "Testing reading the new Secret: " -NoNewline
 $unitTesting = Read-PowerPassSecret -Match "Unit Testing"
 if( $unitTesting.Title -eq "Unit Testing" ) {
     Write-Host "Assert passed"
 } else {
     Write-Warning "Assert failed"
+}
+
+# Test the export functionality with default file names
+Write-Host "Testing locker export with default file names: " -NoNewline
+Export-PowerPassLocker -Path $PSScriptRoot
+if( Test-Path "$PSScriptRoot\locker.salt" ) {
+    if( Test-Path "$PSScriptRoot\powerpass.locker" ) {
+        if( Test-Path "$PSScriptRoot\powerpass.salt" ) {
+            Write-Host "Assert passed"
+        } else {
+            Write-Warning "Assert failed"
+        }
+    } else {
+        Write-Warning "Assert failed"
+    }
+} else {
+    Write-Warning "Assert failed"
+}
+
+# Test the export functionality with custom file names
+Write-Host "Testing locker export with custom file names: " -NoNewline
+Export-PowerPassLocker -Path $PSScriptRoot -LockerFileName "test.locker" -LockerSaltFileName "testlocker.salt" -ModuleSaltFileName "testmodule.salt"
+if( Test-Path "$PSScriptRoot\test.locker" ) {
+    if( Test-Path "$PSScriptRoot\testlocker.salt" ) {
+        if( Test-Path "$PSScriptRoot\testmodule.salt" ) {
+            Write-Host "Assert passed"
+        } else {
+            Write-Warning "Assert failed"
+        }
+    } else {
+        Write-Warning "Assert failed"
+    }
+} else {
+    Write-Warning "Assert failed"
+}
+
+# Test the clear functionality, interactively
+Write-Host "Testing locker clear (interactive, no force)"
+Clear-PowerPassLocker
+$unitTesting = Read-PowerPassSecret -Match "Unit Testing"
+$default = Read-PowerPassSecret -Match "Default"
+if( $unitTesting ) {
+    Write-Warning "Assert failed"
+} else {
+    if( $default.Title -eq "Default" ) {
+        Write-Host "Assert passed"
+    } else {
+        Write-Warning "Assert failed"
+    }
+}
+
+# Test the clear functionality, with force
+Write-Host "Testing locker clear (force): " -NoNewline
+Clear-PowerPassLocker -Force
+$default = Read-PowerPassSecret
+if( $default.Title -eq "Default" ) {
+    Write-Host "Assert passed"
+} else {
+    Write-Warning "Assert failed"
+}
+
+# Test the import functionality without the module salt
+Write-Host "Testing locker import (no module salt)"
+Clear-PowerPassLocker -Force
+Import-PowerPassLocker -LockerFilePath "$PSScriptRoot\powerpass.locker" -LockerSaltPath "$PSScriptRoot\locker.salt"
+$unitTesting = Read-PowerPassSecret -Match "Unit Testing"
+if( $unitTesting.Title -eq "Unit Testing" ) {
+    Write-Host "Assert passed"
+} else {
+    Write-Warning "Assert failed"
+}
+
+# Test the import functionality with the module salt
+Write-Host "Testing locker export (with module salt)"
+Clear-PowerPassLocker -Force
+Import-PowerPassLocker -LockerFilePath "$PSScriptRoot\powerpass.locker" -LockerSaltPath "$PSScriptRoot\locker.salt" -ModuleSaltPath "$PSScriptRoot\powerpass.salt"
+$unitTesting = Read-PowerPassSecret -Match "Unit Testing"
+if( $unitTesting.Title -eq "Unit Testing" ) {
+    Write-Host "Assert passed"
+} else {
+    Write-Warning "Assert failed"
+}
+
+# Clean up
+Write-Host "Cleaning up test files"
+"locker.salt","powerpass.locker","powerpass.salt","test.locker","testlocker.salt","testmodule.salt" | ForEach-Object {
+    Remove-Item -Path "$PSScriptRoot\$_" -Force
 }
