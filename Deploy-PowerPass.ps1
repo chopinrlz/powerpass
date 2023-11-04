@@ -104,44 +104,52 @@ if( Test-Path $saltFile ) {
     }
 }
 
-# Remove the existing KeePassLib assembly if it exists
-Write-Host "Cleaning up old builds"
-$oldBuild = Join-Path -Path $PSScriptRoot -ChildPath "KeePassLib.dll"
-if( Test-Path $oldBuild ) {
-    Remove-Item $oldBuild -Force
-    if( Test-Path $oldBuild ) {
-        throw "Could not remove previous build of KeePassLib.dll"
+# Check for KeePassLib
+Write-Host "Checking for KeePassLib"
+$keePassLib = Join-Path -Path $PSScriptRoot -ChildPath "KeePassLib.dll"
+if( Test-Path $keePassLib ) {
+    $answer = Read-Host "We have detected KeePassLib bundled with this deployment. Would you like to use it? [Y/n]"
+    if( ($answer -eq 'n') -or ($answer -eq 'N') ) {
+        Write-Host "Removing current build and compiling KeePassLib from source"
+        Remove-Item $keePassLib -Force
+        if( Test-Path $keePassLib ) {
+            throw "Could not remove previous build of KeePassLib.dll"
+        }
+    } else {
+        Write-Host "Deploying PowerPass with bundled KeePassLib"
     }
 }
 
-# Get the location of the C# compiler for this runtime
-Write-Host "Locating the C# compiler"
-$cscDir = [System.Runtime.InteropServices.RuntimeEnvironment]::GetRuntimeDirectory()
-$cscPath = Join-Path -Path $cscDir -ChildPath "csc.exe"
-if( -not (Test-Path $cscPath) ) {
-    throw "No C# compiler could be found in the current runtime directory"
-}
+# Build KeePassLib
+if( -not (Test-Path $keePassLib) ) {
+    # Get the location of the C# compiler for this runtime
+    Write-Host "Locating the C# compiler"
+    $cscDir = [System.Runtime.InteropServices.RuntimeEnvironment]::GetRuntimeDirectory()
+    $cscPath = Join-Path -Path $cscDir -ChildPath "csc.exe"
+    if( -not (Test-Path $cscPath) ) {
+        throw "No C# compiler could be found in the current runtime directory"
+    }
 
-# Build the compiler arguments for KeePassLib
-Write-Host "Building the compiler arguments for KeePassLib"
-$compilerArgs = @()
-$compilerArgs += '/target:library'
-$compilerArgs += '/out:KeePassLib.dll'
-Get-ChildItem -Path '.\KeePassLib' -Recurse -Filter "*.cs" | ForEach-Object {
-    $compilerArgs += ($_.FullName)
-}
+    # Build the compiler arguments for KeePassLib
+    Write-Host "Building the compiler arguments for KeePassLib"
+    $compilerArgs = @()
+    $compilerArgs += '/target:library'
+    $compilerArgs += '/out:KeePassLib.dll'
+    Get-ChildItem -Path '.\KeePassLib' -Recurse -Filter "*.cs" | ForEach-Object {
+        $compilerArgs += ($_.FullName)
+    }
 
-# Compile KeePassLib
-Write-Host "Compiling KeePassLib"
-& $cscPath $compilerArgs | Out-Null
+    # Compile KeePassLib
+    Write-Host "Compiling KeePassLib"
+    & $cscPath $compilerArgs | Out-Null
+}
 
 # Verify the compiled assembly
 Write-Host "Verifying the compiled assembly"
-$assemblyPath = Join-Path -Path $PSScriptRoot -ChildPath "KeePassLib.dll"
-if( -not (Test-Path $assemblyPath) ) {
+if( -not (Test-Path $keePassLib) ) {
     throw "KeePassLib was not compiled successfully"
 }
-[System.Reflection.Assembly]::LoadFrom( $assemblyPath ) | Out-Null
+[System.Reflection.Assembly]::LoadFrom( $keePassLib ) | Out-Null
 $database = New-Object -TypeName "KeePassLib.PwDatabase"
 if( -not $database ) {
     throw "There was an error loading KeePassLib, the PwDatabase object could not be instantiated"
