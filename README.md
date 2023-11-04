@@ -42,7 +42,9 @@ Running `Read-PowerPassSecret` will initialize your PowerPass Locker with a defa
 ## KeePass Databases
 To open a KeePass database use the `Open-PowerPassDatabase` cmdlet. Pipe or pass the output to `Get-PowerPassSecret` to fetch secrets from the KeePass database.
 ## PowerPass Locker
-To read a secret from your PowerPass Locker use the `Read-PowerPassSecret` cmdlet. To write a secret into your PowerPass Locker use the `Write-PowerPassSecret` cmdlet. **NOTE: If you are opening KeePass databases with passwords, you can store these passwords in your PowerPass Locker to keep them secure.**
+To read a secret from your PowerPass Locker use the `Read-PowerPassSecret` cmdlet. To write a secret into your PowerPass Locker use the `Write-PowerPassSecret` cmdlet.
+## Storing KeePass Database Passwords
+If you are opening KeePass databases which use master passwords, you can store these passwords in your PowerPass Locker to keep them secure.
 # Additional Information
 ## About KeePassLib
 PowerPass comes bundled with the KeePassLib 2.55 source code which is copyright 2003-2023 Dominik Reichl <dominik.reichl@t-online.de> and is licensed under the GNU Public License 2.0. A copy of this license is included in the LICENSE file in this repository. KeePassLib has not been modified from its release version. You can use PowerPass with KeePassLib 2.55 or with your own version of KeePassLib.

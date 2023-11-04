@@ -16,7 +16,7 @@ Using the `Clear-PowerPassLocker` cmdlet you can clear all your Locker secrets. 
 
 ## Deployment
 To install:
-1. Download the source code for this release
+1. Clone the repo, download and upzip the release build, or download the source code for this release
 2. Run `Deploy-PowerPass.ps1` in Windows PowerShell
 
 You must now use the `Deploy-PowerPass.ps1` script to deploy PowerPass. For details on deployment please refer to the `README` on the homepage of this repository [here](https://github.com/chopinrlz/powerpass).
