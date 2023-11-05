@@ -706,7 +706,14 @@ function Initialize-PowerPassLockerSalt {
         .NOTES
         This cmdlet will break execution with a throw if either the PowerPass module is missing its module salt
         or if the locker salt file could not be written to the user data directory.
+        .PARAMETER NoThrowOnOutFail
+        Used internally, when specified will skip the final throw if Out-File fails to write the locker salt
+        file to disk.
     #>
+    param(
+        [switch]
+        $NoThrowOnOutFail
+    )
     $moduleSalt = Get-PowerPassSalt
     if( -not $moduleSalt ) {
         throw "Your PowerPass installation does not have a module salt file"
@@ -722,7 +729,11 @@ function Initialize-PowerPassLockerSalt {
         Out-File -InputObject $encLockerSaltText -FilePath $pathToLockerSalt -Force
     }
     if( -not (Test-Path $pathToLockerSalt) ) {
-        throw "Cannot write to user data path to initialize salt file"
+        if( $NoThrowOnOutFail ) {
+            # Do not throw or block forward execution
+        } else {
+            throw "Cannot write to user data path to initialize salt file"
+        }
     }
 }
 
@@ -977,4 +988,49 @@ function Import-PowerPassLocker {
             throw "Import cancelled by user"
         }
     }
+}
+
+# ------------------------------------------------------------------------------------------------------------- #
+# FUNCTION: Update-PowerPassSalt
+# ------------------------------------------------------------------------------------------------------------- #
+
+function Update-PowerPassSalt {
+    <#
+        .SYNOPSIS
+        Rotates the Locker salt to a new random key.
+        .DESCRIPTION
+        As a reoutine precaution, key rotation is recommended as a best practice when dealing with sensitive,
+        encrypted data. When you rotate a key, PowerPass reencrypts your PowerPass Locker with a new Locker
+        salt. This ensures that even if a previous encryption was broken, a new attempt must be made if an
+        attacker regains access to your encrypted Locker.
+    #>
+    $moduleSalt = Get-PowerPassSalt
+    if( -not $moduleSalt ) {
+        throw "Unable to fetch the module salt"
+    }
+    $locker = Get-PowerPassLocker
+    if( -not $locker ) {
+        throw "Unable to fetch your PowerPass Locker"
+    }
+    $backupSalt = Get-PowerPassLockerSalt
+    if( -not $backupSalt ) {
+        throw "Unable to fetch backup of Locker salt"
+    }
+    Remove-Item -Path $script:PowerPass.LockerSaltPath -Force
+    if( Test-Path $script:PowerPass.LockerSaltPath ) {
+        throw "Could not delete Locker salt file"
+    }
+    Initialize-PowerPassLockerSalt -NoThrowOnOutFail
+    $lockerSalt = Get-PowerPassLockerSalt
+    if( -not $lockerSalt ) {
+        $lockerSalt = $backupSalt
+        $encLockerSalt = [System.Security.Cryptography.ProtectedData]::Protect($lockerSalt,$moduleSalt,"CurrentUser")
+        $encLockerSaltText = [System.Convert]::ToBase64String($encLockerSalt)
+        Out-File -InputObject $encLockerSaltText -FilePath ($script:PowerPass.LockerSaltPath) -Force
+    }
+    $json = $locker | ConvertTo-Json
+    $data = [System.Text.Encoding]::UTF8.GetBytes($json)
+    $encData = [System.Security.Cryptography.ProtectedData]::Protect($data,$lockerSalt,"CurrentUser")
+    $encDataText = [System.Convert]::ToBase64String($encData)
+    Out-File -FilePath ($script:PowerPass.LockerFilePath) -InputObject $encDataText -Force
 }
