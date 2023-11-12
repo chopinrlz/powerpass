@@ -8,7 +8,12 @@ PowerPass supports secrets from two sources:
 KeePass, a .NET Framework application built by Dominik Reichl <dominik.reichl@t-online.de>, is a popular application used for storing and retrieving secrets (like login credentials) from encrypted databases that the KeePass application itself creates. PowerPass builds on top of the core KeePass library to provide programmatic access to KeePass database secrets through the use of Windows PowerShell.
 ### PowerPass Lockers
 A PowerPass Locker is an encrypted file created by PowerPass to store and retrieve secrets which can only be accessed by your user account. After you deploy PowerPass, you can immediately write and read secrets into your Locker, which is stored in your user profile's Application Data directory. PowerPass Lockers rely on the encryption implementation found in the Windows Data Protection API. To increase the difficulty of attackers brute-force decrypting your Locker, the Locker is salted with a random key which is in turn salted by the PowerPass random key generated at deployment time. The salt for your Locker is encrypted using your Windows user account. The salt for the PowerPass deployment is encrypted using the machine key.
-## Documentation
+# --- ANNOUNCEMENT --- Upcoming AES Support
+As of November 12, 2023, 256-bit AES support for cross-platform PowerPass Lockers on MacOS, Linux, and Windows is under development.
+A proof of concept implementation can be found in the `/PowerPass/AesCrypto.cs` C# source code file.
+This code compiles from source and runs under PowerShell 7.
+You can test this implementation using the `/PowerPassTests/Test-AesCrypto.ps1` script.
+# Documentation
 For information about PowerPass and cmdlet reference please browse the [online documentation](https://chopinrlz.github.io/powerpass).
 # Prerequisites
 ## Windows PowerShell 5.1

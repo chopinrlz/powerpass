@@ -11,3 +11,7 @@
 /PowerPassTests/test.locker
 /PowerPassTests/testlocker.salt
 /PowerPassTests/testmodule.salt
+/PowerPassTests/aes.key
+/PowerPassTests/checkdata.txt
+/PowerPassTests/data.aes
+/powerpass.sln
