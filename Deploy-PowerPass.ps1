@@ -80,7 +80,7 @@ Write-Host "Deploying to $modulesRoot"
 # Check for modules root in the path
 Write-Host "Checking PSModulePath for deployment folder"
 if( -not ($env:PSModulePath -like "*$modulesRoot*") ) {
-    Write-Warning "The deployment folder is not in the PSModulePath. If you are using OneDrive Backup for your documents, you will need to add this directory to your PSModulePath or move PoewrPass after deployment."
+    Write-Warning "The deployment folder is not in the PSModulePath. If you are using OneDrive Backup for your documents, you will need to add this directory to your PSModulePath or move PowerPass after deployment."
     Write-Host "For more information, please see https://chopinrlz.github.io/powerpass/onedrivebackup"
     $answer = Read-Host "Do you want to proceed? [N/y]"
     if( $answer -ne 'y' ) {
