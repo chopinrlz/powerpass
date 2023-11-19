@@ -585,3 +585,28 @@ function Update-PowerPassKey {
     $aes.Encrypt( $data, $script:PowerPass.LockerFilePath )
     $aes.Dispose()
 }
+
+# ------------------------------------------------------------------------------------------------------------- #
+# FUNCTION: New-PowerPassRandomPassword
+# ------------------------------------------------------------------------------------------------------------- #
+
+function New-PowerPassRandomPassword {
+    <#
+        .SYNOPSIS
+        Generates a random password from all available standard US 101-key keyboard characters.
+        .PARAMETER Length
+        The length of the password to generate. Can be between 1 and 65536 characters long. Defaults to 24.
+        .OUTPUTS
+        Outputs a random string of typable characters to the pipeline which can be used as a password.
+    #>
+    [CmdletBinding()]
+    param(
+        [ValidateRange(1,65536)]
+        [int]
+        $Length = 24
+    )
+    $bytes = [System.Byte[]]::CreateInstance( [System.Byte], $Length )
+    [System.Security.Cryptography.RandomNumberGenerator]::Create().GetBytes( $bytes )
+    $bytes = $bytes | % { ( $_ % ( 126 - 33 ) ) + 33 }
+    [System.Text.Encoding]::ASCII.GetString( $bytes )
+}
