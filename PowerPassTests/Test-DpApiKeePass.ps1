@@ -5,12 +5,20 @@
     You may copy, modify or distribute this software under the terms of the GNU Public License 2.0.
 #>
 
+# Make sure we're in the right run-time
+if( $PSVersionTable.PSVersion.Major -ne 5 ) {
+    throw "This test script is for the DP API implementation in Windows PowerShell 5"
+}
+
 # First test is loading the PowerPass module
 Write-Host "Testing module import"
 Import-Module PowerPass
 $module = Get-Module | ? Name -eq "PowerPass"
 if( -not $module ) {
     throw "Failed to load PowerPass module, did you deploy it?"
+}
+if( $PowerPass.Implementation -ne "DPAPI" ) {
+    throw "This test is for the DPAPI implementation of PowerPass, you have the $($PowerPass.Implementation) implementation installed"
 }
 
 # ------------------------------------------------------------------------------------------------------------- #

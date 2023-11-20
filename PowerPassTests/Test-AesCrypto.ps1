@@ -1,10 +1,14 @@
+Write-Host "This script tests the AesCrypto.cs implementation"
+Write-Host "These tests should pass in both Windows PowerShell and PowerShell 7 on all operating systems"
+
+Write-Host "Loading the type from source"
 $code = Get-Content "$PSScriptRoot\..\PowerPass\AesCrypto.cs" -Raw
 Add-Type -TypeDefinition $code -ReferencedAssemblies "System.Security.Cryptography"
 
-# Setup constants
+Write-Host "Setting up constants for testing"
 $keyFile = "$PSScriptRoot\aes.key"
 $encryptedFile = "$PSScriptRoot\data.aes"
-$data = "Hello, world!"
+$data = [System.Guid]::NewGuid().ToString()
 $dataBytes = [System.Text.Encoding]::UTF8.GetBytes($data)
 
 Write-Host "Testing key generation"

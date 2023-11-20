@@ -32,6 +32,7 @@ $PowerPass = [PSCustomObject]@{
     LockerFolderPath   = Join-Path -Path $UserDataPath -ChildPath "$UserDataFolderName"
     LockerFilePath     = Join-Path -Path $UserDataPath -ChildPath "$UserDataFolderName/$LockerFileName"
     LockerSaltPath     = Join-Path -Path $UserDataPath -ChildPath "$UserDataFolderName/$LockerSaltFileName"
+    Implementation     = "DPAPI"
 }
 
 # Load the KeePassLib assembly from the module folder

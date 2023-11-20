@@ -180,9 +180,11 @@ namespace PowerPass {
         /// <exception cref="InvalidOperationException">The file specified by filename does not exist or is not
         /// exactly 32 bytes.</exception>
         public void ReadKeyFromDisk( string filename ) {
+            // Assert preconditions
             if( string.IsNullOrEmpty( filename ) ) throw new ArgumentNullException( "filename" );
             if( !File.Exists( filename ) ) throw new InvalidOperationException();
 
+            // Read the key file into memory
             using( var fs = new FileStream( filename, FileMode.Open ) ) {
                 if( fs.Length < 32 ) throw new InvalidOperationException();
                 int total = 32;
@@ -207,8 +209,13 @@ namespace PowerPass {
         /// If the file already exists on disk, it will be deleted first.
         /// </remarks>
         public void WriteKeyToDisk( string filename ) {
+            // Assert preconditions
             if( string.IsNullOrEmpty( filename ) ) throw new ArgumentNullException( "filename" );
+
+            // Generate a key if there isn't one already
             if( _key == null ) GenerateKey();
+
+            // Write the key file to disk, deleting an existing one
             if( File.Exists( filename ) ) File.Delete( filename );
             using( var fs = new FileStream( filename, FileMode.Create ) ) {
                 fs.Write( _key, 0, _key.Length );
