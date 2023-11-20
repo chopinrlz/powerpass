@@ -1,21 +1,25 @@
 # PowerPass
-A PowerShell module for secret storage and retrieval.
-## About PowerPass
-PowerPass supports secrets from two sources:
+A cross-platform PowerShell module for secret storage and retrieval on Linux, MacOS, and Windows. PowerPass supports Windows PowerShell 5 and PowerShell 7.
+# About PowerPass
+PowerPass supports two encryption standards:
+1. 256-bit AES Encryption
+2. Windows Data Protection API (Windows PowerShell only)
+# Secret Storage
+## PowerShell 7
+PowerPass on Linux, MacOS, or Windows in PowerShell 7 can read and write secrets from PowerPass Lockers. A Locker is a 256-bit AES encrypted file which stores your secrets and metadata in JSON format.
+## Windows PowerShell 5
+PowerPass on Windows PowerShell supports secrets from these two sources:
 1. KeePass 2 databases
 2. PowerPass lockers
-### KeePass 2
+## KeePass 2
 KeePass, a .NET Framework application built by Dominik Reichl <dominik.reichl@t-online.de>, is a popular application used for storing and retrieving secrets (like login credentials) from encrypted databases that the KeePass application itself creates. PowerPass builds on top of the core KeePass library to provide programmatic access to KeePass database secrets through the use of Windows PowerShell.
-### PowerPass Lockers
-A PowerPass Locker is an encrypted file created by PowerPass to store and retrieve secrets which can only be accessed by your user account. After you deploy PowerPass, you can immediately write and read secrets into your Locker, which is stored in your user profile's Application Data directory. PowerPass Lockers rely on the encryption implementation found in the Windows Data Protection API. To increase the difficulty of attackers brute-force decrypting your Locker, the Locker is salted with a random key which is in turn salted by the PowerPass random key generated at deployment time. The salt for your Locker is encrypted using your Windows user account. The salt for the PowerPass deployment is encrypted using the machine key.
-# --- ANNOUNCEMENT --- Upcoming AES Support
-As of November 12, 2023, 256-bit AES support for cross-platform PowerPass Lockers on MacOS, Linux, and Windows is under development.
-A proof of concept implementation can be found in the `/PowerPass/AesCrypto.cs` C# source code file.
-This code compiles from source and runs under PowerShell 7.
-You can test this implementation using the `/PowerPassTests/Test-AesCrypto.ps1` script.
+## PowerPass Lockers
+A PowerPass Locker is an encrypted file created by PowerPass to store and retrieve secrets which can only be accessed by your user account. After you deploy PowerPass, you can immediately write and read secrets into your Locker, which is stored in your home directory on Linux and MacOS or in your user profile's Application Data directory on Windows. PowerPass Lockers rely on the encryption implementation found in the Windows Data Protection API. To increase the difficulty of attackers brute-force decrypting your Locker, the Locker is salted with a random key which is in turn salted by the PowerPass random key generated at deployment time. The salt for your Locker is encrypted using your Windows user account. The salt for the PowerPass deployment is encrypted using the machine key.
 # Documentation
 For information about PowerPass and cmdlet reference please browse the [online documentation](https://chopinrlz.github.io/powerpass).
 # Prerequisites
+## AES
+If you use PowerShell 7 there are no additional prerequisites.
 ## Windows PowerShell 5.1
 PowerPass is designed for use with Windows PowerShell 5.1, although there is a plan to upgrade PowerPass to work cross-platform in the near future.
 ## .NET Framework 4.8.1
