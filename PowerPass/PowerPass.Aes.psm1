@@ -25,7 +25,11 @@ $PowerPass = [PSCustomObject]@{
 }
 
 # Compile and load the AesCrypto implementation
-Add-Type -Path $PowerPass.AesCryptoSourcePath -ReferencedAssemblies "System.Security.Cryptography"
+if( $PSVersionTable.PSVersion.Major -eq 5 ) {
+    Add-Type -Path $PowerPass.AesCryptoSourcePath -ReferencedAssemblies "System.Security"
+} else {
+    Add-Type -Path $PowerPass.AesCryptoSourcePath -ReferencedAssemblies "System.Security.Cryptography"
+}
 
 # ------------------------------------------------------------------------------------------------------------- #
 # FUNCTION: Clear-PowerPassLocker
@@ -457,6 +461,8 @@ function Import-PowerPassLocker {
         The path to the locker file on disk to import.
         .PARAMETER LockerKeyFilePath
         The path to the locker's AES encryption key to import.
+        .PARAMETER Force
+        Import the locker files without prompting for confirmation.
         .DESCRIPTION
         You can specify one, or the other, or both parameters to import the locker, the encryption key
         or both together.
@@ -466,24 +472,34 @@ function Import-PowerPassLocker {
         [string]
         $LockerFilePath,
         [string]
-        $LockerKeyFilePath
+        $LockerKeyFilePath,
+        [switch]
+        $Force
     )
     if( $LockerFilePath ) {
-        Write-Warning "You are about to OVERWRITE your existing locker. This will REPLACE ALL existing locker secrets."
-        $answer = Read-Host "Do you you want to continue? [N/y]"
-        if( Test-PowerPassAnswer $answer ) {
+        if( $Force ) {
             Copy-Item -Path $LockerFilePath -Destination ($PowerPass.LockerFilePath) -Force
         } else {
-            throw "Import cancelled by user"
+            Write-Warning "You are about to OVERWRITE your existing locker. This will REPLACE ALL existing locker secrets."
+            $answer = Read-Host "Do you you want to continue? [N/y]"
+            if( Test-PowerPassAnswer $answer ) {
+                Copy-Item -Path $LockerFilePath -Destination ($PowerPass.LockerFilePath) -Force
+            } else {
+                throw "Import cancelled by user"
+            }
         }
     }
     if( $LockerKeyFilePath ) {
-        Write-Warning "You are about to OVERWRITE your locker's encryption key."
-        $answer = Read-Host "Do you you want to continue? [N/y]"
-        if( Test-PowerPassAnswer $answer ) {
+        if( $Force ) {
             Copy-Item -Path $LockerKeyFilePath -Destination ($PowerPass.LockerKeyFilePath) -Force
         } else {
-            throw "Import cancelled by user"
+            Write-Warning "You are about to OVERWRITE your locker's encryption key."
+            $answer = Read-Host "Do you you want to continue? [N/y]"
+            if( Test-PowerPassAnswer $answer ) {
+                Copy-Item -Path $LockerKeyFilePath -Destination ($PowerPass.LockerKeyFilePath) -Force
+            } else {
+                throw "Import cancelled by user"
+            }
         }
     }
 }
@@ -542,4 +558,17 @@ function New-PowerPassRandomPassword {
     [System.Security.Cryptography.RandomNumberGenerator]::Create().GetBytes( $bytes )
     $bytes = $bytes | % { ( $_ % ( 126 - 33 ) ) + 33 }
     [System.Text.Encoding]::ASCII.GetString( $bytes )
+}
+
+
+# ------------------------------------------------------------------------------------------------------------- #
+# FUNCTION: Get-PowerPass
+# ------------------------------------------------------------------------------------------------------------- #
+
+function Get-PowerPass {
+    <#
+        .SYNOPSIS
+        Gets all the information about this PowerPass deployment.
+    #>
+    $PowerPass
 }

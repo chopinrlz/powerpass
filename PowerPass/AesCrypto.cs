@@ -18,7 +18,9 @@ namespace PowerPass {
         /// <summary>
         /// Constructs a new, empty AesCrypto instance.
         /// </summary>
-        public AesCrypto() { }
+        public AesCrypto() {
+            DecryptionBufferSize = 65536;
+        }
 
         /// <summary>
         /// Implements the destructor which zeroes the key bytes from memory.
@@ -51,7 +53,7 @@ namespace PowerPass {
         /// decryption process, but prevents temporary memory from containing parts of
         /// the decrypted data after the process is complete.
         /// </remarks>
-        public int DecryptionBufferSize { get; set; } = 65536;
+        public int DecryptionBufferSize { get; set; }
 
         /// <summary>
         /// Creates a new 256-bit encryption key using a cryptographic random number generator.

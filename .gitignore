@@ -14,4 +14,6 @@
 /PowerPassTests/aes.key
 /PowerPassTests/checkdata.txt
 /PowerPassTests/data.aes
+/PowerPassTests/.locker_key
+/PowerPassTests/.powerpass_locker
 /powerpass.sln
