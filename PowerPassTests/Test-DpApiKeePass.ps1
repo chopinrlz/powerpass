@@ -17,8 +17,8 @@ $module = Get-Module | ? Name -eq "PowerPass"
 if( -not $module ) {
     throw "Failed to load PowerPass module, did you deploy it?"
 }
-if( $PowerPass.Implementation -ne "DPAPI" ) {
-    throw "This test is for the DPAPI implementation of PowerPass, you have the $($PowerPass.Implementation) implementation installed"
+if( (Get-PowerPass).Implementation -ne "DPAPI" ) {
+    throw "This test is for the DPAPI implementation of PowerPass, you have the $((Get-PowerPass).Implementation) implementation installed"
 }
 
 # ------------------------------------------------------------------------------------------------------------- #

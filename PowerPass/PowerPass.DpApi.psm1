@@ -1060,3 +1060,15 @@ function New-PowerPassRandomPassword {
     $bytes = $bytes | % { ( $_ % ( 126 - 33 ) ) + 33 }
     [System.Text.Encoding]::ASCII.GetString( $bytes )
 }
+
+# ------------------------------------------------------------------------------------------------------------- #
+# FUNCTION: Get-PowerPass
+# ------------------------------------------------------------------------------------------------------------- #
+
+function Get-PowerPass {
+    <#
+        .SYNOPSIS
+        Gets all the information about this PowerPass deployment.
+    #>
+    $PowerPass
+}
