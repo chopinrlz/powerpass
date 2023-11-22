@@ -592,7 +592,10 @@ function Read-PowerPassSecret {
         An optional filter. If specified, only secrets whose Title matches this filter are output to the pipeline.
         .PARAMETER PlainTextPasswords
         An optional switch which instructs PowerPass to output the passwords in plain-text. By default, all
-        passwords are output as SecureString objects.
+        passwords are output as SecureString objects. You cannot combine this with AsCredential.
+        .PARAMETER AsCredential
+        An optional switch which instructs PowerPass to output the secrets as a PSCredential object. You cannot
+        combine this with PlainTextPasswords.
         .INPUTS
         This cmdlet takes no input.
         .OUTPUTS
@@ -616,23 +619,34 @@ function Read-PowerPassSecret {
         [string]
         $Match,
         [switch]
-        $PlainTextPasswords
+        $PlainTextPasswords,
+        [switch]
+        $AsCredential
     )
     $locker = Get-PowerPassLocker
     if( -not $locker ) {
         throw "Could not create or fetch your locker"
     } else {
         if( $Match ) {
+            $secrets = $locker.Secrets | Where-Object { $_.Title -like $Match }
             if( $PlainTextPasswords ) {
-                $locker.Secrets | Where-Object { $_.Title -like $Match } | Write-Output
+                Write-Output $secrets
             } else {
-                $locker.Secrets | Where-Object { $_.Title -like $Match } | Set-PowerPassSecureString
+                if( $AsCredential ) {
+                    $secrets | Get-PowerPassCredential
+                } else {
+                    $secrets | Set-PowerPassSecureString
+                }
             }
         } else {
             if( $PlainTextPasswords ) {
                 Write-Output $locker.Secrets
             } else {
-                $locker.Secrets | Set-PowerPassSecureString
+                if( $AsCredential ) {
+                    $locker.Secrets | Get-PowerPassCredential
+                } else {
+                    $locker.Secrets | Set-PowerPassSecureString
+                }
             }
         }
     }
@@ -1071,4 +1085,23 @@ function Get-PowerPass {
         Gets all the information about this PowerPass deployment.
     #>
     $PowerPass
+}
+
+# ------------------------------------------------------------------------------------------------------------- #
+# FUNCTION: Get-PowerPassCredential
+# ------------------------------------------------------------------------------------------------------------- #
+
+function Get-PowerPassCredential {
+    <#
+        .SYNOPSIS
+        Converts a PowerPass secret into a PSCredential.
+        .PARAMETER Secret
+        The PowerPass secret.
+    #>
+    param(
+        [PSCustomObject]
+        $Secret
+    )
+    $x = @(($Secret.UserName), (ConvertTo-SecureString -String ($Secret.Password) -AsPlainText -Force))
+    New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $x
 }

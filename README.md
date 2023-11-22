@@ -2,7 +2,13 @@
 A cross-platform PowerShell module for secret storage and retrieval on Linux, MacOS, and Windows. PowerPass supports Windows PowerShell 5 and PowerShell 7. PowerPass comes in two flavors:
 1. 256-bit AES Encryption
 2. Windows Data Protection API (Windows PowerShell only)
-# Compatibility
+## Purpose
+PowerPass provides an easy to use set of cmdlets for transparently storing and recalling credentials without the need to embed them in your scripts.
+When automated scripts require credentials to authenticate with a remote resource, those credentials must be stored alongside the script so they can be recalled for use.
+PowerPass allows script designers to store credentials in a secure manner, locked down so that only the login from where they were stored can access them.
+If the credentials files are leaked outside the system, they cannot easily be compromised because they are encrypted.
+For more information on how to use PowerPass best practices, and for implementation assistance, please review [Incorporating PowerPass into your Scripts](https://chopinrlz.github.io/powerpass/usage).
+## Compatibility
 1. The AES flavor supports PowerShell on Linux, MacOS, and Windows and will run in either Windows PowerShell or PowerShell 7.
 2. The Data Protection API flavor supports Windows PowerShell as well as KeePass 2 databases, but can only be used on Windows in Windows PowerShell.
 3. If you deploy PowerPass from PowerShell 7 it will automatically deploy the AES edition.
