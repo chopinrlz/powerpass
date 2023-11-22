@@ -1,0 +1,23 @@
+# PowerPass Cmdlet Reference for Windows PowerShell DP API / KeePass 2 Implementation
+1. [Clear-PowerPassLocker](#Clear-PowerPassLocker)
+2. Export-PowerPassLocker
+3. Import-PowerPassLocker
+4. Get-PowerPassSecret
+5. Get-PowerPass
+6. New-PowerPassRandomPassword
+7. Open-PowerPassDatabase
+8. Open-PowerPassTestDatabase
+9. Read-PowerPassSecret
+10. Update-PowerPassSalt
+11. Write-PowerPassSecret
+# Clear-PowerPassLocker
+# Export-PowerPassLocker
+# Import-PowerPassLocker
+# Get-PowerPassSecret
+# Get-PowerPass
+# New-PowerPassRandomPassword
+# Open-PowerPassDatabase
+# Open-PowerPassTestDatabase
+# Read-PowerPassSecret
+# Update-PowerPassSalt
+# Write-PowerPassSecret
