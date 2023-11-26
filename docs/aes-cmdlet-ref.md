@@ -30,6 +30,8 @@ The path where the exported files will go. This is mandatory, and this path must
 This cmdlet does not output to the pipeline, it copies two files to the specified Path.
 1. .powerpass_locker
 2. .locker_key
+
+These files will be copied to the `Path` specified.
 ### EXAMPLE
 In this example, we backup our Locker and key to a USB drive mounted as the E: drive.
 ```powershell
@@ -47,6 +49,8 @@ A PSCustomObject with these properties:
 * LockerKeyFolderPath : The folder where your locker key is stored
 * LockerKeyFilePath   : The absolute path to your PowerPass locker key file
 * Implementation      : The implementation you are using, either AES or DPAPI
+
+You can access these properties after assigning the output of `Get-PowerPass` to a variable.
 # Import-PowerPassLocker
 ### SYNOPSIS
 Imports a PowerPass locker file and/or AES encryption key from a previous export.
