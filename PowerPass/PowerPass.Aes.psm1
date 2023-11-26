@@ -38,7 +38,7 @@ if( $PSVersionTable.PSVersion.Major -eq 5 ) {
 function Clear-PowerPassLocker {
     <#
         .SYNOPSIS
-        Deletes all your locker secrets.
+        Deletes all your locker secrets and your locker key. PowerPass will generate a new locker and key.
         .DESCRIPTION
         If you want to delete your locker secrets and start with a clean locker, you can use thie cmdlet to do so.
         When you deploy PowerPass using the Deploy-Module.ps1 script provided with this module, it generates a
@@ -528,8 +528,8 @@ function Update-PowerPassKey {
         Rotates the Locker key to a new random key.
         .DESCRIPTION
         As a reoutine precaution, key rotation is recommended as a best practice when dealing with sensitive,
-        encrypted data. When you rotate a key, PowerPass reencrypts your PowerPass Locker with a new Locker
-        salt. This ensures that even if a previous encryption was broken, a new attempt must be made if an
+        encrypted data. When you rotate a key, PowerPass reencrypts your PowerPass Locker with a new random
+        key. This ensures that even if a previous encryption was broken, a new attempt must be made if an
         attacker regains access to your encrypted Locker.
     #>
     $locker = Get-PowerPassLocker
@@ -582,6 +582,14 @@ function Get-PowerPass {
     <#
         .SYNOPSIS
         Gets all the information about this PowerPass deployment.
+        .OUTPUTS
+        A PSCustomObject with these properties:
+            AesCryptoSourcePath : The path on disk to the AesCrypto.cs source code
+            LockerFolderPath    : The folder where your locker is stored
+            LockerFilePath      : The absolute path to your PowerPass locker on disk
+            LockerKeyFolderPath : The folder where your locker key is stored
+            LockerKeyFilePath   : The absolute path to your PowerPass locker key file
+            Implementation      : The implementation you are using, either AES or DPAPI
     #>
     $PowerPass
 }
