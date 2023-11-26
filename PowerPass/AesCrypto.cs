@@ -19,7 +19,7 @@ namespace PowerPass {
         /// Constructs a new, empty AesCrypto instance.
         /// </summary>
         public AesCrypto() {
-            DecryptionBufferSize = 65536;
+            DecryptionBufferSize = (4 * 1024 * 1024);
         }
 
         /// <summary>
@@ -42,7 +42,7 @@ namespace PowerPass {
         }
 
         /// <summary>
-        /// Gets or sets the length of the decryption buffer, defaults to 64 KiB.
+        /// Gets or sets the length of the decryption buffer, defaults to 4 MiB.
         /// </summary>
         /// <remarks>
         /// As file contents are decrypted, for each read of the crypto stream a new
