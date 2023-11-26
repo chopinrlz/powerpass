@@ -8,6 +8,8 @@ The AES implementation of PowerPass works on Windows PowerShell and PowerShell 7
 6. Read-PowerPassSecret
 7. Update-PowerPassKey
 8. Write-PowerPassSecret
+
+Here are the cmdlets for the AES implementation of PowerPass.
 # Clear-PowerPassLocker
 # Export-PowerPassLocker
 # Get-PowerPass
