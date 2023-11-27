@@ -1,15 +1,15 @@
 # PowerPass Cmdlet Reference for Windows PowerShell DP API / KeePass 2 Implementation
 1. [Clear-PowerPassLocker](#Clear-PowerPassLocker)
-2. Export-PowerPassLocker
-3. Import-PowerPassLocker
-4. Get-PowerPassSecret
-5. Get-PowerPass
-6. New-PowerPassRandomPassword
-7. Open-PowerPassDatabase
-8. Open-PowerPassTestDatabase
-9. Read-PowerPassSecret
-10. Update-PowerPassSalt
-11. Write-PowerPassSecret
+2. [Export-PowerPassLocker](#Export-PowerPassLocker)
+3. [Import-PowerPassLocker](#Import-PowerPassLocker)
+4. [Get-PowerPassSecret](#Get-PowerPassSecret)
+5. [Get-PowerPass](#Get-PowerPass)
+6. [New-PowerPassRandomPassword](#New-PowerPassRandomPassword)
+7. [Open-PowerPassDatabase](#Open-PowerPassDatabase)
+8. [Open-PowerPassTestDatabase](#Open-PowerPassTestDatabase)
+9. [Read-PowerPassSecret](#Read-PowerPassSecret)
+10. [Update-PowerPassSalt](#Update-PowerPassSalt)
+11. [Write-PowerPassSecret](#Write-PowerPassSecret)
 
 Here are the cmdlets for the Windows PowerShell DP API implementation with KeePass 2 support.
 # Clear-PowerPassLocker
@@ -139,16 +139,29 @@ In this example, we demonstrate using the pipeline to get a secret with a single
 $secret = "C:\Secrets\KeePassDb.kdbx" | Open-PowerPassDatabase -WindowsUserAccount | Get-PowerPassSecret -Match "Domain Service Account"
 ```
 # Get-PowerPass
-
-TBD
-
-
+### SYNOPSIS
+Gets all the information about this PowerPass deployment.
+### OUTPUTS
+This cmdlet outputs a PSCustomObject with the following properties:
+```
+1.  KeePassLibraryPath = The absolute path to the KeePassLib.dll used by PowerPass
+2.  KeePassLibAssembly = A [System.Reflection.Assembly] object of KeePassLib
+3.  TestDatabasePath   = The absolute path of the test KeePass 2 database
+4.  StatusLoggerSource = The absolute path to the StatusLogger class source code
+5.  ExtensionsSource   = The absolute path to the Extensions class source code
+6.  ModuleSaltFilePath = The absolute path to the module's salt file
+7.  LockerFolderPath   = The absolute path to the folder where PowerPass stores your Locker
+8.  LockerFilePath     = The absolute path to your Locker file
+9.  LockerSaltPath     = The absolute path to your Locker's salt file
+10. Implementation     = The type of implementation either "DPAPI" or "AES", in this case "DPAPI"
+```
 # New-PowerPassRandomPassword
-
-
-TBD
-
-
+### SYNOPSIS
+Generates a random password from all available standard US 101-key keyboard characters.
+### PARAMETER Length
+The length of the password to generate. Can be between 1 and 65536 characters long. Defaults to 24.
+### OUTPUTS
+Outputs a random string of typable characters to the pipeline which can be used as a password.
 # Open-PowerPassDatabase
 ### SYNOPSIS
 Opens a PowerPass database from a KeePass file.
@@ -334,10 +347,13 @@ $svcAccount = Read-PowerPassSecret -Match "Domain Reader Service" -AsCredential
 Get-ADUser -Credential $svcAccount
 ```
 # Update-PowerPassSalt
-
-TBD
-
-
+### SYNOPSIS
+Rotates the Locker salt to a new random key.
+### DESCRIPTION
+As a reoutine precaution, key rotation is recommended as a best practice when dealing with sensitive,
+encrypted data. When you rotate a key, PowerPass reencrypts your PowerPass Locker with a new Locker
+salt. This ensures that even if a previous encryption was broken, a new attempt must be made if an
+attacker regains access to your encrypted Locker.
 # Write-PowerPassSecret
 ### SYNOPSIS
 Writes a secret into your PowerPass locker.
