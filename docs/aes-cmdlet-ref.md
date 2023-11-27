@@ -1,13 +1,13 @@
 # PowerPass Cmdlet Reference for AES Implementation
 The AES implementation of PowerPass works on Windows PowerShell and PowerShell 7 on Linux, MacOS, and Windows.
-1. [Clear-PowerPassLocker](#Clear-PowerPassLocker)
-2. [Export-PowerPassLocker](#Export-PowerPassLocker)
-3. [Get-PowerPass](#Get-PowerPass)
-4. [Import-PowerPassLocker](#Import-PowerPassLocker)
-5. [New-PowerPassRandomPassword](#New-PowerPassRandomPassword)
-6. [Read-PowerPassSecret](#Read-PowerPassSecret)
-7. [Update-PowerPassKey](#Update-PowerPassKey)
-8. [Write-PowerPassSecret](#Write-PowerPassSecret)
+1. [Clear-PowerPassLocker](#clear-powerpasslocker)
+2. [Export-PowerPassLocker](#export-powerpasslocker)
+3. [Get-PowerPass](#get-powerpass)
+4. [Import-PowerPassLocker](#import-powerpasslocker)
+5. [New-PowerPassRandomPassword](#new-powerpassrandompassword)
+6. [Read-PowerPassSecret](#read-powerpasssecret)
+7. [Update-PowerPassKey](#update-powerpasskey)
+8. [Write-PowerPassSecret](#write-powerpasssecret)
 
 Here are the cmdlets for the AES implementation of PowerPass.
 # Clear-PowerPassLocker

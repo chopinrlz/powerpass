@@ -1,15 +1,15 @@
 # PowerPass Cmdlet Reference for Windows PowerShell DP API / KeePass 2 Implementation
-1. [Clear-PowerPassLocker](#Clear-PowerPassLocker)
-2. [Export-PowerPassLocker](#Export-PowerPassLocker)
-3. [Import-PowerPassLocker](#Import-PowerPassLocker)
-4. [Get-PowerPassSecret](#Get-PowerPassSecret)
-5. [Get-PowerPass](#Get-PowerPass)
-6. [New-PowerPassRandomPassword](#New-PowerPassRandomPassword)
-7. [Open-PowerPassDatabase](#Open-PowerPassDatabase)
-8. [Open-PowerPassTestDatabase](#Open-PowerPassTestDatabase)
-9. [Read-PowerPassSecret](#Read-PowerPassSecret)
-10. [Update-PowerPassSalt](#Update-PowerPassSalt)
-11. [Write-PowerPassSecret](#Write-PowerPassSecret)
+1. [Clear-PowerPassLocker](#clear-powerpasslocker)
+2. [Export-PowerPassLocker](#export-powerpasslocker)
+3. [Import-PowerPassLocker](#import-powerpasslocker)
+4. [Get-PowerPassSecret](#get-powerpasssecret)
+5. [Get-PowerPass](#get-powerpass)
+6. [New-PowerPassRandomPassword](#new-powerpassrandompassword)
+7. [Open-PowerPassDatabase](#open-powerpassdatabase)
+8. [Open-PowerPassTestDatabase](#open-powerpasstestdatabase)
+9. [Read-PowerPassSecret](#read-powerpasssecret)
+10. [Update-PowerPassSalt](#update-powerpasssalt)
+11. [Write-PowerPassSecret](#write-powerpasssecret)
 
 Here are the cmdlets for the Windows PowerShell DP API implementation with KeePass 2 support.
 # Clear-PowerPassLocker
@@ -68,10 +68,10 @@ The path fo the locker salt file on disk. This is mandatory.
 The optional path to the module salt, if you also want to restore your module salt.
 # Get-PowerPassSecret
 ### SYNOPSIS
-Retrieves secrets from a PowerPass database.
+Retrieves secrets from a KeePass 2 database opened with `Open-PowerPassDatabase`.
 ### DESCRIPTION
-This cmdlet will extract and decrypt the secrets stored in a PowerPass database which was opened using
-the `Open-PowerPassDatabase` cmdlet. An optional Match parameter can be specified to limit the secrets found
+This cmdlet will extract and decrypt the secrets stored in a KeePass 2 database which was opened using
+the `Open-PowerPassDatabase` cmdlet. An optional `Match` parameter can be specified to limit the secrets found
 to those which match the query, or which match the text exactly.
 ### INPUTS
 This cmdlet will accept the output from `Open-PowerPassDatabase` as pipeline input.
@@ -164,9 +164,9 @@ The length of the password to generate. Can be between 1 and 65536 characters lo
 Outputs a random string of typable characters to the pipeline which can be used as a password.
 # Open-PowerPassDatabase
 ### SYNOPSIS
-Opens a PowerPass database from a KeePass file.
+Opens a KeePass 2 database file.
 ### DESCRIPTION
-This cmdlet will open a KeePass database file from the given path using the keys specified by the given
+This cmdlet will open a KeePass 2 database file from the given path using the keys specified by the given
 parameters. This cmdlet will then create a PSCustomObject containing the KeePass database in-memory
 along with the metadata about the database including its location on disk, log events from KeePass, and
 the collection of keys required to open it. You can then pipe or pass the output of this cmdlet to the
@@ -174,16 +174,16 @@ Get-PowerPassSecret cmdlet to extract the encrypted secrets.
 ### PARAMETER Path
 The path on disk to the KeePass file.
 ### PARAMETER MasterPassword
-If the KeePass database uses a master password, include that here.
+If the KeePass 2 database uses a master password, include that here.
 ### PARAMETER KeyFile
-If the KeePass database uses a key file, include the path to the key file here.
+If the KeePass 2 database uses a key file, include the path to the key file here.
 ### PARAMETER WindowsUserAccount
-If the KeePass database uses the Windows user account, include this switch.
+If the KeePass 2 database uses the Windows user account, include this switch.
 ### INPUTS
 This cmdlet does not take any pipeline input.
 ### OUTPUTS
-This cmdlet outputs a PowerPass object containing the KeePass database secrets. Pipe or pass this to
-Get-PowerPassSecret to extract the secrets from the database.
+This cmdlet outputs a `PSCustomObject` containing the KeePass 2 database secrets. Pipe or pass this to
+`Get-PowerPassSecret` to extract the secrets from the database.
 ### EXAMPLE 1: Open a KeePass 2 Database with a Password (Insecure)
 In this example, we demonstrate how to open a KeePass 2 database using a password in plain-text.
 This method is not secure, because the database password is visible, but is here for demonstration purpose.
@@ -211,7 +211,7 @@ This method is more secure since the password for the database is stored in the 
 $sc = Read-PowerPassSecret -Match "My KeePass Database Password"
 $db = Open-PowerPassDatabase -Path "C:\Secrets\MyKeePassDatabase.kdbx" -MasterPassword ($sc.Password)
 ```
-### EXAMPLE 3: Open a KeePass Database with a Key File
+### EXAMPLE 3: Open a KeePass 2 Database with a Key File
 In this example we demonstrate opening a KeePass 2 database with a KeePass key file.
 ```powershell
 #
@@ -222,7 +222,7 @@ In this example we demonstrate opening a KeePass 2 database with a KeePass key f
 
 $db = Open-PowerPassDatabase -Path "C:\Secrets\MyKeePassDatabase.kdbx" -KeyFile "C:\Users\me\Documents\DatabaseKeyFile.keyx"
 ```
-### EXAMPLE 4: Open a KeePass Databae with your Windows User Account
+### EXAMPLE 4: Open a KeePass 2 Databae with your Windows User Account
 In this example we demonstrate opening a KeePass 2 database with your Windows user account.
 KeePass 2 databases support Windows Data Protection API encryption.
 When you create your KeePass 2 database, you can elect to encrypt it with your Windows user account.
