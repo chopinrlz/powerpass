@@ -153,7 +153,7 @@ function Open-PowerPassDatabase {
         $db = Open-PowerPassDatabase -Path "C:\Secrets\MyKeePassDatabase.kdbx" -WindowsUserAccount
     #>
     param (
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true, ValueFromPipeline, Position = 0)]
         [string]
         $Path,
         [SecureString]
@@ -221,7 +221,14 @@ function Get-PowerPassSecret {
         .INPUTS
         This cmdlet will accept the output from Open-PowerPassDatabase as pipeline input.
         .OUTPUTS
-        This cmdlet will output all, or each matching secret in the PowerPass database.
+        This cmdlet will output all, or each matching secret in the PowerPass database. Each secret is a PSCustomObject
+        with the following properties:
+        1. Title    = the Title or display name of the secret as it appears in KeePass 2
+        2. UserName = the username field value
+        3. Password = the password field value, as a SecureString by default, or plain-text if specified
+        4. URL      = the URL field value
+        5. Notes    = the Notes field value
+        6. Expires  = the Expires field value
         .PARAMETER Database
         The PowerPass database opened using Open-PowerPassDatabase. This can be passed via pipeline.
         .PARAMETER Match
@@ -874,6 +881,13 @@ function Export-PowerPassLocker {
     <#
         .SYNOPSIS
         Exports your PowerPass Locker file, Locker salt file, and module salt file.
+        .DESCRIPTION
+        You can export a PowerPass locker including the locker file, locker salt and module salt.
+        Lockers only work on the same computer under the same user profile since they are encrypted
+        with the Data Protection API under the current user scope. This means you cannot import a
+        Locker exported from another machine or from a different user profile. You should export your
+        Locker before you install a new version of PowerPass, or to back up your Locker in case you
+        lose your AppData folder or you redeploy PowerPass.
         .PARAMETER Path
         The path where the exported files will go. This is mandatory, and this path must exist.
         .PARAMETER LockerFileName
@@ -887,13 +901,6 @@ function Export-PowerPassLocker {
         1. powerpass.salt
         2. locker.salt
         3. powerpass.locker
-        .DESCRIPTION
-        You can export a PowerPass locker including the locker file, locker salt and module salt.
-        Lockers only work on the same computer under the same user profile since they are encrypted
-        with the Data Protection API under the current user scope. This means you cannot import a
-        Locker exported from another machine or from a different user profile. You should export your
-        Locker before you install a new version of PowerPass, or to back up your Locker in case you
-        lose your AppData folder or you redeploy PowerPass.
     #>
     [CmdletBinding()]
     param(
@@ -948,12 +955,6 @@ function Import-PowerPassLocker {
     <#
         .SYNOPSIS
         Imports a PowerPass locker with salt files from a previous export.
-        .PARAMETER LockerFilePath
-        The path to the locker file on disk. This is mandatory.
-        .PARAMETER LockerSaltPath
-        The path fo the locker salt file on disk. This is mandatory.
-        .PARAMETER ModuleSaltPath
-        The optional path to the module salt, if you also want to restore your module salt.
         .DESCRIPTION
         You can import a PowerPass locker including the locker salt and module salt from an exported
         copy. Lockers will only work on the same computer under the same user profile since they are
@@ -963,6 +964,12 @@ function Import-PowerPassLocker {
         and want to restore your Locker secrets, or you accidentally lose your Locker secrets for
         example of they are removed up from your AppData folder or the PowerPass module is removed
         from your computer.
+        .PARAMETER LockerFilePath
+        The path to the locker file on disk. This is mandatory.
+        .PARAMETER LockerSaltPath
+        The path fo the locker salt file on disk. This is mandatory.
+        .PARAMETER ModuleSaltPath
+        The optional path to the module salt, if you also want to restore your module salt.
     #>
     [CmdletBinding()]
     param(

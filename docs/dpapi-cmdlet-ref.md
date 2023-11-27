@@ -13,16 +13,372 @@
 
 Here are the cmdlets for the Windows PowerShell DP API implementation with KeePass 2 support.
 # Clear-PowerPassLocker
+### SYNOPSIS
+Deletes all your locker secrets.
+### DESCRIPTION
+If you want to delete your locker secrets and start with a clean locker, you can use thie cmdlet to do so.
+When you deploy PowerPass using the Deploy-Module.ps1 script provided with this module, it generates a
+unique salt for this deployment which is used to encrypt your locker's salt. If you replace this salt by
+redeploying the module, you will no longer be able to access your locker and will need to start with a
+clean locker.
+### PARAMETER Force
+WARNING: If you specify Force, your locker and salt will be removed WITHOUT confirmation.
 # Export-PowerPassLocker
+### SYNOPSIS
+Exports your PowerPass Locker file, Locker salt file, and module salt file.
+### DESCRIPTION
+You can export a PowerPass locker including the locker file, locker salt and module salt.
+Lockers only work on the same computer under the same user profile since they are encrypted
+with the Data Protection API under the current user scope. This means you cannot import a
+Locker exported from another machine or from a different user profile. You should export your
+Locker before you install a new version of PowerPass, or to back up your Locker in case you
+lose your AppData folder or you redeploy PowerPass.
+### PARAMETER Path
+The path where the exported files will go. This is mandatory, and this path must exist.
+### PARAMETER LockerFileName
+An optional name for your Locker file.
+### PARAMETER LockerSaltFileName
+An optional name for your Locker salt file.
+### PARAMETER ModuleSaltFileName
+An optional name for your module salt file.
+### OUTPUTS
+This cmdlet does not output to the pipeline, it copies three files to the specified Path.
+1. powerpass.salt
+2. locker.salt
+3. powerpass.locker
+
+You will see these files appear at the specified `Path` after running `Export-PowerPassLocker` if you do not specify alternate file names using the provided parameters.
 # Import-PowerPassLocker
+### SYNOPSIS
+Imports a PowerPass locker with salt files from a previous export.
+### DESCRIPTION
+You can import a PowerPass locker including the locker salt and module salt from an exported
+copy. Lockers will only work on the same computer under the same user profile since they are
+encrypted with the Data Protection API under the current user scope. This means you cannot
+import a Locker from one machine to another or from one user to another. The most useful
+scenario for importing your Locker back into PowerPass is if you deploy a new version
+and want to restore your Locker secrets, or you accidentally lose your Locker secrets for
+example of they are removed up from your AppData folder or the PowerPass module is removed
+from your computer.
+### PARAMETER LockerFilePath
+The path to the locker file on disk. This is mandatory.
+### PARAMETER LockerSaltPath
+The path fo the locker salt file on disk. This is mandatory.
+### PARAMETER ModuleSaltPath
+The optional path to the module salt, if you also want to restore your module salt.
 # Get-PowerPassSecret
+### SYNOPSIS
+Retrieves secrets from a PowerPass database.
+### DESCRIPTION
+This cmdlet will extract and decrypt the secrets stored in a PowerPass database which was opened using
+the `Open-PowerPassDatabase` cmdlet. An optional Match parameter can be specified to limit the secrets found
+to those which match the query, or which match the text exactly.
+### INPUTS
+This cmdlet will accept the output from `Open-PowerPassDatabase` as pipeline input.
+### OUTPUTS
+This cmdlet will output all, or each matching secret in the PowerPass database. Each secret is a `PSCustomObject`
+with the following properties:
+```
+1. Title    = the Title or display name of the secret as it appears in KeePass 2
+2. UserName = the username field value
+3. Password = the password field value, as a SecureString by default, or plain-text if specified
+4. URL      = the URL field value
+5. Notes    = the Notes field value
+6. Expires  = the Expires field value
+```
+Each entry in the KeePass 2 database is output to the pipeline not including the groups.
+### PARAMETER Database
+The PowerPass database opened using `Open-PowerPassDatabase`. This can be passed via pipeline.
+### PARAMETER Match
+An optional match filter. If this is specified, this cmdlet will only output secrets where the Title
+matches this filter. Use * for wildcards, use ? for single characters, or specify an exact Title for
+an exact match. If this is not specified, all secrets will be returned.
+### PARAMETER PlainTextPasswords
+An optional switch which will cause this cmdlet to output secrets with plain-text passwords. By default,
+passwords are returned as SecureString objects.
+### EXAMPLE 1: Get All Secrets
+In this example we demonstrate getting all the secrets from a KeePass 2 database.
+The hierarchy of the KeePass 2 database is not maintained.
+All secrets are returned as a flat array.
+```powershell
+# Open the KeePass 2 database
+$db = Open-PowerPassDatabase -Path "C:\Secrets\KeePassDb.kdbx" -WindowsUserAccount
+
+# Get all the secrets and output their titles
+$secrets = Get-PowerPassSecret -Database $db
+foreach( $secret in $secrets ) {
+    Write-Host $secret.Title
+}
+```
+### EXAMPLE 2: Getting Secrets with Pipeline Filtering
+In this example we demonstrate pipeline filtering to fetch secrets.
+While this method works, it is not recommended as it returns more data than may be required.
+```powershell
+# Open the KeePass 2 database
+$db = Open-PowerPassDatabase -Path "C:\Secrets\KeePassDb.kdbx" -WindowsUserAccount
+
+# Get the Domain Service Account secret
+$secret = Get-PowerPassSecret -Database $db | ? Title -eq "Domain Service Account"
+```
+### EXAMPLE 3: Getting Secrets with Match Filtering
+In this example we demonstrate match filtering to fetch secrets.
+This method is the most efficient for locating secrets in a KeePass 2 database.
+Only secrets which match the filter by Title will be returned.
+You can use wildcards or RegEx syntax.
+```powershell
+# Open the KeePass 2 database
+$db = Open-PowerPassDatabase -Path "C:\Secrets\KeePassDb.kdbx" -WindowsUserAccount
+
+# Get the Domain Service Account secret
+$secret = Get-PowerPassSecret -Database $db -Match "Domain Service Account"
+```
+### EXAMPLE 4: Using the Pipeline
+In this example, we demonstrate using the pipeline to get a secret with a single line.
+```powershell
+# Get a secret with one line
+$secret = "C:\Secrets\KeePassDb.kdbx" | Open-PowerPassDatabase -WindowsUserAccount | Get-PowerPassSecret -Match "Domain Service Account"
+```
 # Get-PowerPass
+
+TBD
+
+
 # New-PowerPassRandomPassword
+
+
+TBD
+
+
 # Open-PowerPassDatabase
+### SYNOPSIS
+Opens a PowerPass database from a KeePass file.
+### DESCRIPTION
+This cmdlet will open a KeePass database file from the given path using the keys specified by the given
+parameters. This cmdlet will then create a PSCustomObject containing the KeePass database in-memory
+along with the metadata about the database including its location on disk, log events from KeePass, and
+the collection of keys required to open it. You can then pipe or pass the output of this cmdlet to the
+Get-PowerPassSecret cmdlet to extract the encrypted secrets.
+### PARAMETER Path
+The path on disk to the KeePass file.
+### PARAMETER MasterPassword
+If the KeePass database uses a master password, include that here.
+### PARAMETER KeyFile
+If the KeePass database uses a key file, include the path to the key file here.
+### PARAMETER WindowsUserAccount
+If the KeePass database uses the Windows user account, include this switch.
+### INPUTS
+This cmdlet does not take any pipeline input.
+### OUTPUTS
+This cmdlet outputs a PowerPass object containing the KeePass database secrets. Pipe or pass this to
+Get-PowerPassSecret to extract the secrets from the database.
+### EXAMPLE 1: Open a KeePass 2 Database with a Password (Insecure)
+In this example, we demonstrate how to open a KeePass 2 database using a password in plain-text.
+This method is not secure, because the database password is visible, but is here for demonstration purpose.
+```powershell
+#
+# This example shows how to open a KeePass database which uses a master password as a key
+# NOTE: This method is inherently insecure if you embed the password for the database into
+#       your PowerShell script itself. It is more secure to fetch a secure string from a
+#       separate location or use PowerPass to store this secret in your Locker or in a
+#       separate KeePass database protected with your Windows user account.
+#
+
+$pw = ConvertTo-SecureString -String "databasePasswordHere" -AsPlainText -Force
+$db = Open-PowerPassDatabase -Path "C:\Secrets\MyKeePassDatabase.kdbx" -MasterPassword $pw
+```
+### EXAMPLE 2: Open a KeePass 2 Database with a Password (Secure)
+In this example, we demonstrate using the PowerPass Locker to fetch a KeePass 2 database password.
+This method is more secure since the password for the database is stored in the encrypted PowerPass Locker.
+```powershell
+#
+# This example shows how to open a KeePass database which uses a master password as a key
+# where the master password is securely stored in your PowerPass Locker.
+#
+
+$sc = Read-PowerPassSecret -Match "My KeePass Database Password"
+$db = Open-PowerPassDatabase -Path "C:\Secrets\MyKeePassDatabase.kdbx" -MasterPassword ($sc.Password)
+```
+### EXAMPLE 3: Open a KeePass Database with a Key File
+In this example we demonstrate opening a KeePass 2 database with a KeePass key file.
+```powershell
+#
+# This example shows how to open a KeePass database which uses a key file.
+# NOTE: You should always store the key file in a safe place like your user profile folder
+#       which can only be accessed by yourself and any local administrators on the computer.
+#
+
+$db = Open-PowerPassDatabase -Path "C:\Secrets\MyKeePassDatabase.kdbx" -KeyFile "C:\Users\me\Documents\DatabaseKeyFile.keyx"
+```
+### EXAMPLE 4: Open a KeePass Databae with your Windows User Account
+In this example we demonstrate opening a KeePass 2 database with your Windows user account.
+KeePass 2 databases support Windows Data Protection API encryption.
+When you create your KeePass 2 database, you can elect to encrypt it with your Windows user account.
+These databases can be opened using the `-WindowsUserAccount` parameter with `Open-PowerPassDatabase`.
+```powershell
+#
+# This example shows how to open a KeePass database which uses your Windows user account.
+# Securing a KeePass file with your Windows user account provides a very secure method for
+# storing secrets because they can only be accessed by you on the local machine and no one
+# else, not even local administrators or domain administrators. This method is recommended
+# for storing passwords to other KeePass databases.
+#
+
+$db = Open-PowerPassDatabase -Path "C:\Secrets\MyKeePassDatabase.kdbx" -WindowsUserAccount
+```
 # Open-PowerPassTestDatabase
+### SYNOPSIS
+Opens the TestDatabase.kdbx database bundled with PowerPass for testing.
+### DESCRIPTION
+When you use Open-PowerPassTestDatabase the PowerPass module will load the
+KeePass database TestDatabase.kdbx bundled with this module. By default,
+this database contains one key requried to open it: the password 12345. You
+can open this database in KeePass 2. It was originally created with KeePass 2.
+The output from this cmdlet includes all the relevant properties and data
+required to access and read data from KeePass databases. It also showcases
+the standard PSCustomObject data structure utilized by the PowerPass module.
+### INPUTS
+This cmdlet has no inputs, but it depends on the TestDatabase.kdbx file bundled
+with this module.
+### OUTPUTS
+This cmdlet outputs a PSCustomObject with these properties:
+```
+1. Secrets - the KeePassLib.PwDatabase instance which exposes the secrets contained within the test database
+2. StatusLogger - the PowerPass.StatusLogger instance which captures logging messages from KeePassLib
+3. LiteralPath - the absolute path to the test database on the local file system
+4. Connector - the KeePassLib.IOConnectionInfo instance which tells KeePassLib where to find the test database
+5. Keys - the collection of keys required to open the test database, in this case just the password key
+```
+Below is a code example for how to use this cmdlet.
+### EXAMPLE
+```powershell
+# Open the test database file
+$database = Open-PowerPassTestDatabase
+
+# Fetch the root group, the KeePass 2 database starting point
+$rootGroup = $database.Secrets.RootGroup
+
+# Iterate the Entries property to peruse the KeePass 2 database
+foreach( $entry in $rootGroup.Entries ) {
+
+    # Echo the Title of each entry
+    $entry.Strings | ? Key -eq "Title"
+}
+```
+### NOTES
+This function will fail if the test database file is not found in the module folder.
 # Read-PowerPassSecret
+### SYNOPSIS
+Reads secrets from your PowerPass locker.
+### PARAMETER Match
+An optional filter. If specified, only secrets whose Title matches this filter are output to the pipeline.
+### PARAMETER PlainTextPasswords
+An optional switch which instructs PowerPass to output the passwords in plain-text. By default, all
+passwords are output as SecureString objects. You cannot combine this with AsCredential.
+### PARAMETER AsCredential
+An optional switch which instructs PowerPass to output the secrets as a PSCredential object. You cannot
+combine this with PlainTextPasswords.
+### INPUTS
+This cmdlet takes no input.
+### OUTPUTS
+This cmdlet outputs PowerPass secrets from your locker to the pipeline. Each secret is a PSCustomObject
+with these properties:
+```
+1. Title     - the name, or title, of the secret, this value is unique to the locker
+2. UserName  - the username field string for the secret
+3. Password  - the password field for the secret, by default a SecureString
+4. URL       - the URL string for the secret
+5. Notes     - the notes string for the secret
+6. Expires   - the expiration date for the secret, by default December 31, 9999
+7. Created   - the date and time the secret was created in the locker
+8. Modified  - the date and time the secret was last modified
+```
+### NOTES
+When you use PowerPass for the first time, PowerPass creates a default secret in your locker with the
+Title "Default" with all fields populated as an example of the data structure stored in the locker.
+You can delete or change this secret by using Write-PowerPassSecret or Delete-PowerPassSecret and specifying
+the Title of "Default".
+### EXAMPLE 1: Get All the Secrets from your Locker
+Calling the cmdlet by itself will output all your Locker secrets.
+```powershell
+# Get all my locker secrets
+$secrets = Read-PowerPassSecret
+foreach( $s in $secrets ) {
+    $s.Title
+}
+```
+### EXAMPLE 2: Get a Specific Secret from your Locker
+Rather than fetching everything, you can use a match to fetch one or more secrets where the `Title` of the secret matches the filter you provide.
+You can incorporate wildcards or RegEx in your `Match` parameter to get the secrets by exact title or by pattern.
+```powershell
+# Find all the domain logins
+$domainLogins = Read-PowerPassSecret -Match "Domain Account for *"
+foreach( $s in $domainLogins ) {
+    $s.Title
+}
+```
+### EXAMPLE 3: Get a Secret with the Password in Plain Text
+There may be an occasion where you need the `Password` property in plain-text.
+A common example of this is when you need a Client ID and Client Secret for app-based authentication.
+```powershell
+# Get the secret in plain-text
+$s = Read-PowerPassSecret -Match "My Client App" -PlainTextPasswords
+$clientId = $s.UserName
+$clientSecret = $s.Password
+```
+### EXAMPLE 4: Get a Secret in PSCredential Format
+Many PowerShell cmdlets which require authentication support the PSCredential format.
+You can fetch a secret from your locker in this format automatically and pass it directly to the other cmdlet.
+```powershell
+# Get all the Active Directory users
+$svcAccount = Read-PowerPassSecret -Match "Domain Reader Service" -AsCredential
+Get-ADUser -Credential $svcAccount
+```
 # Update-PowerPassSalt
+
+TBD
+
+
 # Write-PowerPassSecret
+### SYNOPSIS
+Writes a secret into your PowerPass locker.
+### DESCRIPTION
+Before you can read any secrets from your PowerPass locker you have to write them into your PowerPass locker.
+Use the `Write-PowerPassSecret` cmdlet to write secrets into your encrypted PowerPass locker and fetch them later.
+### PARAMETER Title
+Mandatory. The Title of the secret. This is unique to your locker. If you already have a secret in your
+locker with this Title, it will be updated, but only the parameters you specify will be updated.
+### PARAMETER UserName
+Optional. Sets the UserName property of the secret in your locker.
+### PARAMETER Password
+Optional. Sets the Password property of the secret in your locker.
+### PARAMETER URL
+Optional. Sets the URL property of the secret in your locker.
+### PARAMETER Notes
+Optional. Sets the Notes property of the secret in your locker.
+### PARAMETER Expires
+Optional. Sets the Expiras property of the secret in your locker.
+### EXAMPLE 1: Saving a Secret with a UserName and Password
+Most secrets are combinations of usernames and passwords.
+In this example, we store a secret with a username and password we need to use later.
+```powershell
+# Store our new secret
+Write-PowerPassSecret -Title "Domain Service Account" -UserName "DEV\svc_admin" -Password "jcnuetdghskfnrk"
+```
+### EXAMPLE 2: Saving a Secret with a Random Password
+You can completely avoid typing a password for a secret if you use the password generator.
+In this example, we create a new secret with a username and a randomly generated password.
+The password will not be shown on the screen nor will we have to type it in.
+```powershell
+# Create a new credential with a random password
+Write-PowerPassSecret -Title "Domain Service Account" -UserName "DEV\svc_admin" -Password (New-PowerPassRandomPassword)
+```
+### EXAMPLE 3: Adding Metadata to an Existing Secret
+You can add secrets, and you can also update them with additional information.
+In this example, we add some addition information to our `Domain Service Account` secret.
+```powershell
+# Add some more info to our Domain Service Account
+Write-PowerPassSecret -Title "Domain Service Account" -URL "https://intranet.dev.local" -Notes "Use this account to access AD" -Expires ((Get-Date).AddDays(90))
+```
 # All PowerPass Topics
 Select one of the links below to browse to another topic.
 ## [AES Cmdlet Reference](https://chopinrlz.github.io/powerpass/aes-cmdlet-ref) | [Data Structures](https://chopinrlz.github.io/powerpass/data-structures) | [Deployment](https://chopinrlz.github.io/powerpass/deployment) | [DP API Cmdlet Reference](https://chopinrlz.github.io/powerpass/dpapi-cmdlet-ref) | [OneDrive Backup](https://chopinrlz.github.io/powerpass/onedrivebackup) | [Prerequisites](https://chopinrlz.github.io/powerpass/prerequisites) | [Release Notes](https://chopinrlz.github.io/powerpass/release-notes) | [Usage](https://chopinrlz.github.io/powerpass/usage)
