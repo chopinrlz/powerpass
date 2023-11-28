@@ -21,7 +21,7 @@ redeploying the module, you will no longer be able to access your locker and wil
 clean locker.
 ### PARAMETER Force
 WARNING: If you specify Force, your locker and salt will be removed WITHOUT confirmation.
-##### [Back to Top](#powerpass-cmdlet-reference-for-aes-implementation)
+##### ***[Back to Top](#powerpass-cmdlet-reference-for-aes-implementation)***
 # Export-PowerPassLocker
 ### SYNOPSIS
 Exports your PowerPass Locker file and AES encryption key for backup.
@@ -39,6 +39,7 @@ In this example, we backup our Locker and key to a USB drive mounted as the E: d
 # Backup my locker and key to a USB drive
 Export-PowerPassLocker -Path "E:\"
 ```
+##### ***[Back to Top](#powerpass-cmdlet-reference-for-aes-implementation)***
 # Get-PowerPass
 ### SYNOPSIS
 Gets all the information about this PowerPass deployment.
@@ -52,6 +53,7 @@ A PSCustomObject with these properties:
 * Implementation      : The implementation you are using, either AES or DPAPI
 
 You can access these properties after assigning the output of `Get-PowerPass` to a variable.
+##### ***[Back to Top](#powerpass-cmdlet-reference-for-aes-implementation)***
 # Import-PowerPassLocker
 ### SYNOPSIS
 Imports a PowerPass locker file and/or AES encryption key from a previous export.
@@ -77,6 +79,7 @@ In this example, your Locker file and AES encryption will be restored from backu
 # Import my locker file and key
 Import-PowerPassLocker -LockerFilePath "E:\Backup\backup.locker" -LockerKeyFilePath "E:\Backup\locker.key"
 ```
+##### ***[Back to Top](#powerpass-cmdlet-reference-for-aes-implementation)***
 # New-PowerPassRandomPassword
 ### SYNOPSIS
 Generates a random password from all available standard US 101-key keyboard characters.
@@ -84,6 +87,7 @@ Generates a random password from all available standard US 101-key keyboard char
 The length of the password to generate. Can be between 1 and 65536 characters long. Defaults to 24.
 ### OUTPUTS
 Outputs a random string of typable characters to the pipeline which can be used as a password.
+##### ***[Back to Top](#powerpass-cmdlet-reference-for-aes-implementation)***
 # Read-PowerPassSecret
 ### SYNOPSIS
 Reads secrets from your PowerPass locker.
@@ -151,6 +155,7 @@ You can fetch a secret from your locker in this format automatically and pass it
 $svcAccount = Read-PowerPassSecret -Match "Domain Reader Service" -AsCredential
 Get-ADUser -Credential $svcAccount
 ```
+##### ***[Back to Top](#powerpass-cmdlet-reference-for-aes-implementation)***
 # Update-PowerPassKey
 ### SYNOPSIS
 Rotates the Locker key to a new random key.
@@ -166,6 +171,7 @@ Simply execute it and PowerPass with rotate your locker key.
 # Rotate my locker key
 Update-PowerPassKey
 ```
+##### ***[Back to Top](#powerpass-cmdlet-reference-for-aes-implementation)***
 # Write-PowerPassSecret
 ### SYNOPSIS
 Writes a secret into your PowerPass locker.
@@ -206,6 +212,7 @@ In this example, we add some addition information to our `Domain Service Account
 # Add some more info to our Domain Service Account
 Write-PowerPassSecret -Title "Domain Service Account" -URL "https://intranet.dev.local" -Notes "Use this account to access AD" -Expires ((Get-Date).AddDays(90))
 ```
+##### ***[Back to Top](#powerpass-cmdlet-reference-for-aes-implementation)***
 # All PowerPass Topics
 Select one of the links below to browse to another topic.
 ## [AES Cmdlet Reference](https://chopinrlz.github.io/powerpass/aes-cmdlet-ref) | [Data Structures](https://chopinrlz.github.io/powerpass/data-structures) | [Deployment](https://chopinrlz.github.io/powerpass/deployment) | [DP API Cmdlet Reference](https://chopinrlz.github.io/powerpass/dpapi-cmdlet-ref) | [OneDrive Backup](https://chopinrlz.github.io/powerpass/onedrivebackup) | [Prerequisites](https://chopinrlz.github.io/powerpass/prerequisites) | [Release Notes](https://chopinrlz.github.io/powerpass/release-notes) | [Usage](https://chopinrlz.github.io/powerpass/usage)
