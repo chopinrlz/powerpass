@@ -21,6 +21,7 @@ redeploying the module, you will no longer be able to access your locker and wil
 clean locker.
 ### PARAMETER Force
 WARNING: If you specify Force, your locker and salt will be removed WITHOUT confirmation.
+##### [Back to Top](#powerpass-cmdlet-reference-for-aes-implementation)
 # Export-PowerPassLocker
 ### SYNOPSIS
 Exports your PowerPass Locker file and AES encryption key for backup.
