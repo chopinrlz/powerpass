@@ -1,4 +1,5 @@
 # PowerPass Cmdlet Reference for Windows PowerShell DP API / KeePass 2 Implementation
+The Windows PowerShell Data Protection API implementation supports Windows PowerShell 5.1 and includes support for KeePass 2 databases as well as PowerPass Lockers. Cmdlets for this implementation are as follows:
 1. [Clear-PowerPassLocker](#clear-powerpasslocker)
 2. [Export-PowerPassLocker](#export-powerpasslocker)
 3. [Import-PowerPassLocker](#import-powerpasslocker)
@@ -11,7 +12,7 @@
 10. [Update-PowerPassSalt](#update-powerpasssalt)
 11. [Write-PowerPassSecret](#write-powerpasssecret)
 
-Here are the cmdlets for the Windows PowerShell DP API implementation with KeePass 2 support.
+Continue reading for the cmdlet details.
 # Clear-PowerPassLocker
 ### SYNOPSIS
 Deletes all your locker secrets.
@@ -23,6 +24,7 @@ redeploying the module, you will no longer be able to access your locker and wil
 clean locker.
 ### PARAMETER Force
 WARNING: If you specify Force, your locker and salt will be removed WITHOUT confirmation.
+##### ***[Back to Top](#powerpass-cmdlet-reference-for-windows-powershell-dp-api--keepass-2-implementation)***
 # Export-PowerPassLocker
 ### SYNOPSIS
 Exports your PowerPass Locker file, Locker salt file, and module salt file.
@@ -48,6 +50,7 @@ This cmdlet does not output to the pipeline, it copies three files to the specif
 3. powerpass.locker
 
 You will see these files appear at the specified `Path` after running `Export-PowerPassLocker` if you do not specify alternate file names using the provided parameters.
+##### ***[Back to Top](#powerpass-cmdlet-reference-for-windows-powershell-dp-api--keepass-2-implementation)***
 # Import-PowerPassLocker
 ### SYNOPSIS
 Imports a PowerPass locker with salt files from a previous export.
@@ -66,6 +69,7 @@ The path to the locker file on disk. This is mandatory.
 The path fo the locker salt file on disk. This is mandatory.
 ### PARAMETER ModuleSaltPath
 The optional path to the module salt, if you also want to restore your module salt.
+##### ***[Back to Top](#powerpass-cmdlet-reference-for-windows-powershell-dp-api--keepass-2-implementation)***
 # Get-PowerPassSecret
 ### SYNOPSIS
 Retrieves secrets from a KeePass 2 database opened with `Open-PowerPassDatabase`.
@@ -138,6 +142,7 @@ In this example, we demonstrate using the pipeline to get a secret with a single
 # Get a secret with one line
 $secret = "C:\Secrets\KeePassDb.kdbx" | Open-PowerPassDatabase -WindowsUserAccount | Get-PowerPassSecret -Match "Domain Service Account"
 ```
+##### ***[Back to Top](#powerpass-cmdlet-reference-for-windows-powershell-dp-api--keepass-2-implementation)***
 # Get-PowerPass
 ### SYNOPSIS
 Gets all the information about this PowerPass deployment.
@@ -155,6 +160,7 @@ This cmdlet outputs a PSCustomObject with the following properties:
 9.  LockerSaltPath     = The absolute path to your Locker's salt file
 10. Implementation     = The type of implementation either "DPAPI" or "AES", in this case "DPAPI"
 ```
+##### ***[Back to Top](#powerpass-cmdlet-reference-for-windows-powershell-dp-api--keepass-2-implementation)***
 # New-PowerPassRandomPassword
 ### SYNOPSIS
 Generates a random password from all available standard US 101-key keyboard characters.
@@ -162,6 +168,7 @@ Generates a random password from all available standard US 101-key keyboard char
 The length of the password to generate. Can be between 1 and 65536 characters long. Defaults to 24.
 ### OUTPUTS
 Outputs a random string of typable characters to the pipeline which can be used as a password.
+##### ***[Back to Top](#powerpass-cmdlet-reference-for-windows-powershell-dp-api--keepass-2-implementation)***
 # Open-PowerPassDatabase
 ### SYNOPSIS
 Opens a KeePass 2 database file.
@@ -238,6 +245,7 @@ These databases can be opened using the `-WindowsUserAccount` parameter with `Op
 
 $db = Open-PowerPassDatabase -Path "C:\Secrets\MyKeePassDatabase.kdbx" -WindowsUserAccount
 ```
+##### ***[Back to Top](#powerpass-cmdlet-reference-for-windows-powershell-dp-api--keepass-2-implementation)***
 # Open-PowerPassTestDatabase
 ### SYNOPSIS
 Opens the TestDatabase.kdbx database bundled with PowerPass for testing.
@@ -279,6 +287,7 @@ foreach( $entry in $rootGroup.Entries ) {
 ```
 ### NOTES
 This function will fail if the test database file is not found in the module folder.
+##### ***[Back to Top](#powerpass-cmdlet-reference-for-windows-powershell-dp-api--keepass-2-implementation)***
 # Read-PowerPassSecret
 ### SYNOPSIS
 Reads secrets from your PowerPass locker.
@@ -346,6 +355,7 @@ You can fetch a secret from your locker in this format automatically and pass it
 $svcAccount = Read-PowerPassSecret -Match "Domain Reader Service" -AsCredential
 Get-ADUser -Credential $svcAccount
 ```
+##### ***[Back to Top](#powerpass-cmdlet-reference-for-windows-powershell-dp-api--keepass-2-implementation)***
 # Update-PowerPassSalt
 ### SYNOPSIS
 Rotates the Locker salt to a new random key.
@@ -354,6 +364,7 @@ As a reoutine precaution, key rotation is recommended as a best practice when de
 encrypted data. When you rotate a key, PowerPass reencrypts your PowerPass Locker with a new Locker
 salt. This ensures that even if a previous encryption was broken, a new attempt must be made if an
 attacker regains access to your encrypted Locker.
+##### ***[Back to Top](#powerpass-cmdlet-reference-for-windows-powershell-dp-api--keepass-2-implementation)***
 # Write-PowerPassSecret
 ### SYNOPSIS
 Writes a secret into your PowerPass locker.
@@ -395,6 +406,7 @@ In this example, we add some addition information to our `Domain Service Account
 # Add some more info to our Domain Service Account
 Write-PowerPassSecret -Title "Domain Service Account" -URL "https://intranet.dev.local" -Notes "Use this account to access AD" -Expires ((Get-Date).AddDays(90))
 ```
+##### ***[Back to Top](#powerpass-cmdlet-reference-for-windows-powershell-dp-api--keepass-2-implementation)***
 # All PowerPass Topics
 Select one of the links below to browse to another topic.
 ## [AES Cmdlet Reference](https://chopinrlz.github.io/powerpass/aes-cmdlet-ref) | [Data Structures](https://chopinrlz.github.io/powerpass/data-structures) | [Deployment](https://chopinrlz.github.io/powerpass/deployment) | [DP API Cmdlet Reference](https://chopinrlz.github.io/powerpass/dpapi-cmdlet-ref) | [OneDrive Backup](https://chopinrlz.github.io/powerpass/onedrivebackup) | [Prerequisites](https://chopinrlz.github.io/powerpass/prerequisites) | [Release Notes](https://chopinrlz.github.io/powerpass/release-notes) | [Usage](https://chopinrlz.github.io/powerpass/usage)
