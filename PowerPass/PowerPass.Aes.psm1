@@ -11,8 +11,12 @@ $LockerFileName = ".powerpass_locker"
 $LockerKeyFileName = ".locker_key"
 
 # Determine where user data should be stored
-$AppDataPath  = if( $IsLinux -or $IsMacOS ) { "~/.config" } else { [System.Environment]::GetFolderPath("ApplicationData") }
-$UserDataPath = if( $IsLinux -or $IsMacOS ) { "~" } else { [System.Environment]::GetFolderPath("Personal") }
+$AppDataPath  = [System.Environment]::GetFolderPath("LocalApplicationData")
+$UserDataPath = if( $IsLinux -or $IsMacOS ) {
+    [System.Environment]::GetFolderPath("UserProfile")
+} else {
+    [System.Environment]::GetFolderPath("Personal")
+}
 
 # Setup the root module object in script scope and load all relevant properties
 $PowerPass = [PSCustomObject]@{

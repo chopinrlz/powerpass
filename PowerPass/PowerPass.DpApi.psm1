@@ -16,7 +16,7 @@ $ExtensionsSourceCode = "Extensions.cs"
 $ModuleSaltFileName = "powerpass.salt"
 
 # Determine where user data should be stored
-$UserDataPath = [System.Environment]::GetFolderPath("ApplicationData")
+$UserDataPath = [System.Environment]::GetFolderPath("LocalApplicationData")
 $UserDataFolderName = $PowerPassEdition
 
 # Setup the root module object in script scope and load all relevant properties
