@@ -1,32 +1,21 @@
-The latest release of PowerPass version 1.2.0 fixes a minor issue with the deployment script and makes deployment more defensive if you run it multiple times. The salt generation routine has been integrated into the deployment script.
-
-## New Features
-### Locker Export and Import
-Using the new `Export-PowerPassLocker` and `Import-PowerPassLocker` cmdlets you can now make backup copies of your PowerPass locker secrets and restore them later. Locker secrets are encrypted using the Windows Data Protection API under the current user scope and can only be imported back onto the same machine with the same user profile. This is helpful if you want to deploy a new version of PowerPass, you can import your Locker secrets after the update.
-### Release Includes KeePassLib
-New releases of PowerPass will include a compiled assembly for KeePassLib bundled with the release. You can now deploy PowerPass without needing to compile KeePassLib from source although it is still an option.
-
-## Features
-### Support for KeePass Databases
-Fetch secrets from KeePass databases using the `Open-PowerPassDatabase` and `Get-PowerPassSecret` cmdlets.
-### Support for PowerPass Lockers
-User-specific encrypted databases created with PowerPass natively and managed for you automatically. Simply use the `Read-PowerPassSecret` and `Write-PowerPassSecret` cmdlets after deploying the module to securely store and retrieve secrets with PowerPass natively.
-### Clear Locker Secrets
-Using the `Clear-PowerPassLocker` cmdlet you can clear all your Locker secrets. You will be prompted to confirm this action unless you specify the `Force` parameter.
-
-## Deployment
+The latest release of PowerPass version 1.3.0 is now cross-platform. It has been tested on Linux and Windows on PowerShell 7 and Windows PowerShell.
+# New Features
+### AES Encryption
+This release adds support for 256-bit AES encryption for PowerPass Lockers on all operating systems. The Data Protection API implementation with KeePass 2 support is also included. The deployment script has been updated to allow you to pick which edition you want and will auto-detect PowerShell 7 or Windows PowerShell 5 and provide you with the appropriate deployment options.
+### Remove Locker Secrets
+This release adds a new cmdlet `Remove-PowerPassSecret` to allow you to remove secrets from your PowerPass Lockers.
+# Deprecated Features
+### System-wide Deployment
+Support for system-wide deployment has been removed from PowerPass as this goes against the principles of data security offered using user-specific encryption keys. You can still install PowerPass into your system folder, but the deployment script only supports user-level deployment which is the recommend use for PowerPass.
+# Deployment
 To install:
-1. Clone the repo, download and upzip the release build, or download the source code for this release
-2. Run `Deploy-PowerPass.ps1` in Windows PowerShell
-
-You must now use the `Deploy-PowerPass.ps1` script to deploy PowerPass. For details on deployment please refer to the `README` on the homepage of this repository [here](https://github.com/chopinrlz/powerpass).
-
-## Best Practices
-NOTE: It is NOT recommended to install PowerPass for both the current user AND for all users since each deployment includes a unique random salt for encryption. If the module is deployed for all users, it may conflict with the user-level deployment.  The best practice is to deploy PowerPass once for each user who needs it.
-
-## Known Issues
+1. Clone the repo, download a release, or download the source code for this release
+2. Run `Deploy-PowerPass.ps1` in any PowerShell terminal (you will need write access to this folder)
+# Bug Fixes
 ### [OneDrive backup changes default PSModulePath](https://github.com/chopinrlz/powerpass/issues/2)
-Please see the [OneDrive Backup](https://chopinrlz.github.io/powerpass/onedrivebackup) article for more details.
-# All PowerPass Topics
-Select one of the links below to browse to another topic.
-## [AES Cmdlet Reference](https://chopinrlz.github.io/powerpass/aes-cmdlet-ref) | [Data Structures](https://chopinrlz.github.io/powerpass/data-structures) | [Deployment](https://chopinrlz.github.io/powerpass/deployment) | [DP API Cmdlet Reference](https://chopinrlz.github.io/powerpass/dpapi-cmdlet-ref) | [OneDrive Backup](https://chopinrlz.github.io/powerpass/onedrivebackup) | [Prerequisites](https://chopinrlz.github.io/powerpass/prerequisites) | [Release Notes](https://chopinrlz.github.io/powerpass/release-notes) | [Usage](https://chopinrlz.github.io/powerpass/usage)
+This release fixes this bug. The deployment script will now auto-detect if you have OneDrive Backup enabled and will locate your modules path updated by OneDrive. PowerPass will be deployed to your correct modules folder automatically.
+# File Hashes
+| Release                 | SHA256 Hash                                                      |
+| ----------------------- | ---------------------------------------------------------------- |
+| PowerPass-1.3.0.tar.gz  | da9a41fdb16c560b2e8dd847ecbd6d177646891927a998abbfb293f5de7f8664 |
+| PowerPass-1.3.0.zip     | 9caa0b08ec08c3305fc307e39791367086d95c34d7d3178a3cc4ba3880b3c518 |
