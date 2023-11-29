@@ -530,16 +530,13 @@ function Write-PowerPassSecret {
         }
     } else {
         $changed = $true
-        $newSecret = [PSCustomObject]@{
-            Title = $Title
-            UserName = $UserName
-            Password = $Password
-            URL = $URL
-            Notes = $Notes
-            Expires = $Expires
-            Created = (Get-Date).ToUniversalTime()
-            Modified = (Get-Date).ToUniversalTime()
-        }
+        $newSecret = New-PowerPassSecret
+        $newSecret.Title = $Title
+        $newSecret.UserName = $UserName
+        $newSecret.Password = $Password
+        $newSecret.URL = $URL
+        $newSecret.Notes = $Notes
+        $newSecret.Expires = $Expires
         $locker.Secrets += $newSecret
     }
     if( $changed ) {
@@ -548,7 +545,7 @@ function Write-PowerPassSecret {
             throw "Error writing secret, no locker salt"
         }
         $pathToLocker = $script:PowerPass.LockerFilePath
-        $json = $locker | ConvertTo-Json
+        $json = ConvertTo-Json -InputObject $locker
         $data = [System.Text.Encoding]::UTF8.GetBytes($json)
         $encData = [System.Security.Cryptography.ProtectedData]::Protect($data,$salt,"CurrentUser")
         $encDataText = [System.Convert]::ToBase64String($encData)
@@ -812,16 +809,7 @@ function Initialize-PowerPassLocker {
             Secrets = @()
             Attachments = @()
         }
-        $newSecret = [PSCustomObject]@{
-            Title = "Default"
-            UserName = "PowerPass"
-            Password = "PowerPass"
-            URL = "https://github.com/chopinrlz/powerpass"
-            Notes = "This is the default secret for the PowerPass locker."
-            Expires = [DateTime]::MaxValue
-            Created = [DateTime]::Now.ToUniversalTime()
-            Modified = [DateTime]::Now.ToUniversalTime()
-        }
+        $newSecret = New-PowerPassSecret
         $newAttachment = [PSCustomObject]@{
             FileName = "PowerPass.txt"
             Data = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes("This is the default text file attachment."))
@@ -1111,4 +1099,83 @@ function Get-PowerPassCredential {
     )
     $x = @(($Secret.UserName), (ConvertTo-SecureString -String ($Secret.Password) -AsPlainText -Force))
     New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $x
+}
+
+# ------------------------------------------------------------------------------------------------------------- #
+# FUNCTION: Remove-PowerPassSecret
+# ------------------------------------------------------------------------------------------------------------- #
+
+function Remove-PowerPassSecret {
+    <#
+        .SYNOPSIS
+        Removes a secret from your locker.
+        .PARAMETER Title
+        The Title of the secret to remove from your locker.
+        .NOTES
+        The Title parameter can be passed from the pipeline.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory,ValueFromPipeline,Position=0)]
+        [string]
+        $Title
+    )
+    begin {
+        $locker = Get-PowerPassLocker
+        if( -not $locker ) {
+            throw "Could not load your PowerPass locker"
+        }
+        $newLocker = [PSCustomObject]@{
+            Edition = $locker.Edition
+            Created = $locker.Created
+            Secrets = @()
+            Attachments = $locker.Attachments
+        }
+        $changed = $false
+    } process {
+        if( -not [String]::IsNullOrWhiteSpace( $Title ) ) {
+            foreach( $s in $locker.Secrets ) {
+                if( ($s.Title) -eq $Title ) {
+                    $s.Mfd = $true
+                    $changed = $true
+                }
+            }
+        }
+    } end {
+        if( $changed ) {
+            $salt = Get-PowerPassLockerSalt
+            if( -not $salt ) {
+                throw "Error writing secret, no locker salt"
+            }
+            $newLocker.Secrets = $locker.Secrets | Where-Object { -not ($_.Mfd) }
+            $pathToLocker = $script:PowerPass.LockerFilePath
+            $json = ConvertTo-Json -InputObject $newLocker
+            $data = [System.Text.Encoding]::UTF8.GetBytes($json)
+            $encData = [System.Security.Cryptography.ProtectedData]::Protect($data,$salt,"CurrentUser")
+            $encDataText = [System.Convert]::ToBase64String($encData)
+            Out-File -FilePath $pathToLocker -InputObject $encDataText -Force
+        }
+    }
+}
+
+# ------------------------------------------------------------------------------------------------------------- #
+# FUNCTION: New-PowerPassSecret
+# ------------------------------------------------------------------------------------------------------------- #
+
+function New-PowerPassSecret {
+    <#
+        .SYNOPSIS
+        Creates a new PowerPass secret with the standard properties and values.
+    #>
+    [PSCustomObject]@{
+        Title = "Default"
+        UserName = "PowerPass"
+        Password = "PowerPass"
+        URL = "https://github.com/chopinrlz/powerpass"
+        Notes = "This is the default secret for the PowerPass locker."
+        Expires = [DateTime]::MaxValue
+        Created = [DateTime]::Now.ToUniversalTime()
+        Modified = [DateTime]::Now.ToUniversalTime()
+        Mfd = $false
+    }
 }

@@ -280,6 +280,28 @@ if( $unitTesting.Title -eq "Unit Testing" ) {
     Write-Warning "Assert failed"
 }
 
+# Test removing secrets
+Write-Host "Testing secret removal: " -NoNewline
+Write-PowerPassSecret -Title "Delete Me"
+Write-PowerPassSecret -Title "Keep Me"
+$secret = Read-PowerPassSecret -Match "Delete Me"
+if( $secret ) {
+    Remove-PowerPassSecret -Title "Delete Me"
+    $secret = Read-PowerPassSecret -Match "Delete Me"
+    if( $secret ) {
+        Write-Warning "Assert failed"
+    } else {
+        $secret = Read-PowerPassSecret -Match "Keep Me"
+        if( $secret ) {
+            Write-Host "Assert passed"
+        } else {
+            Write-Warning "Assert failed"
+        }
+    }
+} else {
+    Write-Warning "Assert failed"
+}
+
 # Clean up
 Write-Host "Cleaning up test files"
 "locker.salt","powerpass.locker","powerpass.salt","test.locker","testlocker.salt","testmodule.salt" | ForEach-Object {

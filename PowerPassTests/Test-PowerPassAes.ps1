@@ -104,6 +104,27 @@ if( $secret ) {
     Write-Warning "Fail"
 }
 
-Write-Host "Clearnup"
+Write-Host "Testing Remove-PowerPassSecret: " -NoNewline
+Write-PowerPassSecret -Title "Delete Me"
+Write-PowerPassSecret -Title "Keep Me"
+$secret = Read-PowerPassSecret -Match "Delete Me"
+if( $secret ) {
+    Remove-PowerPassSecret -Title "Delete Me"
+    $secret = Read-PowerPassSecret -Match "Delete Me"
+    if( $secret ) {
+        Write-Warning "Fail"
+    } else {
+        $secret = Read-PowerPassSecret -Match "Keep Me"
+        if( $secret ) {
+            Write-Host "Pass"
+        } else {
+            Write-Warning "Fail"
+        }
+    }
+} else {
+    Write-Warning "Fail"
+}
+
+Write-Host "Cleanup"
 Remove-Item -Path "$PSScriptRoot\.locker_key" -Force
 Remove-Item -Path "$PSScriptRoot\.powerpass_locker" -Force

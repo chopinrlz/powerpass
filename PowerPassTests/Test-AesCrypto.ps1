@@ -3,7 +3,11 @@ Write-Host "These tests should pass in both Windows PowerShell and PowerShell 7 
 
 Write-Host "Loading the type from source"
 $code = Get-Content "$PSScriptRoot\..\PowerPass\AesCrypto.cs" -Raw
-Add-Type -TypeDefinition $code -ReferencedAssemblies "System.Security.Cryptography"
+if( $PSVersionTable.PSVersion.Major -eq 5 ) {
+    Add-Type -TypeDefinition $code -ReferencedAssemblies "System.Security"
+} else {
+    Add-Type -TypeDefinition $code -ReferencedAssemblies "System.Security.Cryptography"
+}
 
 Write-Host "Setting up constants for testing"
 $keyFile = "$PSScriptRoot\aes.key"
