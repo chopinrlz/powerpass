@@ -8,6 +8,8 @@
 # Make sure we're in the right run-time
 if( $PSVersionTable.PSVersion.Major -ne 5 ) {
     throw "This test script is for the DP API implementation in Windows PowerShell 5"
+} else {
+    Write-Host "Verified Windows PowerShell 5 shell"
 }
 
 # First test is loading the PowerPass module
@@ -16,9 +18,13 @@ Import-Module PowerPass
 $module = Get-Module | ? Name -eq "PowerPass"
 if( -not $module ) {
     throw "Failed to load PowerPass module, did you deploy it?"
+} else {
+    Write-Host "Verified module import"
 }
 if( (Get-PowerPass).Implementation -ne "DPAPI" ) {
     throw "This test is for the DPAPI implementation of PowerPass, you have the $((Get-PowerPass).Implementation) implementation installed"
+} else {
+    Write-Host "Verified DP API implementation present"
 }
 
 # ------------------------------------------------------------------------------------------------------------- #
@@ -166,18 +172,21 @@ $expectedResults = @('Test Entry','Test Entry','Test Entry')
 $localDb = Open-PowerPassDatabase -Path "$PSScriptRoot\kpdb-pwmulti.kdbx" -MasterPassword $secureString
 $actualResults = Get-PowerPassSecret -Database $localDb -Match "Test Entry"
 Assert-SecretCollection -Collection $actualResults -Titles $expectedResults
+$actualResults = $null
 
 # Test a database with multiple entries using wildcards
 Write-Host "Testing a Database to get All Entries: " -NoNewline
 $expectedResults = @('Other Words in Title','Test Entry','Test Entry','Test Entry','Test User')
 $actualResults = Get-PowerPassSecret -Database $localDb | Sort-Object -Property "Title"
 Assert-SecretCollection -Collection $actualResults -Titles $expectedResults
+$actualResults = $null
 
 # Test a database with multiple entries using Test and wildcards
 Write-Host "Testing a Database with Wilcard Search 'Test*': " -NoNewline
 $expectedResults = @('Test Entry','Test Entry','Test Entry','Test User')
 $actualResults = Get-PowerPassSecret -Database $localDb -Match "Test*" | Sort-Object -Property "Title"
 Assert-SecretCollection -Collection $actualResults -Titles $expectedResults
+$actualResults = $null
 
 # Clear the Locker to Unit Test the Locker
 Write-Host "Testing the Default Secret in a new Locker: " -NoNewline
@@ -198,6 +207,32 @@ if( $unitTesting.Title -eq "Unit Testing" ) {
 } else {
     Write-Warning "Assert failed"
 }
+
+# Test reading secrets in various ways
+Write-Host "Testing Read function with parameter: " -NoNewline
+$secret = Read-PowerPassSecret -Match "Unit Testing"
+if( $secret ) {
+    Write-Host "Assert passed"
+} else {
+    Write-Warning "Assert failed"
+}
+$secret = $null
+Write-Host "Testing Read function with no parameter name: " -NoNewline
+$secret = Read-PowerPassSecret "Unit Testing"
+if( $secret ) {
+    Write-Host "Assert passed"
+} else {
+    Write-Warning "Assert failed"
+}
+$secret = $null
+Write-Host "Testing Read function from pipeline: " -NoNewline
+$secret = "Unit Testing" | Read-PowerPassSecret
+if( $secret ) {
+    Write-Host "Assert passed"
+} else {
+    Write-Warning "Assert failed"
+}
+$secret = $null
 
 # Test the export functionality with default file names
 Write-Host "Testing locker export with default file names: " -NoNewline
@@ -234,6 +269,8 @@ if( Test-Path "$PSScriptRoot\test.locker" ) {
 }
 
 # Test the clear functionality, interactively
+$unitTesting = $null
+$default = $null
 Write-Host "Testing locker clear (interactive, no force)"
 Clear-PowerPassLocker
 $unitTesting = Read-PowerPassSecret -Match "Unit Testing"
@@ -249,6 +286,7 @@ if( $unitTesting ) {
 }
 
 # Test the clear functionality, with force
+$default = $null
 Write-Host "Testing locker clear (force): " -NoNewline
 Clear-PowerPassLocker -Force
 $default = Read-PowerPassSecret
@@ -259,6 +297,7 @@ if( $default.Title -eq "Default" ) {
 }
 
 # Test the import functionality without the module salt
+$unitTesting = $null
 Write-Host "Testing locker import (no module salt)"
 Clear-PowerPassLocker -Force
 Import-PowerPassLocker -LockerFilePath "$PSScriptRoot\powerpass.locker" -LockerSaltPath "$PSScriptRoot\locker.salt"
@@ -270,6 +309,7 @@ if( $unitTesting.Title -eq "Unit Testing" ) {
 }
 
 # Test the import functionality with the module salt
+$unitTesting = $null
 Write-Host "Testing locker export (with module salt)"
 Clear-PowerPassLocker -Force
 Import-PowerPassLocker -LockerFilePath "$PSScriptRoot\powerpass.locker" -LockerSaltPath "$PSScriptRoot\locker.salt" -ModuleSaltPath "$PSScriptRoot\powerpass.salt"
@@ -281,6 +321,7 @@ if( $unitTesting.Title -eq "Unit Testing" ) {
 }
 
 # Test removing secrets
+$secret = $null
 Write-Host "Testing secret removal: " -NoNewline
 Write-PowerPassSecret -Title "Delete Me"
 Write-PowerPassSecret -Title "Keep Me"

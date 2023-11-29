@@ -37,6 +37,31 @@ if( $secret ) {
 Write-Host "Testing Write-PowerPassSecret unit test"
 Write-PowerPassSecret -Title "Unit Test"
 
+Write-Host "Testing Read function with parameter: " -NoNewline
+$secret = Read-PowerPassSecret -Match "Unit Test"
+if( $secret ) {
+    Write-Host "Assert passed"
+} else {
+    Write-Warning "Assert failed"
+}
+$secret = $null
+Write-Host "Testing Read function with no parameter name: " -NoNewline
+$secret = Read-PowerPassSecret "Unit Test"
+if( $secret ) {
+    Write-Host "Assert passed"
+} else {
+    Write-Warning "Assert failed"
+}
+$secret = $null
+Write-Host "Testing Read function from pipeline: " -NoNewline
+$secret = "Unit Test" | Read-PowerPassSecret
+if( $secret ) {
+    Write-Host "Assert passed"
+} else {
+    Write-Warning "Assert failed"
+}
+$secret = $null
+
 Write-Host "Testing Read-PowerPassSecret unit test: " -NoNewline
 $secret = Read-PowerPassSecret | ? Title -eq "Unit Test"
 if( $secret ) {
@@ -44,6 +69,7 @@ if( $secret ) {
 } else {
     Write-Warning "Fail"
 }
+$secret = $null
 
 Write-Host "Testing Clear-PowerPassLocker"
 Clear-PowerPassLocker -Force
@@ -55,6 +81,7 @@ if( $secret ) {
 } else {
     Write-Warning "Fail"
 }
+$secret = $null
 
 Write-Host "Testing Read-PowerPassSecret after clear - unit test: " -NoNewline
 $secret = Read-PowerPassSecret | ? Title -eq "Unit Test"
@@ -63,6 +90,7 @@ if( $secret ) {
 } else {
     Write-Host "Pass"
 }
+$secret = $null
 
 Write-Host "Testing Export-PowerPassLocker: " -NoNewline
 Write-PowerPassSecret -Title "Export Test"
@@ -85,6 +113,7 @@ if( $secret ) {
 } else {
     Write-Warning "Fail"
 }
+$secret = $null
 
 Write-Host "Testing New-PowerPassRandomPassword: " -NoNewline
 $randomPassword = New-PowerPassRandomPassword
@@ -103,6 +132,7 @@ if( $secret ) {
 } else {
     Write-Warning "Fail"
 }
+$secret = $null
 
 Write-Host "Testing Remove-PowerPassSecret: " -NoNewline
 Write-PowerPassSecret -Title "Delete Me"
@@ -124,6 +154,7 @@ if( $secret ) {
 } else {
     Write-Warning "Fail"
 }
+$secret = $null
 
 Write-Host "Cleanup"
 Remove-Item -Path "$PSScriptRoot\.locker_key" -Force

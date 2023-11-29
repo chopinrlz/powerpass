@@ -271,6 +271,7 @@ function Read-PowerPassSecret {
         the Title of "Default".
     #>
     param(
+        [Parameter(ValueFromPipeline,Position=0)]
         [string]
         $Match,
         [switch]
