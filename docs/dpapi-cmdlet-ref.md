@@ -9,8 +9,9 @@ The Windows PowerShell Data Protection API implementation supports Windows Power
 7. [Open-PowerPassDatabase](#open-powerpassdatabase)
 8. [Open-PowerPassTestDatabase](#open-powerpasstestdatabase)
 9. [Read-PowerPassSecret](#read-powerpasssecret)
-10. [Update-PowerPassSalt](#update-powerpasssalt)
-11. [Write-PowerPassSecret](#write-powerpasssecret)
+10. [Remove-PowerPassSecret](#remove-powerpasssecret)
+11. [Update-PowerPassSalt](#update-powerpasssalt)
+12. [Write-PowerPassSecret](#write-powerpasssecret)
 
 Continue reading for the cmdlet details.
 # Clear-PowerPassLocker
@@ -356,6 +357,25 @@ $svcAccount = Read-PowerPassSecret -Match "Domain Reader Service" -AsCredential
 Get-ADUser -Credential $svcAccount
 ```
 ##### ***[Back to Top](#powerpass-cmdlet-reference-for-windows-powershell-dp-api--keepass-2-implementation)***
+# Remove-PowerPassSecret
+### SYNOPSIS
+Removes a secret from your locker.
+### PARAMETER Title
+The Title of the secret to remove from your locker.
+### NOTES
+The Title parameter can be passed from the pipeline.
+### EXAMPLE 1: Remove a Secret
+In this example we demonstrate removing a single secret from the Locker.
+```powershell
+# Remove the Domain Admin credentials
+Remove-PowerPassSecret -Title "Domain Admin Login"
+```
+### EXAMPLE 2: Remove a Few Secrets
+In this example we demonstrate removing several secrets from the Locker at once.
+```powershell
+# Remove all the service accounts
+"svc_sqlserver","svc_sharepoint","svc_spadmin" | Remove-PowerPassSecret
+```
 # Update-PowerPassSalt
 ### SYNOPSIS
 Rotates the Locker salt to a new random key.

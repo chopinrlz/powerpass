@@ -6,8 +6,9 @@ The AES implementation of PowerPass works on Windows PowerShell and PowerShell 7
 4. [Import-PowerPassLocker](#import-powerpasslocker)
 5. [New-PowerPassRandomPassword](#new-powerpassrandompassword)
 6. [Read-PowerPassSecret](#read-powerpasssecret)
-7. [Update-PowerPassKey](#update-powerpasskey)
-8. [Write-PowerPassSecret](#write-powerpasssecret)
+7. [Remove-PowerPassSecret](#remove-powerpasssecret)
+8. [Update-PowerPassKey](#update-powerpasskey)
+9. [Write-PowerPassSecret](#write-powerpasssecret)
 
 Here are the cmdlets for the AES implementation of PowerPass.
 # Clear-PowerPassLocker
@@ -156,6 +157,25 @@ $svcAccount = Read-PowerPassSecret -Match "Domain Reader Service" -AsCredential
 Get-ADUser -Credential $svcAccount
 ```
 ##### ***[Back to Top](#powerpass-cmdlet-reference-for-aes-implementation)***
+# Remove-PowerPassSecret
+### SYNOPSIS
+Removes a secret from your locker.
+### PARAMETER Title
+The Title of the secret to remove from your locker.
+### NOTES
+The Title parameter can be passed from the pipeline.
+### EXAMPLE 1: Remove a Secret
+In this example we demonstrate removing a single secret from the Locker.
+```powershell
+# Remove the Domain Admin credentials
+Remove-PowerPassSecret -Title "Domain Admin Login"
+```
+### EXAMPLE 2: Remove a Few Secrets
+In this example we demonstrate removing several secrets from the Locker at once.
+```powershell
+# Remove all the service accounts
+"svc_sqlserver","svc_sharepoint","svc_spadmin" | Remove-PowerPassSecret
+```
 # Update-PowerPassKey
 ### SYNOPSIS
 Rotates the Locker key to a new random key.
