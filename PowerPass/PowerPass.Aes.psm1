@@ -10,8 +10,14 @@ $PowerPassEdition = "powerpassv2"
 $LockerFileName = ".powerpass_locker"
 $LockerKeyFileName = ".locker_key"
 
+# Determine where application data should be stored
+$AppDataPath  = if( $IsLinux -or $IsMacOS ) {
+    [System.Environment]::GetFolderPath("ApplicationData")
+} else {
+    [System.Environment]::GetFolderPath("LocalApplicationData")
+}
+
 # Determine where user data should be stored
-$AppDataPath  = [System.Environment]::GetFolderPath("LocalApplicationData")
 $UserDataPath = if( $IsLinux -or $IsMacOS ) {
     [System.Environment]::GetFolderPath("UserProfile")
 } else {
