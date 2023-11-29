@@ -1,7 +1,9 @@
 The latest release of PowerPass version 1.3.0 is now cross-platform. It has been tested on Linux and Windows on PowerShell 7 and Windows PowerShell.
 # New Features
 ### AES Encryption
-This release adds support for 256-bit AES encryption for PowerPass Lockers on all operating systems. The Data Protection API implementation with KeePass 2 support is also included. The deployment script has been updated to allow you to pick which edition you want and will auto-detect PowerShell 7 or Windows PowerShell 5 and provide you with the appropriate deployment options.
+This release adds support for 256-bit AES encryption for PowerPass Lockers on all operating systems. The Data Protection API implementation with KeePass 2 support is also included in this release. Based on your PowerShell environment, the deployment script will allow you to pick which edition you want and will auto-detect PowerShell 7 or Windows PowerShell 5 and provide you with the appropriate deployment options.
+### Password Generator
+This release adds a new cmdlet `New-PowerPassRandomPassword` which will let you create a random password of almost any length.
 ### Remove Locker Secrets
 This release adds a new cmdlet `Remove-PowerPassSecret` to allow you to remove secrets from your PowerPass Lockers.
 # Deprecated Features
