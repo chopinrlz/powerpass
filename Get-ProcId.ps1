@@ -1,0 +1,1 @@
+sudo dmidecode -t processor
