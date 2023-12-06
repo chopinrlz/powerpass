@@ -17,6 +17,7 @@
 /PowerPassTests/data.aes
 /PowerPassTests/.locker_key
 /PowerPassTests/.powerpass_locker
+/PowerPassTests/powerpass_locker.bin
 /powerpass.sln
 /TSS/bin/*
 cim.json
