@@ -207,7 +207,7 @@ namespace PowerPass {
         public void WriteKeyToDisk( string filename, byte[] passphrase ) {
             // Assert preconditions
             if( string.IsNullOrEmpty( filename ) ) throw new ArgumentNullException( "filename" );
-            if( passphrase == null ) throw ArgumentNullException( "passphrase" );
+            if( passphrase == null ) throw new ArgumentNullException( "passphrase" );
 
             // Generate a key if there isn't one already
             if( _key == null ) GenerateKey();
