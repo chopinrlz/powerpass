@@ -178,27 +178,20 @@ namespace PowerPass {
         /// Loads an encryption key from disk into this AesCrypto instance for encryption and decryption.
         /// </summary>
         /// <param name="filename">The absolute path fo the key file.</param>
+        /// <param name="passphrase">The passphrase required to unlock the keyfile.</param>
         /// <exception cref="ArgumentNullException">The filename argument is null or empty.</exception>
         /// <exception cref="InvalidOperationException">The file specified by filename does not exist or is not
         /// exactly 32 bytes.</exception>
-        public void ReadKeyFromDisk( string filename ) {
+        public void ReadKeyFromDisk( string filename, byte[] passphrase ) {
             // Assert preconditions
             if( string.IsNullOrEmpty( filename ) ) throw new ArgumentNullException( "filename" );
             if( !File.Exists( filename ) ) throw new InvalidOperationException();
+            if( passphrase == null ) throw new ArgumentNullException( "passphrase" );
 
-            // Read the key file into memory
-            using( var fs = new FileStream( filename, FileMode.Open ) ) {
-                if( fs.Length < 32 ) throw new InvalidOperationException();
-                int total = 32;
-                _key = new byte[32];
-                int index = 0;
-                int read = fs.Read( _key, index, 32 );
-                total -= read;
-                index += read;
-                while( total > 0 ) {
-                    read = fs.Read( _key, index, 32 - total );
-                    total -= read;
-                }
+            // Decrypt the key using the passphrase
+            using( var aes = new AesCrypto() ) {
+                aes.Key = passphrase;
+                this.Key = aes.Decrypt( filename );
             }
         }
 
@@ -206,22 +199,24 @@ namespace PowerPass {
         /// Saves the current key to disk. If no key has been set, a key will be generated.
         /// </summary>
         /// <param name="filename">The absolute path to the file to write to disk.</param>
+        /// <param name="passphrase">The passphrase required to encrypt the key.</param>
         /// <exception cref="ArgumentNullException">The filename argument is null or empty.</exception>
         /// <remarks>
         /// If the file already exists on disk, it will be deleted first.
         /// </remarks>
-        public void WriteKeyToDisk( string filename ) {
+        public void WriteKeyToDisk( string filename, byte[] passphrase ) {
             // Assert preconditions
             if( string.IsNullOrEmpty( filename ) ) throw new ArgumentNullException( "filename" );
+            if( passphrase == null ) throw ArgumentNullException( "passphrase" );
 
             // Generate a key if there isn't one already
             if( _key == null ) GenerateKey();
 
             // Write the key file to disk, deleting an existing one
             if( File.Exists( filename ) ) File.Delete( filename );
-            using( var fs = new FileStream( filename, FileMode.Create ) ) {
-                fs.Write( _key, 0, _key.Length );
-                fs.Flush();
+            using( var aes = new AesCrypto() ) {
+                aes.Key = passphrase;
+                aes.Encrypt( _key, filename );
             }
         }
 
