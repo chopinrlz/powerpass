@@ -26,6 +26,9 @@ if( $answer ) {
     throw "Testing cancelled by user"
 }
 
+Write-Host "Setting up constants and variables"
+$lockerExport = Join-Path -Path $PSScriptRoot -ChildPath "powerpass_locker.bin"
+
 Write-Host "Testing Read-PowerPassSecret with empty locker: " -NoNewline
 $secret = Read-PowerPassSecret | ? Title -eq "Default"
 if( $secret ) {
@@ -93,7 +96,6 @@ if( $secret ) {
 $secret = $null
 
 Write-Host "Testing Export-PowerPassLocker: " -NoNewline
-$lockerExport = "$PSScriptRoot\powerpass_locker.bin"
 if( Test-Path $lockerExport ) {
     Remove-Item $lockerExport -Force
 }
@@ -106,7 +108,7 @@ if( Test-Path $lockerExport ) {
 }
 
 Write-Host "Testing Import-PowerPassLocker: " -NoNewline
-Import-PowerPassLocker -LockerFile "$PSScriptRoot\powerpass_locker.bin" -Password "12345" -Force
+Import-PowerPassLocker -LockerFile $lockerExport -Password "12345" -Force
 $secret = Read-PowerPassSecret | ? Title -eq "Export Test"
 if( $secret ) {
     Write-Host "Pass"
@@ -131,7 +133,7 @@ if( Test-Path $lockerExport ) {
 }
 
 Write-Host "Testing Import-PowerPassLocker with strong password: " -NoNewline
-Import-PowerPassLocker -LockerFile "$PSScriptRoot\powerpass_locker.bin" -Password "h76fnJ&fd543JMnd4#d9*mnc2@1k;:5r" -Force
+Import-PowerPassLocker -LockerFile $lockerExport -Password "h76fnJ&fd543JMnd4#d9*mnc2@1k;:5r" -Force
 $secret = Read-PowerPassSecret | ? Title -eq "Export Test"
 if( $secret ) {
     Write-Host "Pass"
@@ -183,4 +185,6 @@ $secret = $null
 
 Write-Host "Cleanup"
 Clear-PowerPassLocker -Force
-Remove-Item -Path "$PSScriptRoot\powerpass_locker.bin" -Force
+if( Test-Path $lockerExport ) {
+    Remove-Item $lockerExport -Force
+}
