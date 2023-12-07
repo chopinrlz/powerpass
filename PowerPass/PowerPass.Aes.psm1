@@ -469,6 +469,12 @@ function Export-PowerPassLocker {
     if( -not $locker ) {
         throw "Could not load you PowerPass locker"
     }
+    if( $Password -eq "" ) {
+        throw "You cannot use a blank password"
+    }
+    if( $Password.Length -gt 32 ) {
+        throw "The maximum password length is 32 characters."
+    }
     $output = Join-Path -Path $Path -ChildPath "powerpass_locker.bin"
     if( Test-Path $output ) {
         $answer = Read-Host "$output already exists, overwrite? [N/y]"
@@ -479,11 +485,10 @@ function Export-PowerPassLocker {
         }
     }
     $json = ConvertTo-Json -InputObject $locker
-    $jsonBytes = [System.Text.Encoding]::UTF8.GetBytes( $json )
-    $passwordBytes = [System.Text.Encoding]::UTF8.GetBytes( $Password )
+    $data = [System.Text.Encoding]::UTF8.GetBytes( $json )
     $aes = New-Object -TypeName "PowerPass.AesCrypto"
-    $aes.Key = $passwordBytes
-    $aes.Encrypt( $jsonBytes, $output )
+    $aes.SetPaddedKey( $Password )
+    $aes.Encrypt( $data, $output )
     $aes.Dispose()
 }
 
@@ -521,7 +526,7 @@ function Import-PowerPassLocker {
     # Verify and load locker backup file
     if( Test-Path $LockerFile ) {
         $aes = New-Object -TypeName "PowerPass.AesCrypto"
-        $aes.Key = [System.Text.Encoding]::UTF8.GetBytes( $Password )
+        $aes.SetPaddedKey( $Password )
         $data = $aes.Decrypt( $LockerFile )
         $aes.Dispose()
     } else {

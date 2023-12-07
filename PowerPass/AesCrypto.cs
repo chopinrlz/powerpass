@@ -221,6 +221,30 @@ namespace PowerPass {
         }
 
         /// <summary>
+        /// Sets the key for this AES instance to a password padded with null values to ensure
+        /// it fits the key size for 256-bit AES.
+        /// </summary>
+        /// <param name="password">The password to convert and pad into a byte array.</param>
+        /// <exception cref="ArgumentNullException">The password argument is null or empty.</exception>
+        public void SetPaddedKey( string password ) {
+            if( string.IsNullOrEmpty( password ) ) throw new ArgumentNullException( "password" );
+            if( _key != null ) ZeroKeyBytes();
+            var pb = System.Text.Encoding.UTF8.GetBytes( password );
+            if( pb.Length < 32 ) {
+                var pbNew = new byte[32];
+                Array.Copy( pb, 0, pbNew, 0, pb.Length );
+                for( int i = pb.Length; i < 32; i++ ) {
+                    pbNew[i] = 0x00;
+                }
+                for( int i = 0; i < pb.Length; i++ ) {
+                    pb[i] = 0x00;
+                }
+                pb = pbNew;
+            }
+            _key = pb;
+        }
+
+        /// <summary>
         /// Zeroes out the key bytes from memory.
         /// </summary>
         public void Dispose() {

@@ -93,20 +93,45 @@ if( $secret ) {
 $secret = $null
 
 Write-Host "Testing Export-PowerPassLocker: " -NoNewline
+$lockerExport = "$PSScriptRoot\powerpass_locker.bin"
+if( Test-Path $lockerExport ) {
+    Remove-Item $lockerExport -Force
+}
 Write-PowerPassSecret -Title "Export Test"
-Export-PowerPassLocker -Path $PSScriptRoot
-if( Test-Path "$PSScriptRoot\.powerpass_locker" ) {
-    if( Test-Path "$PSScriptRoot\.locker_key" ) {
-        Write-Host "Pass"
-    } else {
-        Write-Warning "Fail: no key file"
-    }
+Export-PowerPassLocker -Path $PSScriptRoot -Password "12345"
+if( Test-Path $lockerExport ) {
+    Write-Host "Pass"
 } else {
     Write-Warning "Fail: no locker file"
 }
 
 Write-Host "Testing Import-PowerPassLocker: " -NoNewline
-Import-PowerPassLocker -LockerFilePath "$PSScriptRoot\.powerpass_locker" -LockerKeyFilePath "$PSScriptRoot\.locker_key" -Force
+Import-PowerPassLocker -LockerFile "$PSScriptRoot\powerpass_locker.bin" -Password "12345" -Force
+$secret = Read-PowerPassSecret | ? Title -eq "Export Test"
+if( $secret ) {
+    Write-Host "Pass"
+} else {
+    Write-Warning "Fail"
+}
+$secret = $null
+
+Write-Host "Cleaning up for next test"
+Clear-PowerPassLocker -Force
+if( Test-Path $lockerExport ) {
+    Remove-Item $lockerExport -Force
+}
+
+Write-Host "Testing Export-PowerPassLocker with strong password: " -NoNewline
+Write-PowerPassSecret -Title "Export Test"
+Export-PowerPassLocker -Path $PSScriptRoot -Password "h76fnJ&fd543JMnd4#d9*mnc2@1k;:5r"
+if( Test-Path $lockerExport ) {
+    Write-Host "Pass"
+} else {
+    Write-Warning "Fail: no locker file"
+}
+
+Write-Host "Testing Import-PowerPassLocker with strong password: " -NoNewline
+Import-PowerPassLocker -LockerFile "$PSScriptRoot\powerpass_locker.bin" -Password "h76fnJ&fd543JMnd4#d9*mnc2@1k;:5r" -Force
 $secret = Read-PowerPassSecret | ? Title -eq "Export Test"
 if( $secret ) {
     Write-Host "Pass"
@@ -157,5 +182,5 @@ if( $secret ) {
 $secret = $null
 
 Write-Host "Cleanup"
-Remove-Item -Path "$PSScriptRoot\.locker_key" -Force
-Remove-Item -Path "$PSScriptRoot\.powerpass_locker" -Force
+Clear-PowerPassLocker -Force
+Remove-Item -Path "$PSScriptRoot\powerpass_locker.bin" -Force
