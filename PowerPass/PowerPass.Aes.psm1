@@ -105,13 +105,12 @@ function Get-PowerPassLocker {
         This cmdlet will stop execution with a throw if the locker salt could not be fetched.
     #>
     Initialize-PowerPassLocker
-    $passphrase = Get-PowerPassEphemeralKey
     $pathToLockerKey = $script:PowerPass.LockerKeyFilePath
     $pathToLocker = $script:PowerPass.LockerFilePath
     if( Test-Path $pathToLocker ) {
         if( Test-Path $pathToLockerKey ) {
             $aes = New-Object -TypeName "PowerPass.AesCrypto"
-            $aes.ReadKeyFromDisk( $pathToLockerKey, $passphrase )
+            $aes.ReadKeyFromDisk( $pathToLockerKey, [ref] (Get-PowerPassEphemeralKey) )
             $lockerBytes = $aes.Decrypt( $pathToLocker )
             $lockerJson = [System.Text.Encoding]::UTF8.GetString( $lockerBytes )
             $locker = ConvertFrom-Json $lockerJson
@@ -204,13 +203,12 @@ function Write-PowerPassSecret {
         $locker.Secrets += $newSecret
     }
     if( $changed ) {
-        $passphrase = Get-PowerPassEphemeralKey
         $pathToLocker = $script:PowerPass.LockerFilePath
         $pathToLockerKey = $script:PowerPass.LockerKeyFilePath
         $json = ConvertTo-Json -InputObject $locker
         $data = [System.Text.Encoding]::UTF8.GetBytes($json)
         $aes = New-Object "PowerPass.AesCrypto"
-        $aes.ReadKeyFromDisk( $pathToLockerKey, $passphrase )
+        $aes.ReadKeyFromDisk( $pathToLockerKey, [ref] (Get-PowerPassEphemeralKey) )
         $aes.Encrypt( $data, $pathToLocker )
         $aes.Dispose()
     }
@@ -365,12 +363,11 @@ function Initialize-PowerPassLocker {
         be loaded, or if the locker file could not be written to the user data directory.
     #>
     Initialize-PowerPassUserDataFolder
-    $passphrase = Get-PowerPassEphemeralKey
     $pathToLockerKey = $script:PowerPass.LockerKeyFilePath
     if( -not (Test-Path $pathToLockerKey) ) {
         $aes = New-Object -TypeName "PowerPass.AesCrypto"
         $aes.GenerateKey()
-        $aes.WriteKeyToDisk( $pathToLockerKey, $passphrase )
+        $aes.WriteKeyToDisk( $pathToLockerKey, [ref] (Get-PowerPassEphemeralKey) )
         $aes.Dispose()
     }
     if( -not (Test-Path $pathToLockerKey) ) {
@@ -396,7 +393,7 @@ function Initialize-PowerPassLocker {
         $json = ConvertTo-Json -InputObject $locker
         $data = [System.Text.Encoding]::UTF8.GetBytes($json)
         $aes = New-Object -TypeName "PowerPass.AesCrypto"
-        $aes.ReadKeyFromDisk( $pathToLockerKey, $passphrase )
+        $aes.ReadKeyFromDisk( $pathToLockerKey, [ref] (Get-PowerPassEphemeralKey) )
         $aes.Encrypt( $data, $pathToLocker )
         $aes.Dispose()
     }
@@ -552,9 +549,8 @@ function Import-PowerPassLocker {
     }
 
     # Import the locker
-    $passphrase = Get-PowerPassEphemeralKey
     $aes = New-Object "PowerPass.AesCrypto"
-    $aes.ReadKeyFromDisk( $script:PowerPass.LockerKeyFilePath, $passphrase )
+    $aes.ReadKeyFromDisk( $script:PowerPass.LockerKeyFilePath, [ref] (Get-PowerPassEphemeralKey) )
     $aes.Encrypt( $data, $script:PowerPass.LockerFilePath )
     $aes.Dispose()
 }
@@ -581,10 +577,9 @@ function Update-PowerPassKey {
     if( Test-Path $script:PowerPass.LockerKeyFilePath ) {
         throw "Could not delete Locker key file"
     }
-    $passphrase = Get-PowerPassEphemeralKey
     $aes = New-Object -TypeName "PowerPass.AesCrypto"
     $aes.GenerateKey()
-    $aes.WriteKeyToDisk( $script:PowerPass.LockerKeyFilePath, $passphrase )
+    $aes.WriteKeyToDisk( $script:PowerPass.LockerKeyFilePath, [ref] (Get-PowerPassEphemeralKey) )
     $json = ConvertTo-Json -InputObject $locker
     $data = [System.Text.Encoding]::UTF8.GetBytes($json)
     $aes.Encrypt( $data, $script:PowerPass.LockerFilePath )
@@ -698,13 +693,12 @@ function Remove-PowerPassSecret {
     } end {
         if( $changed ) {
             $newLocker.Secrets = $locker.Secrets | Where-Object { -not ($_.Mfd) }
-            $passphrase = Get-PowerPassEphemeralKey
             $pathToLocker = $script:PowerPass.LockerFilePath
             $pathToLockerKey = $script:PowerPass.LockerKeyFilePath
             $json = ConvertTo-Json -InputObject $newLocker
             $data = [System.Text.Encoding]::UTF8.GetBytes( $json )
             $aes = New-Object "PowerPass.AesCrypto"
-            $aes.ReadKeyFromDisk( $pathToLockerKey, $passphrase )
+            $aes.ReadKeyFromDisk( $pathToLockerKey, [ref] (Get-PowerPassEphemeralKey) )
             $aes.Encrypt( $data, $pathToLocker )
             $aes.Dispose()
         }

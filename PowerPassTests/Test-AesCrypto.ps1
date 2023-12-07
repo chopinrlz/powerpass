@@ -19,8 +19,10 @@ $dataBytes = [System.Text.Encoding]::UTF8.GetBytes($data)
 Write-Host "Testing explicit key generation"
 $aes = New-Object -TypeName "PowerPass.AesCrypto"
 $aes.GenerateKey()
-$aes.WriteKeyToDisk( $keyFile, $password )
-$aes.ReadKeyFromDisk( $keyFile, $password )
+$secret = [System.Text.Encoding]::UTF8.GetBytes($password)
+$aes.WriteKeyToDisk( $keyFile, [ref] $secret )
+$secret = [System.Text.Encoding]::UTF8.GetBytes($password)
+$aes.ReadKeyFromDisk( $keyFile, [ref] $secret )
 
 Write-Host "Clearing key file from disk"
 if( Test-Path $keyFile ) {
@@ -29,8 +31,10 @@ if( Test-Path $keyFile ) {
 
 Write-Host "Testing automatic key generation"
 $aes = New-Object -TypeName "PowerPass.AesCrypto"
-$aes.WriteKeyToDisk( $keyFile, $password )
-$aes.ReadKeyFromDisk( $keyFile, $password )
+$secret = [System.Text.Encoding]::UTF8.GetBytes($password)
+$aes.WriteKeyToDisk( $keyFile, [ref] $secret )
+$secret = [System.Text.Encoding]::UTF8.GetBytes($password)
+$aes.ReadKeyFromDisk( $keyFile, [ref] $secret )
 
 Write-Host "Testing dispose"
 $aes = New-Object -TypeName "PowerPass.AesCrypto"
@@ -53,10 +57,12 @@ if( [System.String]::Equals( $data, $checkData, "Ordinal" ) ) {
 
 Write-Host "Testing decryption with loaded key: " -NoNewline
 $aes = New-Object -TypeName "PowerPass.AesCrypto"
-$aes.WriteKeyToDisk( $keyFile, $password )
+$secret = [System.Text.Encoding]::UTF8.GetBytes($password)
+$aes.WriteKeyToDisk( $keyFile, [ref] $secret )
 $aes.Encrypt( $dataBytes, $encryptedFile )
 $aes = New-Object -TypeName "PowerPass.AesCrypto"
-$aes.ReadKeyFromDisk( $keyFile, $password )
+$secret = [System.Text.Encoding]::UTF8.GetBytes($password)
+$aes.ReadKeyFromDisk( $keyFile, [ref] $secret )
 $checkDataBytes = $aes.Decrypt( $encryptedFile )
 $checkData = [System.Text.Encoding]::UTF8.GetString($checkDataBytes)
 if( [System.String]::Equals( $data, $checkData, "Ordinal" ) ) {

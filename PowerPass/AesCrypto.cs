@@ -182,20 +182,20 @@ namespace PowerPass {
         /// <summary>
         /// Loads an encryption key from disk into this AesCrypto instance for encryption and decryption.
         /// </summary>
-        /// <param name="filename">The absolute path fo the key file.</param>
-        /// <param name="passphrase">The passphrase required to unlock the keyfile. Must be between 4 and 32 characters.</param>
-        /// <exception cref="ArgumentNullException">The filename or phassphrase are null or empty.</exception>
-        /// <exception cref="ArgumentException">The filename does not exist on disk or the passphrase length is incorrect.</exception>
-        public void ReadKeyFromDisk( string filename, string passphrase ) {
+        /// <param name="filename">The absolute path to the key file.</param>
+        /// <param name="secret">The secret used to decrypt the key. This must be 32 bytes. The contents of this array will be erased.</param>
+        /// <exception cref="ArgumentNullException">The filename or secret are null or empty.</exception>
+        /// <exception cref="ArgumentException">The filename does not exist on disk or the secret length is incorrect.</exception>
+        public void ReadKeyFromDisk( string filename, ref byte[] secret ) {
             // Assert preconditions
             if( string.IsNullOrEmpty( filename ) ) throw new ArgumentNullException( "filename" );
             if( !File.Exists( filename ) ) throw new ArgumentException( "filename does not exist", "filename" );
-            if( string.IsNullOrEmpty( passphrase ) ) throw new ArgumentNullException( "passphrase" );
-            if( passphrase.Length < 4 || passphrase.Length > 32 ) throw new ArgumentException( "passphrase must be between 4 and 32 characters", "passphrase" );
+            if( secret == null ) throw new ArgumentNullException( "secret" );
+            if( secret.Length != 32 ) throw new ArgumentException( "secret must be 32 bytes", "secret" );
 
             // Decrypt the key using the passphrase
             using( var aes = new AesCrypto() ) {
-                aes.Key = CreatePaddedKey( passphrase );
+                aes.Key = secret;
                 this.Key = aes.Decrypt( filename );
             }
         }
@@ -204,17 +204,17 @@ namespace PowerPass {
         /// Saves the current key to disk. If no key has been set, a key will be generated.
         /// </summary>
         /// <param name="filename">The absolute path to the file to write to disk.</param>
-        /// <param name="passphrase">The passphrase required to encrypt the key. Must be between 4 and 32 characters.</param>
-        /// <exception cref="ArgumentNullException">The filename or phassphrase are null or empty.</exception>
+        /// <param name="secret">The secret used to encrypt the key. Must be 32 characters. The contents of this array will be erased.</param>
+        /// <exception cref="ArgumentNullException">The filename or secret are null or empty.</exception>
         /// <exception cref="ArgumentException">The passphrase length is incorrect.</exception>
         /// <remarks>
         /// If the file already exists on disk, it will be deleted first.
         /// </remarks>
-        public void WriteKeyToDisk( string filename, string passphrase ) {
+        public void WriteKeyToDisk( string filename, ref byte[] secret ) {
             // Assert preconditions
             if( string.IsNullOrEmpty( filename ) ) throw new ArgumentNullException( "filename" );
-            if( string.IsNullOrEmpty( passphrase ) ) throw new ArgumentNullException( "passphrase" );
-            if( passphrase.Length < 4 || passphrase.Length > 32 ) throw new ArgumentException( "passphrase must be between 4 and 32 characters", "passphrase" );
+            if( secret == null ) throw new ArgumentNullException( "secret" );
+            if( secret.Length != 32 ) throw new ArgumentException( "secret must be 32 bytes", "secret" );
 
             // Generate a key if there isn't one already
             if( _key == null ) GenerateKey();
@@ -222,7 +222,7 @@ namespace PowerPass {
             // Write the key file to disk, deleting an existing one
             if( File.Exists( filename ) ) File.Delete( filename );
             using( var aes = new AesCrypto() ) {
-                aes.Key = CreatePaddedKey( passphrase );
+                aes.Key = secret;
                 aes.Encrypt( _key, filename );
             }
         }
