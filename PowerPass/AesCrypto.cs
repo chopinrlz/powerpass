@@ -221,6 +221,31 @@ namespace PowerPass {
         }
 
         /// <summary>
+        /// Creates a 256-bit AES key from a password.
+        /// </summary>
+        /// <param name="password">Any password between 1 and 32 characters in length.</param>
+        /// <returns>A UTF-8 encoded 32-length byte array with the password.</returns>
+        /// <exception cref="ArgumentNullException">The password is null or empty.</exception>
+        /// <exception cref="ArgumentException">The password is more than 32 characters.</exception>
+        public static byte[] CreatePaddedKey( string password ) {
+            if( string.IsNullOrEmpty( password ) ) throw new ArgumentNullException( "password" );
+            if( password.Length > 32 ) throw new ArgumentException( "password" );
+            var pb = System.Text.Encoding.UTF8.GetBytes( password );
+            if( pb.Length < 32 ) {
+                var pbNew = new byte[32];
+                Array.Copy( pb, 0, pbNew, 0, pb.Length );
+                for( int i = pb.Length; i < 32; i++ ) {
+                    pbNew[i] = pb[i % pb.Length];
+                }
+                for( int i = 0; i < pb.Length; i++ ) {
+                    pb[i] = 0;
+                }
+                pb = pbNew;
+            }
+            return pb;
+        }
+
+        /// <summary>
         /// Sets the key for this AES instance to a password padded with null values to ensure
         /// it fits the key size for 256-bit AES.
         /// </summary>
@@ -229,19 +254,7 @@ namespace PowerPass {
         public void SetPaddedKey( string password ) {
             if( string.IsNullOrEmpty( password ) ) throw new ArgumentNullException( "password" );
             if( _key != null ) ZeroKeyBytes();
-            var pb = System.Text.Encoding.UTF8.GetBytes( password );
-            if( pb.Length < 32 ) {
-                var pbNew = new byte[32];
-                Array.Copy( pb, 0, pbNew, 0, pb.Length );
-                for( int i = pb.Length; i < 32; i++ ) {
-                    pbNew[i] = 0x00;
-                }
-                for( int i = 0; i < pb.Length; i++ ) {
-                    pb[i] = 0x00;
-                }
-                pb = pbNew;
-            }
-            _key = pb;
+            _key = CreatePaddedKey( password );
         }
 
         /// <summary>

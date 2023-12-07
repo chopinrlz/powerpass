@@ -701,8 +701,8 @@ function Remove-PowerPassSecret {
             $passphrase = Get-PowerPassEphemeralKey
             $pathToLocker = $script:PowerPass.LockerFilePath
             $pathToLockerKey = $script:PowerPass.LockerKeyFilePath
-            $json = $newLocker | ConvertTo-Json
-            $data = [System.Text.Encoding]::UTF8.GetBytes($json)
+            $json = ConvertTo-Json -InputObject $newLocker
+            $data = [System.Text.Encoding]::UTF8.GetBytes( $json )
             $aes = New-Object "PowerPass.AesCrypto"
             $aes.ReadKeyFromDisk( $pathToLockerKey, $passphrase )
             $aes.Encrypt( $data, $pathToLocker )

@@ -10,6 +10,7 @@ if( $PSVersionTable.PSVersion.Major -eq 5 ) {
 }
 
 Write-Host "Setting up constants for testing"
+$password = [PowerPass.AesCrypto]::CreatePaddedKey( "12345" )
 $keyFile = "$PSScriptRoot\aes.key"
 $encryptedFile = "$PSScriptRoot\data.aes"
 $data = [System.Guid]::NewGuid().ToString()
@@ -18,13 +19,18 @@ $dataBytes = [System.Text.Encoding]::UTF8.GetBytes($data)
 Write-Host "Testing key generation"
 $aes = New-Object -TypeName "PowerPass.AesCrypto"
 $aes.GenerateKey()
-$aes.WriteKeyToDisk( $keyFile )
-$aes.ReadKeyFromDisk( $keyFile )
+$aes.WriteKeyToDisk( $keyFile, $password )
+$aes.ReadKeyFromDisk( $keyFile, $password )
+
+Write-Host "Clearing key file from disk"
+if( Test-Path $keyFile ) {
+    Remove-Item $keyFile -Force
+}
 
 Write-Host "Testing automatic key generation"
 $aes = New-Object -TypeName "PowerPass.AesCrypto"
-$aes.WriteKeyToDisk( $keyFile )
-$aes.ReadKeyFromDisk( $keyFile )
+$aes.WriteKeyToDisk( $keyFile, $password )
+$aes.ReadKeyFromDisk( $keyFile, $password )
 
 Write-Host "Testing dispose"
 $aes = New-Object -TypeName "PowerPass.AesCrypto"
@@ -47,10 +53,10 @@ if( [System.String]::Equals( $data, $checkData, "Ordinal" ) ) {
 
 Write-Host "Testing decryption with loaded key: " -NoNewline
 $aes = New-Object -TypeName "PowerPass.AesCrypto"
-$aes.WriteKeyToDisk( $keyFile )
+$aes.WriteKeyToDisk( $keyFile, $password )
 $aes.Encrypt( $dataBytes, $encryptedFile )
 $aes = New-Object -TypeName "PowerPass.AesCrypto"
-$aes.ReadKeyFromDisk( $keyFile )
+$aes.ReadKeyFromDisk( $keyFile, $password )
 $checkDataBytes = $aes.Decrypt( $encryptedFile )
 $checkData = [System.Text.Encoding]::UTF8.GetString($checkDataBytes)
 if( [System.String]::Equals( $data, $checkData, "Ordinal" ) ) {
@@ -73,4 +79,12 @@ if( [System.String]::Equals( $data, $checkData, "Ordinal" ) ) {
     Write-Host "Assert passed"
 } else {
     Write-Warning "Assert failed"
+}
+
+Write-Host "Clean up"
+if( Test-Path $keyFile ) {
+    Remove-Item $keyFile -Force
+}
+if( Test-Path $encryptedFile ) {
+    Remove-Item $encryptedFile -Force
 }
