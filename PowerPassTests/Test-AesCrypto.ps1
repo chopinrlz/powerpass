@@ -10,13 +10,13 @@ if( $PSVersionTable.PSVersion.Major -eq 5 ) {
 }
 
 Write-Host "Setting up constants for testing"
-$password = [PowerPass.AesCrypto]::CreatePaddedKey( "12345" )
+$password = New-PowerPassRandomPassword -Length 32
 $keyFile = "$PSScriptRoot\aes.key"
 $encryptedFile = "$PSScriptRoot\data.aes"
 $data = [System.Guid]::NewGuid().ToString()
 $dataBytes = [System.Text.Encoding]::UTF8.GetBytes($data)
 
-Write-Host "Testing key generation"
+Write-Host "Testing explicit key generation"
 $aes = New-Object -TypeName "PowerPass.AesCrypto"
 $aes.GenerateKey()
 $aes.WriteKeyToDisk( $keyFile, $password )

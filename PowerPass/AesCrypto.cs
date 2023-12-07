@@ -4,7 +4,6 @@ using System.IO;
 using System.Security.Cryptography;
 
 namespace PowerPass {
-
     /// <summary>
     /// Implements 256-bit AES encryption and descryption using the file system.
     /// </summary>
@@ -25,17 +24,23 @@ namespace PowerPass {
         /// <summary>
         /// Implements the destructor which zeroes the key bytes from memory.
         /// </summary>
-        ~AesCrypto() {
-            if( _key != null ) ZeroKeyBytes();
-        }
+        ~AesCrypto() { Dispose(); }
 
         /// <summary>
         /// Allows callers to set the symmetric key for encryption or set it to null to erase
         /// it from memory. You should wrap this AesCrypto object in a using statement, or call
         /// Dispose, to ensure the key bytes are zeroed in memory after using this object.
-        /// </summary>
+        /// </summary> 
+        /// <remarks>Only 32-byte key lengths are supported. If you set this property to a non-null
+        /// value, the byte array must be exactly 32-bytes in length.</remarks>
+        /// <exception cref="ArgumentException">The value is not exactly 32-bytes.</exception>
         public byte[] Key {
             set {
+                if( value != null ) {
+                    if( value.Length != 32 ) {
+                        throw new ArgumentException( "value must be 32 bytes", "value" );
+                    }
+                }
                 if( _key != null ) ZeroKeyBytes();
                 _key = value;
             }
@@ -178,19 +183,19 @@ namespace PowerPass {
         /// Loads an encryption key from disk into this AesCrypto instance for encryption and decryption.
         /// </summary>
         /// <param name="filename">The absolute path fo the key file.</param>
-        /// <param name="passphrase">The passphrase required to unlock the keyfile.</param>
-        /// <exception cref="ArgumentNullException">The filename argument is null or empty.</exception>
-        /// <exception cref="InvalidOperationException">The file specified by filename does not exist or is not
-        /// exactly 32 bytes.</exception>
-        public void ReadKeyFromDisk( string filename, byte[] passphrase ) {
+        /// <param name="passphrase">The passphrase required to unlock the keyfile. Must be between 4 and 32 characters.</param>
+        /// <exception cref="ArgumentNullException">The filename or phassphrase are null or empty.</exception>
+        /// <exception cref="ArgumentException">The filename does not exist on disk or the passphrase length is incorrect.</exception>
+        public void ReadKeyFromDisk( string filename, string passphrase ) {
             // Assert preconditions
             if( string.IsNullOrEmpty( filename ) ) throw new ArgumentNullException( "filename" );
-            if( !File.Exists( filename ) ) throw new InvalidOperationException();
-            if( passphrase == null ) throw new ArgumentNullException( "passphrase" );
+            if( !File.Exists( filename ) ) throw new ArgumentException( "filename does not exist", "filename" );
+            if( string.IsNullOrEmpty( passphrase ) ) throw new ArgumentNullException( "passphrase" );
+            if( passphrase.Length < 4 || passphrase.Length > 32 ) throw new ArgumentException( "passphrase must be between 4 and 32 characters", "passphrase" );
 
             // Decrypt the key using the passphrase
             using( var aes = new AesCrypto() ) {
-                aes.Key = passphrase;
+                aes.Key = CreatePaddedKey( passphrase );
                 this.Key = aes.Decrypt( filename );
             }
         }
@@ -199,15 +204,17 @@ namespace PowerPass {
         /// Saves the current key to disk. If no key has been set, a key will be generated.
         /// </summary>
         /// <param name="filename">The absolute path to the file to write to disk.</param>
-        /// <param name="passphrase">The passphrase required to encrypt the key.</param>
-        /// <exception cref="ArgumentNullException">The filename argument is null or empty.</exception>
+        /// <param name="passphrase">The passphrase required to encrypt the key. Must be between 4 and 32 characters.</param>
+        /// <exception cref="ArgumentNullException">The filename or phassphrase are null or empty.</exception>
+        /// <exception cref="ArgumentException">The passphrase length is incorrect.</exception>
         /// <remarks>
         /// If the file already exists on disk, it will be deleted first.
         /// </remarks>
-        public void WriteKeyToDisk( string filename, byte[] passphrase ) {
+        public void WriteKeyToDisk( string filename, string passphrase ) {
             // Assert preconditions
             if( string.IsNullOrEmpty( filename ) ) throw new ArgumentNullException( "filename" );
-            if( passphrase == null ) throw new ArgumentNullException( "passphrase" );
+            if( string.IsNullOrEmpty( passphrase ) ) throw new ArgumentNullException( "passphrase" );
+            if( passphrase.Length < 4 || passphrase.Length > 32 ) throw new ArgumentException( "passphrase must be between 4 and 32 characters", "passphrase" );
 
             // Generate a key if there isn't one already
             if( _key == null ) GenerateKey();
@@ -215,7 +222,7 @@ namespace PowerPass {
             // Write the key file to disk, deleting an existing one
             if( File.Exists( filename ) ) File.Delete( filename );
             using( var aes = new AesCrypto() ) {
-                aes.Key = passphrase;
+                aes.Key = CreatePaddedKey( passphrase );
                 aes.Encrypt( _key, filename );
             }
         }
@@ -223,14 +230,17 @@ namespace PowerPass {
         /// <summary>
         /// Creates a 256-bit AES key from a password.
         /// </summary>
-        /// <param name="password">Any password between 1 and 32 characters in length.</param>
+        /// <param name="secret">Any secret between 4 and 32 characters in length.</param>
         /// <returns>A UTF-8 encoded 32-length byte array with the password.</returns>
-        /// <exception cref="ArgumentNullException">The password is null or empty.</exception>
-        /// <exception cref="ArgumentException">The password is more than 32 characters.</exception>
-        public static byte[] CreatePaddedKey( string password ) {
-            if( string.IsNullOrEmpty( password ) ) throw new ArgumentNullException( "password" );
-            if( password.Length > 32 ) throw new ArgumentException( "password" );
-            var pb = System.Text.Encoding.UTF8.GetBytes( password );
+        /// <exception cref="ArgumentNullException">The secret is null or empty.</exception>
+        /// <exception cref="ArgumentException">The secret is the incorrect length.</exception>
+        public static byte[] CreatePaddedKey( string secret ) {
+            // Assert pre-conditions
+            if( string.IsNullOrEmpty( secret ) ) throw new ArgumentNullException( "secret" );
+            if( secret.Length < 4 || secret.Length > 32 ) throw new ArgumentException( "secret must be between 4 and 32 characters", "secret" );
+
+            // Generate the byte array from the password
+            var pb = System.Text.Encoding.UTF8.GetBytes( secret );
             if( pb.Length < 32 ) {
                 var pbNew = new byte[32];
                 Array.Copy( pb, 0, pbNew, 0, pb.Length );
@@ -246,15 +256,19 @@ namespace PowerPass {
         }
 
         /// <summary>
-        /// Sets the key for this AES instance to a password padded with null values to ensure
-        /// it fits the key size for 256-bit AES.
+        /// Sets the key to a secret passphrase.
         /// </summary>
-        /// <param name="password">The password to convert and pad into a byte array.</param>
-        /// <exception cref="ArgumentNullException">The password argument is null or empty.</exception>
-        public void SetPaddedKey( string password ) {
-            if( string.IsNullOrEmpty( password ) ) throw new ArgumentNullException( "password" );
+        /// <param name="secret">The secret passphrase to use as the key. Must be between 4 and 32 characters in length.</param>
+        /// <exception cref="ArgumentNullException">The secret argument is null or empty.</exception>
+        /// <exception cref="ArgumentException">The secret length is incorrect.</exception>
+        public void SetPaddedKey( string secret ) {
+            // Assert pre-conditions
+            if( string.IsNullOrEmpty( secret ) ) throw new ArgumentNullException( "secret" );
+            if( secret.Length < 4 || secret.Length > 32 ) throw new ArgumentException( "secret must be between 4 and 32 characters", "secret" );
+
+            // Update the key
             if( _key != null ) ZeroKeyBytes();
-            _key = CreatePaddedKey( password );
+            _key = CreatePaddedKey( secret );
         }
 
         /// <summary>
