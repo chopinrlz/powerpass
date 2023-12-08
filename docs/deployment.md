@@ -8,7 +8,7 @@ You must have write permissions to this folder.
 Open your target PowerShell environment and run `.\Deploy-PowerPass.ps1`.
 Follow the prompts to deploy PowerPass.
 ```
-If you are using Windows PowerShell you will be prompted to install either the AES or DP API with KeePass support variant.
+If you are using Windows PowerShell you will be prompted to install either the (1) AES or (2) DP API with KeePass support variant.
 ```
 ### Step 3: Verify the Deployment
 You can test the deployment with these cmdlets:

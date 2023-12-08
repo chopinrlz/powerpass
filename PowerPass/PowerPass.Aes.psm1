@@ -48,13 +48,8 @@ if( $PSVersionTable.PSVersion.Major -eq 5 ) {
 function Clear-PowerPassLocker {
     <#
         .SYNOPSIS
-        Deletes all your locker secrets and your locker key. PowerPass will generate a new locker and key.
-        .DESCRIPTION
-        If you want to delete your locker secrets and start with a clean locker, you can use thie cmdlet to do so.
-        When you deploy PowerPass using the Deploy-Module.ps1 script provided with this module, it generates a
-        unique salt for this deployment which is used to encrypt your locker's salt. If you replace this salt by
-        redeploying the module, you will no longer be able to access your locker and will need to start with a
-        clean locker.
+        Deletes all your locker secrets and your locker key. PowerPass will generate a new locker and key
+        for you the next time you write or read secrets to or from your locker.
         .PARAMETER Force
         WARNING: If you specify Force, your locker and salt will be removed WITHOUT confirmation.
     #>
@@ -445,7 +440,8 @@ function Export-PowerPassLocker {
         .PARAMETER Path
         The path where the exported file will go. This is mandatory, and this path must exist.
         .PARAMETER Password
-        The password to encrypt the PowerPass Locker backup file.
+        The password to encrypt the PowerPass Locker backup file. This must be at least 4 characters
+        and no more than 32.
         .OUTPUTS
         This cmdlet does not output to the pipeline. It creates the file powerpass_locker.bin
         in the target Path. If the file already exists, you will be prompted to replace it.
@@ -469,8 +465,8 @@ function Export-PowerPassLocker {
     if( $Password -eq "" ) {
         throw "You cannot use a blank password"
     }
-    if( $Password.Length -gt 32 ) {
-        throw "The maximum password length is 32 characters."
+    if( ($Password.Length -lt 4) -or ($Password.Length -gt 32) ) {
+        throw "The password must be between 4 and 32 characters."
     }
     $output = Join-Path -Path $Path -ChildPath "powerpass_locker.bin"
     if( Test-Path $output ) {

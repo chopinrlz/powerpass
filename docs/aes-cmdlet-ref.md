@@ -13,32 +13,28 @@ The AES implementation of PowerPass works on Windows PowerShell and PowerShell 7
 Here are the cmdlets for the AES implementation of PowerPass.
 # Clear-PowerPassLocker
 ### SYNOPSIS
-Deletes all your locker secrets and your locker key. PowerPass will generate a new locker and key.
-### DESCRIPTION
-If you want to delete your locker secrets and start with a clean locker, you can use thie cmdlet to do so.
-When you deploy PowerPass using the Deploy-Module.ps1 script provided with this module, it generates a
-unique salt for this deployment which is used to encrypt your locker's salt. If you replace this salt by
-redeploying the module, you will no longer be able to access your locker and will need to start with a
-clean locker.
+Deletes all your locker secrets and your locker key. PowerPass will generate a new locker and key
+for you the next time you write or read secrets to or from your locker.
 ### PARAMETER Force
 WARNING: If you specify Force, your locker and salt will be removed WITHOUT confirmation.
 ##### ***[Back to Top](#powerpass-cmdlet-reference-for-aes-implementation)***
 # Export-PowerPassLocker
 ### SYNOPSIS
-Exports your PowerPass Locker file and AES encryption key for backup.
+Exports your PowerPass Locker to an encrypted backup file named `powerpass_locker.bin` in the directory
+specified by the `Path` parameter.
 ### PARAMETER Path
-The path where the exported files will go. This is mandatory, and this path must exist.
+The path where the exported file will go. This is mandatory, and this path must exist.
+### PARAMETER Password
+The password to encrypt the PowerPass Locker backup file. This must be at least 4 characters
+and no more than 32.
 ### OUTPUTS
-This cmdlet does not output to the pipeline, it copies two files to the specified Path.
-1. .powerpass_locker
-2. .locker_key
-
-These files will be copied to the `Path` specified.
+This cmdlet does not output to the pipeline. It creates the file `powerpass_locker.bin`
+in the target `Path`. If the file already exists, you will be prompted to replace it.
 ### EXAMPLE
 In this example, we backup our Locker and key to a USB drive mounted as the E: drive.
 ```powershell
 # Backup my locker and key to a USB drive
-Export-PowerPassLocker -Path "E:\"
+Export-PowerPassLocker -Path "E:\" -Password "mySecretPassphrase"
 ```
 ##### ***[Back to Top](#powerpass-cmdlet-reference-for-aes-implementation)***
 # Get-PowerPass
@@ -57,28 +53,18 @@ You can access these properties after assigning the output of `Get-PowerPass` to
 ##### ***[Back to Top](#powerpass-cmdlet-reference-for-aes-implementation)***
 # Import-PowerPassLocker
 ### SYNOPSIS
-Imports a PowerPass locker file and/or AES encryption key from a previous export.
-### PARAMETER LockerFilePath
+Imports a PowerPass locker file.
+### PARAMETER LockerFile
 The path to the locker file on disk to import.
-### PARAMETER LockerKeyFilePath
-The path to the locker's AES encryption key to import.
+### PARAMETER Password
+The password used to encrypt the locker file used during export.
 ### PARAMETER Force
 Import the locker files without prompting for confirmation.
-### DESCRIPTION
-You can specify one, or the other, or both parameters to import the locker, the encryption key
-or both together.
-### EXAMPLE 1: Import a Locker File
-In this example, only your Locker file will be restored from backup.
-Your AES encryption key will remain the same.
+### EXAMPLE
+In this example, we import a Locker file which will overwrite your existing Locker file if you have one.
 ```powershell
 # Import my old locker file
-Import-PowerPassLocker -LockerFilePath "E:\Backup\backup.locker"
-```
-### EXAMPLE 2: Import a Locker and Key File Together
-In this example, your Locker file and AES encryption will be restored from backup.
-```powershell
-# Import my locker file and key
-Import-PowerPassLocker -LockerFilePath "E:\Backup\backup.locker" -LockerKeyFilePath "E:\Backup\locker.key"
+Import-PowerPassLocker -LockerFile "E:\Backup\powerpass_locker.bin" -Password "mySecretPassphrase"
 ```
 ##### ***[Back to Top](#powerpass-cmdlet-reference-for-aes-implementation)***
 # New-PowerPassRandomPassword
@@ -96,10 +82,10 @@ Reads secrets from your PowerPass locker.
 An optional filter. If specified, only secrets whose Title matches this filter are output to the pipeline.
 ### PARAMETER PlainTextPasswords
 An optional switch which instructs PowerPass to output the passwords in plain-text. By default, all
-passwords are output as SecureString objects. You cannot combine this with AsCredential.
+passwords are output as `SecureString` objects. You cannot combine this with `-AsCredential`.
 ### PARAMETER AsCredential
-An optional switch which instructs PowerPass to output the secrets as PSCredential objects. You cannot
-combine this with PlainTextPasswords.
+An optional switch which instructs PowerPass to output the secrets as `PSCredential` objects. You cannot
+combine this with `-PlainTextPasswords`.
 ### INPUTS
 This cmdlet takes no input.
 ### OUTPUTS
@@ -118,7 +104,7 @@ You can access these properties after assigning the output to a variable.
 ### NOTES
 When you use PowerPass for the first time, PowerPass creates a default secret in your locker with the
 Title "Default" with all fields populated as an example of the data structure stored in the locker.
-You can delete or change this secret by using Write-PowerPassSecret or Delete-PowerPassSecret and specifying
+You can delete or change this secret by using `Write-PowerPassSecret` or `Delete-PowerPassSecret` and specifying
 the Title of "Default".
 ### EXAMPLE 1: Get All the Secrets from your Locker
 Calling the cmdlet by itself will output all your Locker secrets.
