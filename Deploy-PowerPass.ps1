@@ -216,16 +216,16 @@ $missingFiles = $false
 switch( $installation ) {
     $powerPassAes {
         Write-Host "Copying AES common files"
-        $itemsToDeploy = @("LICENSE","PowerPass\PowerPass.ps1",".\PowerPass\AesCrypto.cs")
+        $itemsToDeploy = @("LICENSE","module\PowerPass.ps1",".\module\AesCrypto.cs")
         $itemsToDeploy | Copy-Item -Destination $targetLocation -Force
 
         Write-Host "Copying AES manifest"
-        $sourceFile = Join-Path -Path $PSScriptRoot -ChildPath "PowerPass\PowerPass.Aes.psd1"
+        $sourceFile = Join-Path -Path $PSScriptRoot -ChildPath "module\PowerPass.Aes.psd1"
         $targetFile = Join-Path -Path $targetLocation -ChildPath "PowerPass.psd1"
         Copy-Item -Path $sourceFile -Destination $targetFile -Force
 
         Write-Host "Copying AES module"
-        $sourceFile = Join-Path -Path $PSScriptRoot -ChildPath "PowerPass\PowerPass.Aes.psm1"
+        $sourceFile = Join-Path -Path $PSScriptRoot -ChildPath "module\PowerPass.Aes.psm1"
         $targetFile = Join-Path -Path $targetLocation -ChildPath "PowerPass.psm1"
         Copy-Item -Path $sourceFile -Destination $targetFile -Force
 
@@ -241,19 +241,19 @@ switch( $installation ) {
     }
     $powerPassDpApi {
         Write-Host "Copying DP API common files"
-        $itemsToDeploy = @("LICENSE","TestDatabase.kdbx","KeePassLib.dll","PowerPass\PowerPass.ps1",".\PowerPass\StatusLogger.cs",".\PowerPass\Extensions.cs")
+        $itemsToDeploy = @("LICENSE","TestDatabase.kdbx","KeePassLib.dll","module\PowerPass.ps1",".\module\StatusLogger.cs",".\module\Extensions.cs")
         if( $deploySalt ) {
             $itemsToDeploy += "powerpass.salt"
         }
         $itemsToDeploy | Copy-Item -Destination $targetLocation -Force
 
         Write-Host "Copying DP API manifest"
-        $sourceFile = Join-Path -Path $PSScriptRoot -ChildPath "PowerPass\PowerPass.DpApi.psd1"
+        $sourceFile = Join-Path -Path $PSScriptRoot -ChildPath "module\PowerPass.DpApi.psd1"
         $targetFile = Join-Path -Path $targetLocation -ChildPath "PowerPass.psd1"
         Copy-Item -Path $sourceFile -Destination $targetFile -Force
 
         Write-Host "Copying DP API module"
-        $sourceFile = Join-Path -Path $PSScriptRoot -ChildPath "PowerPass\PowerPass.DpApi.psm1"
+        $sourceFile = Join-Path -Path $PSScriptRoot -ChildPath "module\PowerPass.DpApi.psm1"
         $targetFile = Join-Path -Path $targetLocation -ChildPath "PowerPass.psm1"
         Copy-Item -Path $sourceFile -Destination $targetFile -Force
 
