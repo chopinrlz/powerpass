@@ -37,9 +37,10 @@ This is the maximum AES key length supported by .NET on all operating systems.
 #### Key Generation and Storage
 When you first use PowerPass, the module will generate a key for you.
 The key is generated using the cryptographic random number generator.
-The Locker is stored in your home directory while they key is stored in your application data directory.
+The Locker is stored in your home directory while the key is stored in your application data directory.
+These directories can only be accessed by you, but can also be accessed by anyone with admin rights to the computer, so bear that in mind when you store secrets in your Locker.
 The Locker is encrypted with the key while the key is encrypted with an ephemeral key that is based on your hostname, username, and primary MAC address.
-You can get the file paths using the `Get-PowerPass` cmdlet.
+You can get the file paths to you locker and key files using the `Get-PowerPass` cmdlet.
 #### Exporting and Importing your Locker
 You can export your locker to save a backup copy elsewhere.
 When you export your locker, you specify a password to encrypt the locker.
