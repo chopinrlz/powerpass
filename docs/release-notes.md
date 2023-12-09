@@ -18,5 +18,5 @@ To install:
 # File Hashes
 | Release                 | SHA256 Hash                                                      |
 | ----------------------- | ---------------------------------------------------------------- |
-| PowerPass-1.3.0.tar.gz  | da9a41fdb16c560b2e8dd847ecbd6d177646891927a998abbfb293f5de7f8664 |
-| PowerPass-1.3.0.zip     | 9caa0b08ec08c3305fc307e39791367086d95c34d7d3178a3cc4ba3880b3c518 |
+| PowerPass-1.4.0.tar.gz  | 18aa2dbbd1adc12b864e63150ee435006cff1e942f3b8eb513928d490b054fcc |
+| PowerPass-1.4.0.zip     | 7c601540f66e85628b11aa40e81f160fa4a64716fa65c0be0a5a033e600b3430 |

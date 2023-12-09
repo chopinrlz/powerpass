@@ -68,8 +68,11 @@ if( $IsWindows ) {
 
 # Create the release archive TAR.GZ file
 Set-Location $releaseDir
-& tar -czf $tarGzFileName .
-Move-Item -Path $tarGzFileName -Destination $releaseTarGz -Force
+if( $IsWindows ) {
+    & tar @('-czf',"..\$tarGzFileName",'.')
+} else {
+    & tar @('-czf',"../$tarGzFileName",'.')
+}
 Set-Location $PSScriptRoot
 
 # Clean up temporary files

@@ -33,13 +33,24 @@ If you are opening KeePass databases which use master passwords, you can store t
 2. For the DP API edition: [PowerPass DP API Cmdlet Reference](https://chopinrlz.github.io/powerpass/dpapi-cmdlet-ref)
 
 Additional information below.
+# Unit Testing
+Each version of PowerPass is unit tested prior to release.
+There are three unit test batteries for PowerPass located in the `test` folder in this repo.
+## AES Unit Tests
+Unit testing the AES edition of PowerPass can be done by running the `Test-ModuleAes.ps1` script in Windows PowerShell or PowerShell 7.
+## Data Protection API Tests
+Unit testing the Data Protection API edition of PowerPass can be done by running the `Test-ModuleDpApi.ps1` script in Windows PowerShell.
+This test battery will also test the KeePass 2 integration.
+## AES Crypto Unit Tests
+Unit testing the AES crypto class source code included with PowerPass can be done by running `Test-AesCrypto.cs` script in Windows PowerShell or PowerShell 7.
+This test battery tests the `AesCrypto.cs` implementation found in the `module` folder which implements the 256-bit AES encryption and decryption routines native to .NET and the underlying operating systems on which .NET runs.
+This source code uses the `Aes` and `CryptoStream` classes found in the `System.Security` or `System.Security.Cryptography` namespaces in the .NET Framework and .NET, respectively, to encrypt and decrypt data using symmetric key AES encryption.
+Keys are generated using the `RandomNumberGenerator` class from the aforementioned namespaces.
 # Additional Information
 ## About KeePassLib
 PowerPass comes bundled with the KeePassLib 2.55 source code which is copyright 2003-2023 Dominik Reichl <dominik.reichl@t-online.de> and is licensed under the GNU Public License 2.0. A copy of this license is included in the LICENSE file in this repository. KeePassLib has not been modified from its release version. You can use PowerPass with KeePassLib 2.55 or with your own version of KeePassLib.
 ## Test Database Password
 You can alter the KeePass test database if you like. The master password to the test database TestDatabase.kdbx is "12345" without the quotation marks. The test database is stored in the module deployment directory.
-## Unit Testing
-You can run all the unit tests developed for PowerPass by running the `Test-PowerPass.ps1` script in the `PowerPassTests` directory after deploying the module. This script runs a series of unit tests against PowerPass to ensure that all functionality works as designed.
 # All PowerPass Topics
 Select one of the links below to browse to another topic.
 ## [AES Cmdlet Reference](https://chopinrlz.github.io/powerpass/aes-cmdlet-ref) | [Data Structures](https://chopinrlz.github.io/powerpass/data-structures) | [Deployment](https://chopinrlz.github.io/powerpass/deployment) | [DP API Cmdlet Reference](https://chopinrlz.github.io/powerpass/dpapi-cmdlet-ref) | [OneDrive Backup](https://chopinrlz.github.io/powerpass/onedrivebackup) | [Prerequisites](https://chopinrlz.github.io/powerpass/prerequisites) | [Release Notes](https://chopinrlz.github.io/powerpass/release-notes) | [Usage](https://chopinrlz.github.io/powerpass/usage)
