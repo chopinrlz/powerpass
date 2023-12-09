@@ -94,3 +94,6 @@ if( Test-Path $keyFile ) {
 if( Test-Path $encryptedFile ) {
     Remove-Item $encryptedFile -Force
 }
+if( Test-Path $checkData ) {
+    Remove-Item $checkData -Force
+}
