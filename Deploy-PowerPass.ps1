@@ -18,48 +18,48 @@ $oneDriveCheck = $false
 
 # Detect the PowerShell version and operating system, set the deployment version
 if( $PSVersionTable.PSVersion.Major -eq 5 ) {
-    Write-Host "Windows PowerShell 5 detected"
+    Write-Output "Windows PowerShell 5 detected"
     $modulesRoot = Join-Path -Path $env:USERPROFILE -ChildPath "Documents\WindowsPowerShell\Modules"
     $answer = Read-Host "Please indicate the edition of PowerPass you want to deploy: (1) AES or (2) DP API with KeePass support? [1/2]"
     $oneDriveCheck = $true
     switch( $answer ) {
         "1" {
-            Write-Host "Deploying PowerPass AES"
+            Write-Output "Deploying PowerPass AES"
             $installation = $powerPassAes
         }
         "2" {
-            Write-Host "Deploying PowerPass DP API with KeePass support"
+            Write-Output "Deploying PowerPass DP API with KeePass support"
             $installation = $powerPassDpApi
         }
         default {
-            Write-Host "Deploying PowerPass AES"
+            Write-Output "Deploying PowerPass AES"
             $installation = $powerPassAes
         }
     }
 } elseif( $PSVersionTable.PSVersion.Major -eq 7 ) {
-    Write-Host "PowerShell 7 detected"
+    Write-Output "PowerShell 7 detected"
     if( $IsWindows ) {
-        Write-Host "Windows operating system detected"
+        Write-Output "Windows operating system detected"
         $modulesRoot = Join-Path -Path $env:USERPROFILE -ChildPath "Documents\PowerShell\Modules"
         $oneDriveCheck = $true
     } elseif( $IsLinux ) {
-        Write-Host "Linux operating system detected"
+        Write-Output "Linux operating system detected"
         $modulesRoot = Join-Path -Path "~" -ChildPath ".local/share/powershell/Modules"
     } elseif( $IsMacOS ) {
-        Write-Host "MacOS operating system detected"
+        Write-Output "MacOS operating system detected"
         $modulesRoot = Join-Path -Path "~" -ChildPath ".local/share/powershell/Modules"
     } else {
         throw "Operating system not supported"
     }
     $installation = $powerPassAes
 } else {
-    Write-Host "PowerShell $($PSVersionTable.PSVersion.Major) detected"
+    Write-Output "PowerShell $($PSVersionTable.PSVersion.Major) detected"
     throw "Unsupported PowerShell version"
 }
 
 # Check for OneDrive backup
 if( $oneDriveCheck ) {
-    Write-Host "Checking PSModulePath for deployment folder"
+    Write-Output "Checking PSModulePath for deployment folder"
     $path = $env:PSModulePath -split ";"
     if( -not ($path -contains $modulesRoot) ) {
         $search = "tbd"
@@ -76,7 +76,7 @@ if( $oneDriveCheck ) {
         }
         $newPath = $path -like $search
         if( $newPath ) {
-            Write-Host "Found alternate path"
+            Write-Output "Found alternate path"
             $modulesRoot = $newPath
         } else {
             Write-Warning "$modulesRoot is not in the PSModulePath and no suitable alternative could be found"
@@ -87,7 +87,7 @@ if( $oneDriveCheck ) {
                         $modulesRoot = $path
                         break
                     } else {
-                        Write-Host "$path does not exist"
+                        Write-Output "$path does not exist"
                     }
                 } else {
                     throw "Deployment cancelled by user"
@@ -96,49 +96,49 @@ if( $oneDriveCheck ) {
         }
     }
 } else {
-    Write-Host "Skipping OneDrive check for Windows"
+    Write-Output "Skipping OneDrive check for Windows"
 }
 
 # Test the deployment folder
 if( -not (Test-Path $modulesRoot) ) {
-    Write-Host "Creating modules directory"
+    Write-Output "Creating modules directory"
     New-Item -Path $modulesRoot -ItemType Directory
     if( -not (Test-Path $modulesRoot) ) {
         throw "Unable to create deployment folder"
     }
 } else {
-    Write-Host "Module folder exists"
+    Write-Output "Module folder exists"
 }
 
 # Create the deployment location
 $targetLocation = Join-Path -Path $modulesRoot -ChildPath "PowerPass"
-Write-Host "Target folder is $targetLocation"
+Write-Output "Target folder is $targetLocation"
 
 # Perform the DP API and KeePass specific tasks
 $deploySalt = $false
 if( $installation -eq $powerPassDpApi ) {
     # Check for KeePassLib
-    Write-Host "Checking for KeePassLib"
+    Write-Output "Checking for KeePassLib"
     $keePassLib = Join-Path -Path $PSScriptRoot -ChildPath "KeePassLib.dll"
     if( Test-Path $keePassLib ) {
         $answer = Read-Host "We have detected KeePassLib bundled with this deployment. Would you like to use it? [Y/n]"
         if( ($answer -eq 'n') -or ($answer -eq 'N') ) {
-            Write-Host "Removing current build and compiling KeePassLib from source"
+            Write-Output "Removing current build and compiling KeePassLib from source"
             Remove-Item $keePassLib -Force
             if( Test-Path $keePassLib ) {
                 throw "Could not remove previous build of KeePassLib.dll"
             }
         } else {
-            Write-Host "Deploying PowerPass with bundled KeePassLib"
+            Write-Output "Deploying PowerPass with bundled KeePassLib"
         }
     } else {
-        Write-Host "No bundled KeePassLib"
+        Write-Output "No bundled KeePassLib"
     }
 
     # Build KeePassLib
     if( -not (Test-Path $keePassLib) ) {
         # Get the location of the C# compiler for this runtime
-        Write-Host "Locating the C# compiler"
+        Write-Output "Locating the C# compiler"
         $cscDir = [System.Runtime.InteropServices.RuntimeEnvironment]::GetRuntimeDirectory()
         $cscPath = Join-Path -Path $cscDir -ChildPath "csc.exe"
         if( -not (Test-Path $cscPath) ) {
@@ -146,7 +146,7 @@ if( $installation -eq $powerPassDpApi ) {
         }
 
         # Build the compiler arguments for KeePassLib
-        Write-Host "Building the compiler arguments for KeePassLib"
+        Write-Output "Building the compiler arguments for KeePassLib"
         $compilerArgs = @()
         $compilerArgs += '/target:library'
         $compilerArgs += '/out:KeePassLib.dll'
@@ -155,14 +155,14 @@ if( $installation -eq $powerPassDpApi ) {
         }
 
         # Compile KeePassLib
-        Write-Host "Compiling KeePassLib"
+        Write-Output "Compiling KeePassLib"
         & $cscPath $compilerArgs | Out-Null
     } else {
-        Write-Host "Detected KeePassLib with release"
+        Write-Output "Detected KeePassLib with release"
     }
 
     # Verify the compiled assembly
-    Write-Host "Verifying the compiled assembly"
+    Write-Output "Verifying the compiled assembly"
     if( -not (Test-Path $keePassLib) ) {
         throw "KeePassLib was not compiled successfully"
     }
@@ -173,12 +173,12 @@ if( $installation -eq $powerPassDpApi ) {
     }
 
     # Generate a salt for the installation
-    Write-Host "Checking for an existing salt"
+    Write-Output "Checking for an existing salt"
     $saltFile = Join-Path -Path $targetLocation -ChildPath "powerpass.salt"
     if( Test-Path $saltFile ) {
-        Write-Host "Detected existing module salt"
+        Write-Output "Detected existing module salt"
     } else {
-        Write-Host "Generating a salt for this deployment"
+        Write-Output "Generating a salt for this deployment"
         $saltFile = Join-Path -Path $PSScriptRoot -ChildPath "powerpass.salt"
         [System.Reflection.Assembly]::LoadWithPartialName("System.Security") | Out-Null
         $saltShaker = [System.Security.Cryptography.RandomNumberGenerator]::Create()
@@ -190,46 +190,46 @@ if( $installation -eq $powerPassDpApi ) {
         if( -not (Test-Path $saltFile) ) {
             throw "Unable to generate a salt for the installation"
         } else {
-            Write-Host "Salt generated successfully"
+            Write-Output "Salt generated successfully"
             $deploySalt = $true
         }
     }
 } else {
-    Write-Host "Skipping DP API steps"
+    Write-Output "Skipping DP API steps"
 }
 
 # Create the deployment directory
-Write-Host "Deploying the PowerPass module"
+Write-Output "Deploying the PowerPass module"
 if( -not (Test-Path $targetLocation) ) {
-    Write-Host "Creating the PowerPass directory"
+    Write-Output "Creating the PowerPass directory"
     New-Item -Path $modulesRoot -Name "PowerPass" -ItemType Directory | Out-Null
 } else {
-    Write-Host "Target location already exists"
+    Write-Output "Target location already exists"
 }
 if( -not (Test-Path $targetLocation) ) {
     throw "Failed to create deployment folder, $modulesRoot is not writable"
 }
 
 # Deploy the module
-Write-Host "Installing module files"
+Write-Output "Installing module files"
 $missingFiles = $false
 switch( $installation ) {
     $powerPassAes {
-        Write-Host "Copying AES common files"
+        Write-Output "Copying AES common files"
         $itemsToDeploy = @("LICENSE","module\PowerPass.ps1",".\module\AesCrypto.cs")
         $itemsToDeploy | Copy-Item -Destination $targetLocation -Force
 
-        Write-Host "Copying AES manifest"
+        Write-Output "Copying AES manifest"
         $sourceFile = Join-Path -Path $PSScriptRoot -ChildPath "module\PowerPass.Aes.psd1"
         $targetFile = Join-Path -Path $targetLocation -ChildPath "PowerPass.psd1"
         Copy-Item -Path $sourceFile -Destination $targetFile -Force
 
-        Write-Host "Copying AES module"
+        Write-Output "Copying AES module"
         $sourceFile = Join-Path -Path $PSScriptRoot -ChildPath "module\PowerPass.Aes.psm1"
         $targetFile = Join-Path -Path $targetLocation -ChildPath "PowerPass.psm1"
         Copy-Item -Path $sourceFile -Destination $targetFile -Force
 
-        Write-Host "Verifying the installation"
+        Write-Output "Verifying the installation"
         $verified = @("LICENSE","PowerPass.ps1","PowerPass.psd1","PowerPass.psm1","AesCrypto.cs")
         $verified | ForEach-Object {
             $verifiedPath = Join-Path -Path $targetLocation -ChildPath $_
@@ -240,24 +240,24 @@ switch( $installation ) {
         }
     }
     $powerPassDpApi {
-        Write-Host "Copying DP API common files"
+        Write-Output "Copying DP API common files"
         $itemsToDeploy = @("LICENSE","TestDatabase.kdbx","KeePassLib.dll","module\PowerPass.ps1",".\module\StatusLogger.cs",".\module\Extensions.cs")
         if( $deploySalt ) {
             $itemsToDeploy += "powerpass.salt"
         }
         $itemsToDeploy | Copy-Item -Destination $targetLocation -Force
 
-        Write-Host "Copying DP API manifest"
+        Write-Output "Copying DP API manifest"
         $sourceFile = Join-Path -Path $PSScriptRoot -ChildPath "module\PowerPass.DpApi.psd1"
         $targetFile = Join-Path -Path $targetLocation -ChildPath "PowerPass.psd1"
         Copy-Item -Path $sourceFile -Destination $targetFile -Force
 
-        Write-Host "Copying DP API module"
+        Write-Output "Copying DP API module"
         $sourceFile = Join-Path -Path $PSScriptRoot -ChildPath "module\PowerPass.DpApi.psm1"
         $targetFile = Join-Path -Path $targetLocation -ChildPath "PowerPass.psm1"
         Copy-Item -Path $sourceFile -Destination $targetFile -Force
 
-        Write-Host "Verifying the installation"
+        Write-Output "Verifying the installation"
         $verified = @("LICENSE","TestDatabase.kdbx","KeePassLib.dll","PowerPass.ps1","PowerPass.psd1","PowerPass.psm1","StatusLogger.cs","Extensions.cs","powerpass.salt")
         $verified | ForEach-Object {
             $verifiedPath = Join-Path -Path $targetLocation -ChildPath $_
@@ -271,7 +271,7 @@ switch( $installation ) {
 
 # Report on status
 if( $missingFiles ) {
-    Write-Host "PowerPass deployed with warnings, please review messages above"
+    Write-Output "PowerPass deployed with warnings, please review messages above"
 } else {
-    Write-Host "PowerPass deployed successfully"
+    Write-Output "PowerPass deployed successfully"
 }
