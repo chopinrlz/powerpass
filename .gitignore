@@ -13,7 +13,6 @@
 /test/testlocker.salt
 /test/testmodule.salt
 /test/aes.key
-/test/checkdata.txt
 /test/data.aes
 /test/.locker_key
 /test/.powerpass_locker
