@@ -14,9 +14,9 @@ You can import the Locker from any KeePass 1.4.0 install to any other KeePass 1.
 # Deployment
 To install:
 1. Clone the repo, download the release, or download the source code for this release
-2. Run `Deploy-PowerPass.ps1` in any PowerShell terminal (you will need write access to this folder)
+2. Run `.\Deploy-PowerPass.ps1` in any PowerShell terminal (you will need write access to this folder)
 # File Hashes
 | Release                 | SHA256 Hash                                                      |
 | ----------------------- | ---------------------------------------------------------------- |
-| PowerPass-1.4.0.tar.gz  | 18aa2dbbd1adc12b864e63150ee435006cff1e942f3b8eb513928d490b054fcc |
-| PowerPass-1.4.0.zip     | 7c601540f66e85628b11aa40e81f160fa4a64716fa65c0be0a5a033e600b3430 |
+| PowerPass-1.4.0.tar.gz  | C53A1C74E9CDA2A41047809F343B4608E9CB06C67714AD32AA10F9A42E523B09 |
+| PowerPass-1.4.0.zip     | DE0A16A6450507A9083F20C1FF540613AF70DA49B9E66B39AA58789AAF9825EA |
