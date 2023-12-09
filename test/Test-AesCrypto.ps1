@@ -80,7 +80,6 @@ $aes.GenerateKey()
 $aes.Encrypt( $dataBytes, $encryptedFile )
 $checkDataBytes = $aes.Decrypt( $encryptedFile )
 $checkData = [System.Text.Encoding]::UTF8.GetString($checkDataBytes)
-$checkData | Out-File "$PSScriptRoot\checkdata.txt" -Force
 if( [System.String]::Equals( $data, $checkData, "Ordinal" ) ) {
     Write-Host "Assert passed"
 } else {
@@ -93,7 +92,4 @@ if( Test-Path $keyFile ) {
 }
 if( Test-Path $encryptedFile ) {
     Remove-Item $encryptedFile -Force
-}
-if( Test-Path $checkData ) {
-    Remove-Item $checkData -Force
 }
