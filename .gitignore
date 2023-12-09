@@ -20,7 +20,6 @@
 /test/powerpass_locker.bin
 /powerpass.sln
 /release/*
-/TSS/bin/*
 cim.json
 nic.json
 PowerPass*.zip
