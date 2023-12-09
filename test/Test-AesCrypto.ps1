@@ -2,7 +2,7 @@ Write-Host "This script tests the AesCrypto.cs implementation"
 Write-Host "These tests should pass in both Windows PowerShell and PowerShell 7 on all operating systems"
 
 Write-Host "Loading the type from source"
-$code = Get-Content "$PSScriptRoot\..\PowerPass\AesCrypto.cs" -Raw
+$code = Get-Content "$PSScriptRoot\..\module\AesCrypto.cs" -Raw
 if( $PSVersionTable.PSVersion.Major -eq 5 ) {
     Add-Type -TypeDefinition $code -ReferencedAssemblies "System.Security"
 } else {
