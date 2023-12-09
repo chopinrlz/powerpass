@@ -1,3 +1,10 @@
+/*
+    Extensions.cs source code for extending functionality into other types
+    Copyright 2023 by The Daltas Group LLC.
+    This software is provided AS IS WITHOUT WARRANTEE.
+    You may copy, modify or distribute this software under the terms of the GNU Public License 2.0.
+*/
+
 using System;
 using System.Runtime.InteropServices;
 using System.Security;

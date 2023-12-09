@@ -1,3 +1,11 @@
+/*
+    StatusLogger.cs source code for KeePassLib database access logging
+    Copyright 2023 by The Daltas Group LLC.
+    The KeePassLib source code is copyright (C) 2003-2023 Dominik Reichl <dominik.reichl@t-online.de>
+    This software is provided AS IS WITHOUT WARRANTEE.
+    You may copy, modify or distribute this software under the terms of the GNU Public License 2.0.
+*/
+
 using System;
 using KeePassLib.Interfaces;
 
