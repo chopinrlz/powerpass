@@ -5,7 +5,7 @@ On both the AES edition and Data Protection API edition of PowerPass, lockers ar
 ### Importing and Exporting Across Editions
 Due to the changes in the way locker exporting and importing works, you can now export a locker from the AES edition and import it into the Data Protection API edition, or vice versa, across PowerShell versions or operating systems. This greatly increases the flexibility and portability of lockers from one system to another. It also facilitates the distribution of lockers across multiple systems.
 ### Passwords for Importing and Exporting
-You are no longer able to use the `-Password` parameter with the import and export cmdlets. Instead, you will be prompted to enter a password (which will be masked on input) when you the export or import cmdlet. This means that importing and exporting cannot be automated, but it also prevents passwords from being displayed on the console or inadvertently saved within a script.
+You are no longer able to use the `-Password` parameter with the import and export cmdlets. Instead, you will be prompted to enter a password (which will be masked on input) when you invoke the export or import cmdlet. This means that importing and exporting cannot be automated, but it also prevents passwords from being displayed on the console or inadvertently saved within a script.
 # Deployment
 To install:
 1. Clone the repo, download the release, or download the source code for this release
