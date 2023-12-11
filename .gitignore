@@ -6,16 +6,11 @@
 /test/kpdb-pwuser.kdbx
 /test/kpdb-pwkeyuser.kdbx
 /test/kpdb-user.kdbx
-/test/locker.salt
 /test/powerpass_locker.bin
-/test/test.locker
-/test/testlocker.salt
-/test/testmodule.salt
 /test/aes.key
 /test/data.aes
 /test/.locker_key
 /test/.powerpass_locker
-/test/powerpass_locker.bin
 /powerpass.sln
 /release/*
 cim.json
