@@ -1,16 +1,11 @@
-The latest release of PowerPass version 1.4.0 incorporates hardening to the AES implementation. It has been tested on Linux and Windows on PowerShell 7 and Windows PowerShell.
+The latest release of PowerPass version 1.4.1 updates the import and export functionality. It has been tested on Linux and Windows on PowerShell 7 and Windows PowerShell.
 # Changelog
-### AES Encryption Hardening
-The AES implementation has been hardened.
-A new function has been added to the module which generates an ephemeral key using details about the local machine, your user account, and the primary network adapter.
-This module creates hash of this key using SHA-256 which is used to encrypt the locker's AES key.
-If either the Locker file or the Key file are leaked outside the user's home directory or application directory, an attacker will need to brute-force decrypt the Key file to decrypt the Locker file. 
-### AES Export and Import Encryption
-AES mode Locker exports are now encrypted using a passphrase and key export has been removed.
-When you export your Locker, you are prompted for a passphrase which is used to encrypt the Locker.
-The same passphrase must be used to import the Locker at a later date.
-Your Locker key is not used, nor is it exported.
-You can import the Locker from any KeePass 1.4.0 install to any other KeePass 1.4.0 install.
+### Importing and Exporting Lockers
+On both the AES edition and Data Protection API edition of PowerPass, lockers are now exported using AES encryption to a single file. Keys and salts are not exported, nor are they replaced or rotated on import. Rotating keys and salts can be done using the built-in `Update-PowerPassKey` or `Update-PowerPassSalt` cmdlets at any time.
+### Importing and Exporting Across Editions
+Due to the changes in the way locker exporting and importing works, you can now export a locker from the AES edition and import it into the Data Protection API edition, or vice versa, across PowerShell versions or operating systems. This greatly increases the flexibility and portability of lockers from one system to another. It also facilitates the distribution of lockers across multiple systems.
+### Passwords for Importing and Exporting
+You are no longer able to use the `-Password` parameter with the import and export cmdlets. Instead, you will be prompted to enter a password (which will be masked on input) when you the export or import cmdlet. This means that importing and exporting cannot be automated, but it also prevents passwords from being displayed on the console or inadvertently saved within a script.
 # Deployment
 To install:
 1. Clone the repo, download the release, or download the source code for this release
@@ -18,5 +13,5 @@ To install:
 # File Hashes
 | Release                 | SHA256 Hash                                                      |
 | ----------------------- | ---------------------------------------------------------------- |
-| PowerPass-1.4.0.tar.gz  | C53A1C74E9CDA2A41047809F343B4608E9CB06C67714AD32AA10F9A42E523B09 |
-| PowerPass-1.4.0.zip     | DE0A16A6450507A9083F20C1FF540613AF70DA49B9E66B39AA58789AAF9825EA |
+| PowerPass-1.4.1.tar.gz  | 3959CF1892D515ADB84D1C56DC72D79F082894350C2F0DFCE596BB90D4DECE8E |
+| PowerPass-1.4.1.zip     | 673AFAE347786BD72DBC117C71A74E95224222BA01C2244CBF9C545245D38BB3 |
