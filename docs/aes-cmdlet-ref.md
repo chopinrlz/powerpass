@@ -22,11 +22,11 @@ WARNING: If you specify Force, your locker and salt will be removed WITHOUT conf
 ### SYNOPSIS
 Exports your PowerPass Locker to an encrypted backup file named `powerpass_locker.bin` in the directory
 specified by the `Path` parameter.
+### DESCRIPTION
+You will be prompted to enter a password to encrypt the locker. The password must be
+between 4 and 32 characters.
 ### PARAMETER Path
 The path where the exported file will go. This is mandatory, and this path must exist.
-### PARAMETER Password
-The password to encrypt the PowerPass Locker backup file. This must be at least 4 characters
-and no more than 32.
 ### OUTPUTS
 This cmdlet does not output to the pipeline. It creates the file `powerpass_locker.bin`
 in the target `Path`. If the file already exists, you will be prompted to replace it.
@@ -54,10 +54,10 @@ You can access these properties after assigning the output of `Get-PowerPass` to
 # Import-PowerPassLocker
 ### SYNOPSIS
 Imports a PowerPass locker file.
+### DESCRIPTION
+You will be prompted to enter the locker password.
 ### PARAMETER LockerFile
 The path to the locker file on disk to import.
-### PARAMETER Password
-The password used to encrypt the locker file used during export.
 ### PARAMETER Force
 Import the locker files without prompting for confirmation.
 ### EXAMPLE

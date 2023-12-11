@@ -7,8 +7,7 @@
 /test/kpdb-pwkeyuser.kdbx
 /test/kpdb-user.kdbx
 /test/locker.salt
-/test/powerpass.locker
-/test/powerpass.salt
+/test/powerpass_locker.bin
 /test/test.locker
 /test/testlocker.salt
 /test/testmodule.salt

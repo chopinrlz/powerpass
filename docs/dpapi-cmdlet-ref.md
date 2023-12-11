@@ -28,48 +28,24 @@ WARNING: If you specify Force, your locker and salt will be removed WITHOUT conf
 ##### ***[Back to Top](#powerpass-cmdlet-reference-for-windows-powershell-dp-api--keepass-2-implementation)***
 # Export-PowerPassLocker
 ### SYNOPSIS
-Exports your PowerPass Locker file, Locker salt file, and module salt file.
+Exports your PowerPass Locker to an encrypted backup file powerpass_locker.bin.
 ### DESCRIPTION
-You can export a PowerPass locker including the locker file, locker salt and module salt.
-Lockers only work on the same computer under the same user profile since they are encrypted
-with the Data Protection API under the current user scope. This means you cannot import a
-Locker exported from another machine or from a different user profile. You should export your
-Locker before you install a new version of PowerPass, or to back up your Locker in case you
-lose your AppData folder or you redeploy PowerPass.
+You will be prompted to enter a password.
 ### PARAMETER Path
-The path where the exported files will go. This is mandatory, and this path must exist.
-### PARAMETER LockerFileName
-An optional name for your Locker file.
-### PARAMETER LockerSaltFileName
-An optional name for your Locker salt file.
-### PARAMETER ModuleSaltFileName
-An optional name for your module salt file.
+The path where the exported file will go. This is mandatory, and this path must exist.
 ### OUTPUTS
-This cmdlet does not output to the pipeline, it copies three files to the specified Path.
-1. powerpass.salt
-2. locker.salt
-3. powerpass.locker
-
-You will see these files appear at the specified `Path` after running `Export-PowerPassLocker` if you do not specify alternate file names using the provided parameters.
+This cmdlet does not output to the pipeline. It creates the file powerpass_locker.bin
+in the target Path. If the file already exists, you will be prompted to replace it.
 ##### ***[Back to Top](#powerpass-cmdlet-reference-for-windows-powershell-dp-api--keepass-2-implementation)***
 # Import-PowerPassLocker
-### SYNOPSIS
-Imports a PowerPass locker with salt files from a previous export.
+# SYNOPSIS
+Imports an encrypted PowerPass locker created from Export-PowerPassLocker.
 ### DESCRIPTION
-You can import a PowerPass locker including the locker salt and module salt from an exported
-copy. Lockers will only work on the same computer under the same user profile since they are
-encrypted with the Data Protection API under the current user scope. This means you cannot
-import a Locker from one machine to another or from one user to another. The most useful
-scenario for importing your Locker back into PowerPass is if you deploy a new version
-and want to restore your Locker secrets, or you accidentally lose your Locker secrets for
-example of they are removed up from your AppData folder or the PowerPass module is removed
-from your computer.
+You can import a PowerPass locker including all the locker secrets and attachments from an exported copy.
+You can import any locker, either from the AES edition or the DP API edition of PowerPass.
+You will be prompted to enter the password to the locker.
 ### PARAMETER LockerFilePath
 The path to the locker file on disk. This is mandatory.
-### PARAMETER LockerSaltPath
-The path fo the locker salt file on disk. This is mandatory.
-### PARAMETER ModuleSaltPath
-The optional path to the module salt, if you also want to restore your module salt.
 ##### ***[Back to Top](#powerpass-cmdlet-reference-for-windows-powershell-dp-api--keepass-2-implementation)***
 # Get-PowerPassSecret
 ### SYNOPSIS

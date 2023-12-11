@@ -14,6 +14,7 @@ $TestDatabaseFileName = "TestDatabase.kdbx"
 $StatusLoggerSourceCode = "StatusLogger.cs"
 $ExtensionsSourceCode = "Extensions.cs"
 $ModuleSaltFileName = "powerpass.salt"
+$AesCryptoSourceCode = "AesCrypto.cs"
 
 # Determine where user data should be stored
 $UserDataPath = [System.Environment]::GetFolderPath("LocalApplicationData")
@@ -27,6 +28,7 @@ $PowerPass = [PSCustomObject]@{
     StatusLoggerSource = Join-Path -Path $PSScriptRoot -ChildPath $StatusLoggerSourceCode
     ExtensionsSource   = Join-Path -Path $PSScriptRoot -ChildPath $ExtensionsSourceCode
     ModuleSaltFilePath = Join-Path -Path $PSScriptRoot -ChildPath $ModuleSaltFileName
+    AesCryptoSource    = Join-Path -Path $PSScriptRoot -ChildPath $AesCryptoSourceCode
     # These paths must always be a combination of the UserDataPath and the UserDataFolderName
     # The cmdlets in this module assume that the user data folder for PowerPass is $UserDataPath/$UserDataFolderName
     LockerFolderPath   = Join-Path -Path $UserDataPath -ChildPath "$UserDataFolderName"
@@ -44,6 +46,9 @@ $PowerPass.KeePassLibAssembly = [System.Reflection.Assembly]::LoadFrom( $PowerPa
 # Compile and load the custom PowerPass.StatusLogger class
 Add-Type -Path $PowerPass.StatusLoggerSource -ReferencedAssemblies $PowerPass.KeePassLibraryPath
 Add-Type -Path $PowerPass.ExtensionsSource -ReferencedAssemblies $PowerPass.KeePassLibraryPath
+
+# Compile and load the AES crypto class
+Add-Type -Path $PowerPass.AesCryptoSource -ReferencedAssemblies "System.Security"
 
 # ------------------------------------------------------------------------------------------------------------- #
 # FUNCTION: Open-PowerPassTestDatabase
@@ -869,71 +874,53 @@ function Test-PowerPassAnswer {
 function Export-PowerPassLocker {
     <#
         .SYNOPSIS
-        Exports your PowerPass Locker file, Locker salt file, and module salt file.
+        Exports your PowerPass Locker to an encrypted backup file powerpass_locker.bin.
         .DESCRIPTION
-        You can export a PowerPass locker including the locker file, locker salt and module salt.
-        Lockers only work on the same computer under the same user profile since they are encrypted
-        with the Data Protection API under the current user scope. This means you cannot import a
-        Locker exported from another machine or from a different user profile. You should export your
-        Locker before you install a new version of PowerPass, or to back up your Locker in case you
-        lose your AppData folder or you redeploy PowerPass.
+        You will be prompted to enter a password.
         .PARAMETER Path
-        The path where the exported files will go. This is mandatory, and this path must exist.
-        .PARAMETER LockerFileName
-        An optional name for your Locker file.
-        .PARAMETER LockerSaltFileName
-        An optional name for your Locker salt file.
-        .PARAMETER ModuleSaltFileName
-        An optional name for your module salt file.
+        The path where the exported file will go. This is mandatory, and this path must exist.
         .OUTPUTS
-        This cmdlet does not output to the pipeline, it copies three files to the specified Path.
-        1. powerpass.salt
-        2. locker.salt
-        3. powerpass.locker
+        This cmdlet does not output to the pipeline. It creates the file powerpass_locker.bin
+        in the target Path. If the file already exists, you will be prompted to replace it.
     #>
     [CmdletBinding()]
     param(
         [Parameter(Mandatory,ValueFromPipeline,Position=0)]
         [string]
-        $Path,
-        [string]
-        $LockerFileName,
-        [string]
-        $LockerSaltFileName,
-        [string]
-        $ModuleSaltFileName
+        $Path
     )
     if( -not (Test-Path $Path) ) {
         throw "$Path does not exist"
     }
     $locker = Get-PowerPassLocker
     if( -not $locker ) {
-        throw "Unable to initialize your locker"
+        throw "Could not load you PowerPass locker"
     }
-    if( -not (Test-Path ($PowerPass.ModuleSaltFilePath)) ) {
-        throw "Illegal or undefined module salt file path"
+    $secString = Read-Host "Enter a password (4 - 32 characters)" -AsSecureString
+    $bString = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR( $secString )
+    $password = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto( $bString )
+    [System.Runtime.InteropServices.Marshal]::ZeroFreeBSTR( $bString )
+    if( -not $password ) {
+        throw "No password given"
     }
-    if( -not (Test-Path ($PowerPass.LockerSaltPath)) ) {
-        throw "Illegal or undefined locker salt file path"
+    if( ($password.Length -lt 4) -or ($password.Length -gt 32) ) {
+        throw "Password must be between 4 and 32 characters"
     }
-    if( $ModuleSaltFileName ) {
-        $target = Join-Path -Path $Path -ChildPath $ModuleSaltFileName
-        Copy-Item -Path $PowerPass.ModuleSaltFilePath -Destination $target
-    } else {
-        Copy-Item -Path $PowerPass.ModuleSaltFilePath -Destination $Path
+    $output = Join-Path -Path $Path -ChildPath "powerpass_locker.bin"
+    if( Test-Path $output ) {
+        $answer = Read-Host "$output already exists, overwrite? [N/y]"
+        if( Test-PowerPassAnswer $answer ) {
+            Remove-Item -Path $output
+        } else {
+            throw "Export cancelled by user"
+        }
     }
-    if( $LockerSaltFileName ) {
-        $target = Join-Path -Path $Path -ChildPath $LockerSaltFileName
-        Copy-Item -Path $PowerPass.LockerSaltPath -Destination $target
-    } else {
-        Copy-Item -Path $PowerPass.LockerSaltPath -Destination $Path
-    }
-    if( $LockerFileName ) {
-        $target = Join-Path -Path $Path -ChildPath $LockerFileName
-        Copy-Item -Path $PowerPass.LockerFilePath -Destination $target
-    } else {
-        Copy-Item -Path $PowerPass.LockerFilePath -Destination $Path
-    }
+    $json = ConvertTo-Json -InputObject $locker
+    $data = [System.Text.Encoding]::UTF8.GetBytes( $json )
+    $aes = New-Object -TypeName "PowerPass.AesCrypto"
+    $aes.SetPaddedKey( $password )
+    $aes.Encrypt( $data, $output )
+    $aes.Dispose()
 }
 
 # ------------------------------------------------------------------------------------------------------------- #
@@ -943,61 +930,57 @@ function Export-PowerPassLocker {
 function Import-PowerPassLocker {
     <#
         .SYNOPSIS
-        Imports a PowerPass locker with salt files from a previous export.
+        Imports an encrypted PowerPass locker created from Export-PowerPassLocker.
         .DESCRIPTION
-        You can import a PowerPass locker including the locker salt and module salt from an exported
-        copy. Lockers will only work on the same computer under the same user profile since they are
-        encrypted with the Data Protection API under the current user scope. This means you cannot
-        import a Locker from one machine to another or from one user to another. The most useful
-        scenario for importing your Locker back into PowerPass is if you deploy a new version
-        and want to restore your Locker secrets, or you accidentally lose your Locker secrets for
-        example of they are removed up from your AppData folder or the PowerPass module is removed
-        from your computer.
+        You can import a PowerPass locker including all the locker secrets and attachments from an exported copy.
+        You can import any locker, either from the AES edition or the DP API edition of PowerPass.
+        You will be prompted to enter the password to the locker.
         .PARAMETER LockerFilePath
         The path to the locker file on disk. This is mandatory.
-        .PARAMETER LockerSaltPath
-        The path fo the locker salt file on disk. This is mandatory.
-        .PARAMETER ModuleSaltPath
-        The optional path to the module salt, if you also want to restore your module salt.
     #>
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]
         [string]
-        $LockerFilePath,
-        [Parameter(Mandatory)]
-        [string]
-        $LockerSaltPath,
-        [string]
-        $ModuleSaltPath
+        $LockerFilePath
     )
     if( -not (Test-Path $LockerFilePath) ) {
         throw "Locker file path does not exist"
     }
-    if( -not (Test-Path $LockerSaltPath) ) {
-        throw "Locker salt file path does not exist"
+    if( -not (Test-Path ($script:PowerPass.LockerSaltPath)) ) {
+        Initialize-PowerPassLockerSalt
     }
-    if( $ModuleSaltPath ) {    
-        if( -not (Test-Path $ModuleSaltPath) ) {
-            throw "Module salt file path does not exist"
-        }
+    $salt = Get-PowerPassLockerSalt
+    if( -not $salt ) {
+        throw "Import failed: no locker salt"
     }
-    Write-Warning "You are about to OVERWRITE your existing locker. This will REPLACE ALL existing locker secrets."
-    $answer = Read-Host "Do you you want to continue? [N/y]"
-    if( Test-PowerPassAnswer $answer ) {
-        Copy-Item -Path $LockerFilePath -Destination ($PowerPass.LockerFilePath) -Force
-        Copy-Item -Path $LockerSaltPath -Destination ($PowerPass.LockerSaltPath) -Force
-    } else {
-        throw "Import cancelled by user"
+    $secString = Read-Host "Enter the locker password" -AsSecureString
+    $bString = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR( $secString )
+    $password = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto( $bString )
+    [System.Runtime.InteropServices.Marshal]::ZeroFreeBSTR( $bString )
+    if( -not $password ) {
+        throw "No password given"
     }
-    if( $ModuleSaltPath ) {
-        Write-Warning "You are about to OVERWRITE your PowerPass module salt. This will INVALIDATE ALL existing locker secrets."
+    if( ($password.Length -lt 4) -or ($password.Length -gt 32) ) {
+        throw "Password must be between 4 and 32 characters"
+    }
+    $aes = New-Object -TypeName "PowerPass.AesCrypto"
+    $aes.SetPaddedKey( $Password )
+    $data = $aes.Decrypt( $LockerFilePath )
+    $aes.Dispose()
+    if( $data ) {
+        Write-Warning "You are about to OVERWRITE your existing locker. This will REPLACE ALL existing locker secrets."
         $answer = Read-Host "Do you you want to continue? [N/y]"
         if( Test-PowerPassAnswer $answer ) {
-            Copy-Item -Path $ModuleSaltPath -Destination ($PowerPass.ModuleSaltFilePath) -Force
+            $pathToLocker = $script:PowerPass.LockerFilePath
+            $encData = [System.Security.Cryptography.ProtectedData]::Protect($data,$salt,"CurrentUser")
+            $encDataText = [System.Convert]::ToBase64String($encData)
+            Out-File -FilePath $pathToLocker -InputObject $encDataText -Force
         } else {
             throw "Import cancelled by user"
         }
+    } else {
+        throw "Decryption failed"
     }
 }
 

@@ -9,22 +9,22 @@
 if( $PSVersionTable.PSVersion.Major -ne 5 ) {
     throw "This test script is for the DP API implementation in Windows PowerShell 5"
 } else {
-    Write-Host "Verified Windows PowerShell 5 shell"
+    Write-Output "Verified Windows PowerShell 5 shell"
 }
 
 # First test is loading the PowerPass module
-Write-Host "Testing module import"
+Write-Output "Testing module import"
 Import-Module PowerPass
 $module = Get-Module | ? Name -eq "PowerPass"
 if( -not $module ) {
     throw "Failed to load PowerPass module, did you deploy it?"
 } else {
-    Write-Host "Verified module import"
+    Write-Output "Verified module import"
 }
 if( (Get-PowerPass).Implementation -ne "DPAPI" ) {
     throw "This test is for the DPAPI implementation of PowerPass, you have the $((Get-PowerPass).Implementation) implementation installed"
 } else {
-    Write-Host "Verified DP API implementation present"
+    Write-Output "Verified DP API implementation present"
 }
 
 # ------------------------------------------------------------------------------------------------------------- #
@@ -63,7 +63,7 @@ function Assert-SecretCollection {
         $indexer++
     }
     if ( $assert ) {
-        Write-Host "Assert passed"
+        Write-Output "Assert passed"
     } else {
         Write-Warning "Assert failed"
     }
@@ -89,7 +89,7 @@ function Assert-Strings {
         $StringB
     )
     if( [String]::Equals( $StringA, $StringB, "Ordinal" ) ) {
-        Write-Host "Assert passed"
+        Write-Output "Assert passed"
     } else {
         Write-Warning "Assert failed"
     }
@@ -119,7 +119,7 @@ function Assert-Secret {
 }
 
 # Notify
-Write-Host "Defining test constants"
+Write-Output "Defining test constants"
 
 # Key file for all test cases
 $keyFilePath = "$PSScriptRoot\keepass-keyfile.keyx"
@@ -128,46 +128,46 @@ $keyFilePath = "$PSScriptRoot\keepass-keyfile.keyx"
 $secureString = ConvertTo-SecureString -String "12345" -AsPlainText -Force
 
 # Test a database which uses a password key
-Write-Host "Testing a Database with a Password: " -NoNewline
+Write-Output "Testing a Database with a Password"
 $script:expectedPassword = "BkLQzZvxEV5Znav7"
 Open-PowerPassDatabase -Path "$PSScriptRoot\kpdb-pw.kdbx" -MasterPassword $secureString | Assert-Secret
 
 # Test a database which uses a key file key
-Write-Host "Testing a Database with a Key File: " -NoNewline
+Write-Output "Testing a Database with a Key File"
 $script:expectedPassword = "C4uqg38rjAdoo1AT"
 Open-PowerPassDatabase -Path "$PSScriptRoot\kpdb-key.kdbx" -KeyFile $keyFilePath | Assert-Secret
 
 # Cannot be done for anyone else but yourself
 # Test a database which uses the Windows user account as the key
-# Write-Host "Testing a Database with User Account: " -NoNewline
+# Write-Output "Testing a Database with User Account"
 # $expectedPassword = "AAhvNSLcjLEaSfa6"
 # Open-PowerPassDatabase -Path "$PSScriptRoot\kpdb-user.kdbx" -WindowsUserAccount | Assert-Secret
 
 # Test a database which uses both a key file key and password key
-Write-Host "Testing a Database with a Key File and Password: " -NoNewline
+Write-Output "Testing a Database with a Key File and Password"
 $expectedPassword = "trlasJhJlVuZHETS"
 Open-PowerPassDatabase -Path "$PSScriptRoot\kpdb-keypw.kdbx" -KeyFile $keyFilePath -MasterPassword $secureString | Assert-Secret
 
 # Cannot be done for anyone else but yourself
 # Test a database which uses both a key file key and Windows user account key
-# Write-Host "Testing a Database with a Key File and User Account: " -NoNewline
+# Write-Output "Testing a Database with a Key File and User Account"
 # $expectedPassword = "LgAXW2iIjRAgczfT"
 # Open-PowerPassDatabase -Path "$PSScriptRoot\kpdb-keyuser.kdbx" -KeyFile $keyFilePath -WindowsUserAccount | Assert-Secret
 
 # Cannot be done for anyone else but yourself
 # Test a database which uses both a password key and Windows user account key
-# Write-Host "Testing a Database with a Password and User Account: " -NoNewline
+# Write-Output "Testing a Database with a Password and User Account"
 # $expectedPassword = "Bf9GZ9dM0UBt2F5c"
 # Open-PowerPassDatabase -Path "$PSScriptRoot\kpdb-pwuser.kdbx" -MasterPassword $secureString -WindowsUserAccount | Assert-Secret
 
 # Cannot be done for anyone else but yourself
 # Test a database which uses all three keys
-# Write-Host "Testing a Database with a Password User Account and Key File: " -NoNewline
+# Write-Output "Testing a Database with a Password User Account and Key File"
 # $expectedPassword = "z3jZ3IhHM8bz2NGt"
 # Open-PowerPassDatabase -Path "$PSScriptRoot\kpdb-pwkeyuser.kdbx" -KeyFile $keyFilePath -MasterPassword $secureString -WindowsUserAccount | Assert-Secret
 
 # Test a database with multiple entries with the same Title
-Write-Host "Testing a Database with Indentical Entries: " -NoNewline
+Write-Output "Testing a Database with Indentical Entries"
 $expectedResults = @('Test Entry','Test Entry','Test Entry')
 $localDb = Open-PowerPassDatabase -Path "$PSScriptRoot\kpdb-pwmulti.kdbx" -MasterPassword $secureString
 $actualResults = Get-PowerPassSecret -Database $localDb -Match "Test Entry"
@@ -175,95 +175,70 @@ Assert-SecretCollection -Collection $actualResults -Titles $expectedResults
 $actualResults = $null
 
 # Test a database with multiple entries using wildcards
-Write-Host "Testing a Database to get All Entries: " -NoNewline
+Write-Output "Testing a Database to get All Entries"
 $expectedResults = @('Other Words in Title','Test Entry','Test Entry','Test Entry','Test User')
 $actualResults = Get-PowerPassSecret -Database $localDb | Sort-Object -Property "Title"
 Assert-SecretCollection -Collection $actualResults -Titles $expectedResults
 $actualResults = $null
 
 # Test a database with multiple entries using Test and wildcards
-Write-Host "Testing a Database with Wilcard Search 'Test*': " -NoNewline
+Write-Output "Testing a Database with Wilcard Search 'Test*'"
 $expectedResults = @('Test Entry','Test Entry','Test Entry','Test User')
 $actualResults = Get-PowerPassSecret -Database $localDb -Match "Test*" | Sort-Object -Property "Title"
 Assert-SecretCollection -Collection $actualResults -Titles $expectedResults
 $actualResults = $null
 
 # Clear the Locker to Unit Test the Locker
-Write-Host "Testing the Default Secret in a new Locker: " -NoNewline
+Write-Output "Testing the Default Secret in a new Locker"
 Clear-PowerPassLocker -Force
 $default = Read-PowerPassSecret
 if( $default.Title -eq "Default" ) {
-    Write-Host "Assert passed"
+    Write-Output "Assert passed"
 } else {
     Write-Warning "Assert failed"
 }
 
 # Write a New Secret into the Locker
-Write-Host "Testing Write function to Locker: " -NoNewline
+Write-Output "Testing Write function to Locker"
 Write-PowerPassSecret -Title "Unit Testing" -UserName "unit test user" -Password "unit test password" -URL "https://github.com/chopinrlz/powerpass" -Notes "Unit testing." -Expires (Get-Date)
 $unitTesting = Read-PowerPassSecret -Match "Unit Testing"
 if( $unitTesting.Title -eq "Unit Testing" ) {
-    Write-Host "Assert passed"
+    Write-Output "Assert passed"
 } else {
     Write-Warning "Assert failed"
 }
 
 # Test reading secrets in various ways
-Write-Host "Testing Read function with parameter: " -NoNewline
+Write-Output "Testing Read function with parameter"
 $secret = Read-PowerPassSecret -Match "Unit Testing"
 if( $secret ) {
-    Write-Host "Assert passed"
+    Write-Output "Assert passed"
 } else {
     Write-Warning "Assert failed"
 }
 $secret = $null
-Write-Host "Testing Read function with no parameter name: " -NoNewline
+Write-Output "Testing Read function with no parameter name"
 $secret = Read-PowerPassSecret "Unit Testing"
 if( $secret ) {
-    Write-Host "Assert passed"
+    Write-Output "Assert passed"
 } else {
     Write-Warning "Assert failed"
 }
 $secret = $null
-Write-Host "Testing Read function from pipeline: " -NoNewline
+Write-Output "Testing Read function from pipeline"
 $secret = "Unit Testing" | Read-PowerPassSecret
 if( $secret ) {
-    Write-Host "Assert passed"
+    Write-Output "Assert passed"
 } else {
     Write-Warning "Assert failed"
 }
 $secret = $null
 
-# Test the export functionality with default file names
-Write-Host "Testing locker export with default file names: " -NoNewline
+# Test the export functionality
+Write-Output "Testing locker export"
 Export-PowerPassLocker -Path $PSScriptRoot
-if( Test-Path "$PSScriptRoot\locker.salt" ) {
-    if( Test-Path "$PSScriptRoot\powerpass.locker" ) {
-        if( Test-Path "$PSScriptRoot\powerpass.salt" ) {
-            Write-Host "Assert passed"
-        } else {
-            Write-Warning "Assert failed"
-        }
-    } else {
-        Write-Warning "Assert failed"
-    }
-} else {
-    Write-Warning "Assert failed"
-}
-
-# Test the export functionality with custom file names
-Write-Host "Testing locker export with custom file names: " -NoNewline
-Export-PowerPassLocker -Path $PSScriptRoot -LockerFileName "test.locker" -LockerSaltFileName "testlocker.salt" -ModuleSaltFileName "testmodule.salt"
-if( Test-Path "$PSScriptRoot\test.locker" ) {
-    if( Test-Path "$PSScriptRoot\testlocker.salt" ) {
-        if( Test-Path "$PSScriptRoot\testmodule.salt" ) {
-            Write-Host "Assert passed"
-        } else {
-            Write-Warning "Assert failed"
-        }
-    } else {
-        Write-Warning "Assert failed"
-    }
+if( Test-Path "$PSScriptRoot\powerpass_locker.bin" ) {
+    Write-Output "Assert passed"
 } else {
     Write-Warning "Assert failed"
 }
@@ -271,7 +246,7 @@ if( Test-Path "$PSScriptRoot\test.locker" ) {
 # Test the clear functionality, interactively
 $unitTesting = $null
 $default = $null
-Write-Host "Testing locker clear (interactive, no force)"
+Write-Output "Testing locker clear (interactive, no force)"
 Clear-PowerPassLocker
 $unitTesting = Read-PowerPassSecret -Match "Unit Testing"
 $default = Read-PowerPassSecret -Match "Default"
@@ -279,7 +254,7 @@ if( $unitTesting ) {
     Write-Warning "Assert failed"
 } else {
     if( $default.Title -eq "Default" ) {
-        Write-Host "Assert passed"
+        Write-Output "Assert passed"
     } else {
         Write-Warning "Assert failed"
     }
@@ -287,42 +262,30 @@ if( $unitTesting ) {
 
 # Test the clear functionality, with force
 $default = $null
-Write-Host "Testing locker clear (force): " -NoNewline
+Write-Output "Testing locker clear (force)"
 Clear-PowerPassLocker -Force
 $default = Read-PowerPassSecret
 if( $default.Title -eq "Default" ) {
-    Write-Host "Assert passed"
+    Write-Output "Assert passed"
 } else {
     Write-Warning "Assert failed"
 }
 
-# Test the import functionality without the module salt
+# Test the import functionality
 $unitTesting = $null
-Write-Host "Testing locker import (no module salt)"
+Write-Output "Testing locker import"
 Clear-PowerPassLocker -Force
-Import-PowerPassLocker -LockerFilePath "$PSScriptRoot\powerpass.locker" -LockerSaltPath "$PSScriptRoot\locker.salt"
+Import-PowerPassLocker -LockerFilePath "$PSScriptRoot\powerpass_locker.bin"
 $unitTesting = Read-PowerPassSecret -Match "Unit Testing"
 if( $unitTesting.Title -eq "Unit Testing" ) {
-    Write-Host "Assert passed"
-} else {
-    Write-Warning "Assert failed"
-}
-
-# Test the import functionality with the module salt
-$unitTesting = $null
-Write-Host "Testing locker export (with module salt)"
-Clear-PowerPassLocker -Force
-Import-PowerPassLocker -LockerFilePath "$PSScriptRoot\powerpass.locker" -LockerSaltPath "$PSScriptRoot\locker.salt" -ModuleSaltPath "$PSScriptRoot\powerpass.salt"
-$unitTesting = Read-PowerPassSecret -Match "Unit Testing"
-if( $unitTesting.Title -eq "Unit Testing" ) {
-    Write-Host "Assert passed"
+    Write-Output "Assert passed"
 } else {
     Write-Warning "Assert failed"
 }
 
 # Test removing secrets
 $secret = $null
-Write-Host "Testing secret removal: " -NoNewline
+Write-Output "Testing secret removal"
 Write-PowerPassSecret -Title "Delete Me"
 Write-PowerPassSecret -Title "Keep Me"
 $secret = Read-PowerPassSecret -Match "Delete Me"
@@ -334,7 +297,7 @@ if( $secret ) {
     } else {
         $secret = Read-PowerPassSecret -Match "Keep Me"
         if( $secret ) {
-            Write-Host "Assert passed"
+            Write-Output "Assert passed"
         } else {
             Write-Warning "Assert failed"
         }
@@ -344,7 +307,5 @@ if( $secret ) {
 }
 
 # Clean up
-Write-Host "Cleaning up test files"
-"locker.salt","powerpass.locker","powerpass.salt","test.locker","testlocker.salt","testmodule.salt" | ForEach-Object {
-    Remove-Item -Path "$PSScriptRoot\$_" -Force
-}
+Write-Output "Cleaning up"
+Remove-Item "$PSScriptRoot\powerpass_locker.bin" -Force

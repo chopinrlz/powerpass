@@ -241,7 +241,7 @@ switch( $installation ) {
     }
     $powerPassDpApi {
         Write-Output "Copying DP API common files"
-        $itemsToDeploy = @("LICENSE","TestDatabase.kdbx","KeePassLib.dll","module\PowerPass.ps1",".\module\StatusLogger.cs",".\module\Extensions.cs")
+        $itemsToDeploy = @("LICENSE","TestDatabase.kdbx","KeePassLib.dll","module\PowerPass.ps1",".\module\StatusLogger.cs",".\module\Extensions.cs",".\module\AesCrypto.cs")
         if( $deploySalt ) {
             $itemsToDeploy += "powerpass.salt"
         }

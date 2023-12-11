@@ -437,11 +437,11 @@ function Export-PowerPassLocker {
     <#
         .SYNOPSIS
         Exports your PowerPass Locker to an encrypted backup file powerpass_locker.bin.
+        .DESCRIPTION
+        You will be prompted to enter a password to encrypt the locker. The password must be
+        between 4 and 32 characters.
         .PARAMETER Path
         The path where the exported file will go. This is mandatory, and this path must exist.
-        .PARAMETER Password
-        The password to encrypt the PowerPass Locker backup file. This must be at least 4 characters
-        and no more than 32.
         .OUTPUTS
         This cmdlet does not output to the pipeline. It creates the file powerpass_locker.bin
         in the target Path. If the file already exists, you will be prompted to replace it.
@@ -450,10 +450,7 @@ function Export-PowerPassLocker {
     param(
         [Parameter(Mandatory,ValueFromPipeline,Position=0)]
         [string]
-        $Path,
-        [Parameter(Mandatory)]
-        [string]
-        $Password
+        $Path
     )
     if( -not (Test-Path $Path) ) {
         throw "$Path does not exist"
@@ -462,10 +459,19 @@ function Export-PowerPassLocker {
     if( -not $locker ) {
         throw "Could not load you PowerPass locker"
     }
-    if( $Password -eq "" ) {
+    $password = ""
+    if( $PSVersionTable.PSVersion.Major -eq 5 ) {
+        $secString = Read-Host "Enter a password (4 - 32 characters)" -AsSecureString
+        $bString = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR( $secString )
+        $password = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto( $bString )
+        [System.Runtime.InteropServices.Marshal]::ZeroFreeBSTR( $bString )
+    } else {
+        $password = Read-Host -Prompt "Enter a locker password (4 - 32 characters)" -MaskInput
+    }
+    if( $password -eq "" ) {
         throw "You cannot use a blank password"
     }
-    if( ($Password.Length -lt 4) -or ($Password.Length -gt 32) ) {
+    if( ($password.Length -lt 4) -or ($password.Length -gt 32) ) {
         throw "The password must be between 4 and 32 characters."
     }
     $output = Join-Path -Path $Path -ChildPath "powerpass_locker.bin"
@@ -480,7 +486,7 @@ function Export-PowerPassLocker {
     $json = ConvertTo-Json -InputObject $locker
     $data = [System.Text.Encoding]::UTF8.GetBytes( $json )
     $aes = New-Object -TypeName "PowerPass.AesCrypto"
-    $aes.SetPaddedKey( $Password )
+    $aes.SetPaddedKey( $password )
     $aes.Encrypt( $data, $output )
     $aes.Dispose()
 }
@@ -493,10 +499,10 @@ function Import-PowerPassLocker {
     <#
         .SYNOPSIS
         Imports a PowerPass locker file.
+        .DESCRIPTION
+        You will be prompted to enter the locker password.
         .PARAMETER LockerFile
         The path to the locker file on disk to import.
-        .PARAMETER Password
-        The password used to encrypt the locker file used during export.
         .PARAMETER Force
         Import the locker files without prompting for confirmation.
     #>
@@ -505,9 +511,6 @@ function Import-PowerPassLocker {
         [Parameter(Mandatory,ValueFromPipeline,Position=0)]
         [string]
         $LockerFile,
-        [Parameter(Mandatory)]
-        [string]
-        $Password,
         [switch]
         $Force
     )
@@ -516,14 +519,28 @@ function Import-PowerPassLocker {
     [bool]$warn = $false
     [byte[]]$data = $null
 
+    # Prompt for password
+    $password = ""
+    if( $PSVersionTable.PSVersion.Major -eq 5 ) {
+        $secString = Read-Host "Enter the locker password" -AsSecureString
+        $bString = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR( $secString )
+        $password = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto( $bString )
+        [System.Runtime.InteropServices.Marshal]::ZeroFreeBSTR( $bString )
+    } else {
+        $password = Read-Host -Prompt "Enter the locker password" -MaskInput
+    }
+
     # Verify and load locker backup file
     if( Test-Path $LockerFile ) {
         $aes = New-Object -TypeName "PowerPass.AesCrypto"
-        $aes.SetPaddedKey( $Password )
+        $aes.SetPaddedKey( $password )
         $data = $aes.Decrypt( $LockerFile )
         $aes.Dispose()
     } else {
         throw "$LockerFile does not exist"
+    }
+    if( -not $data ) {
+        throw "Decryption failed"
     }
 
     # Check for existing locker
@@ -537,7 +554,7 @@ function Import-PowerPassLocker {
     # Check for warning message
     if( $warn ) {
         $answer = Read-Host "You are about to overwrite your existing locker. Proceed? [N/y]"
-        if( Test-Answer $answer ) { 
+        if( Test-PowerPassAnswer $answer ) { 
             Write-Output "Restoring locker from $LockerFile"
         } else {
             throw "Import cancelled by user"
