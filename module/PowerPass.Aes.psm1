@@ -11,7 +11,7 @@ $LockerFileName = ".powerpass_locker"
 $LockerKeyFileName = ".locker_key"
 
 # Determine where application data should be stored
-$AppDataPath  = if( $IsLinux -or $IsMacOS ) {
+$AppDataPath  = if( $IsLinux ) {
     [System.Environment]::GetFolderPath("ApplicationData")
 } else {
     [System.Environment]::GetFolderPath("LocalApplicationData")
