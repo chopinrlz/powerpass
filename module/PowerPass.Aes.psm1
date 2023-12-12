@@ -161,7 +161,7 @@ function Write-PowerPassSecret {
         throw "Could not create or fetch your locker"
     }
     $changed = $false
-    $existingSecret = $locker.Secrets | Where-Object { 'Title' -eq $Title }
+    $existingSecret = $locker.Secrets | Where-Object { $_.Title -eq $Title }
     if( $existingSecret ) {
         if( $UserName ) {
             $existingSecret.UserName = $UserName
