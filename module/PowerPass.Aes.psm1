@@ -27,7 +27,7 @@ $UserDataPath = if( $IsLinux -or $IsMacOS ) {
 # Setup the root module object in script scope and load all relevant properties
 $PowerPass = [PSCustomObject]@{
     AesCryptoSourcePath = Join-Path -Path $PSScriptRoot -ChildPath "AesCrypto.cs"
-    CommonSourcePath    = Join-Path -Path $PSScriptRoot -ChildPath "PowerPass.Common.cs"
+    CommonSourcePath    = Join-Path -Path $PSScriptRoot -ChildPath "PowerPass.Common.ps1"
     LockerFolderPath    = $UserDataPath
     LockerFilePath      = Join-Path -Path $UserDataPath -ChildPath $LockerFileName
     LockerKeyFolderPath = Join-Path -Path $AppDataPath -ChildPath $PowerPassEdition

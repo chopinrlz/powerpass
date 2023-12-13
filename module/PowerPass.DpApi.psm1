@@ -29,7 +29,7 @@ $PowerPass = [PSCustomObject]@{
     ExtensionsSource   = Join-Path -Path $PSScriptRoot -ChildPath $ExtensionsSourceCode
     ModuleSaltFilePath = Join-Path -Path $PSScriptRoot -ChildPath $ModuleSaltFileName
     AesCryptoSource    = Join-Path -Path $PSScriptRoot -ChildPath $AesCryptoSourceCode
-    CommonSourcePath   = Join-Path -Path $PSScriptRoot -ChildPath "PowerPass.Common.cs"
+    CommonSourcePath   = Join-Path -Path $PSScriptRoot -ChildPath "PowerPass.Common.ps1"
     # These paths must always be a combination of the UserDataPath and the UserDataFolderName
     # The cmdlets in this module assume that the user data folder for PowerPass is $UserDataPath/$UserDataFolderName
     LockerFolderPath   = Join-Path -Path $UserDataPath -ChildPath "$UserDataFolderName"
