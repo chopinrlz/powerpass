@@ -216,7 +216,7 @@ $missingFiles = $false
 switch( $installation ) {
     $powerPassAes {
         Write-Output "Copying AES common files"
-        $itemsToDeploy = @("LICENSE","module\PowerPass.ps1",".\module\AesCrypto.cs")
+        $itemsToDeploy = @("LICENSE","module\PowerPass.ps1",".\module\AesCrypto.cs",".\module\PowerPass.Common.ps1")
         $itemsToDeploy | Copy-Item -Destination $targetLocation -Force
 
         Write-Output "Copying AES manifest"
@@ -230,7 +230,7 @@ switch( $installation ) {
         Copy-Item -Path $sourceFile -Destination $targetFile -Force
 
         Write-Output "Verifying the installation"
-        $verified = @("LICENSE","PowerPass.ps1","PowerPass.psd1","PowerPass.psm1","AesCrypto.cs")
+        $verified = @("LICENSE","PowerPass.ps1","PowerPass.psd1","PowerPass.psm1","AesCrypto.cs","PowerPass.Common.ps1")
         $verified | ForEach-Object {
             $verifiedPath = Join-Path -Path $targetLocation -ChildPath $_
             if( -not (Test-Path $verifiedPath) ) {
@@ -241,7 +241,7 @@ switch( $installation ) {
     }
     $powerPassDpApi {
         Write-Output "Copying DP API common files"
-        $itemsToDeploy = @("LICENSE","TestDatabase.kdbx","KeePassLib.dll","module\PowerPass.ps1",".\module\StatusLogger.cs",".\module\Extensions.cs",".\module\AesCrypto.cs")
+        $itemsToDeploy = @("LICENSE","TestDatabase.kdbx","KeePassLib.dll","module\PowerPass.ps1",".\module\StatusLogger.cs",".\module\Extensions.cs",".\module\AesCrypto.cs",".\module\PowerPass.Common.ps1")
         if( $deploySalt ) {
             $itemsToDeploy += "powerpass.salt"
         }
@@ -258,7 +258,7 @@ switch( $installation ) {
         Copy-Item -Path $sourceFile -Destination $targetFile -Force
 
         Write-Output "Verifying the installation"
-        $verified = @("LICENSE","TestDatabase.kdbx","KeePassLib.dll","PowerPass.ps1","PowerPass.psd1","PowerPass.psm1","StatusLogger.cs","Extensions.cs","powerpass.salt")
+        $verified = @("LICENSE","TestDatabase.kdbx","KeePassLib.dll","PowerPass.ps1","PowerPass.psd1","PowerPass.psm1","StatusLogger.cs","Extensions.cs","powerpass.salt","PowerPass.Common.ps1")
         $verified | ForEach-Object {
             $verifiedPath = Join-Path -Path $targetLocation -ChildPath $_
             if( -not (Test-Path $verifiedPath) ) {

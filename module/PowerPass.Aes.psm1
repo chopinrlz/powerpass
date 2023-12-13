@@ -27,6 +27,7 @@ $UserDataPath = if( $IsLinux -or $IsMacOS ) {
 # Setup the root module object in script scope and load all relevant properties
 $PowerPass = [PSCustomObject]@{
     AesCryptoSourcePath = Join-Path -Path $PSScriptRoot -ChildPath "AesCrypto.cs"
+    CommonSourcePath    = Join-Path -Path $PSScriptRoot -ChildPath "PowerPass.Common.cs"
     LockerFolderPath    = $UserDataPath
     LockerFilePath      = Join-Path -Path $UserDataPath -ChildPath $LockerFileName
     LockerKeyFolderPath = Join-Path -Path $AppDataPath -ChildPath $PowerPassEdition
@@ -40,6 +41,9 @@ if( $PSVersionTable.PSVersion.Major -eq 5 ) {
 } else {
     Add-Type -Path $PowerPass.AesCryptoSourcePath -ReferencedAssemblies "System.Security.Cryptography"
 }
+
+# Dot Source the common functions
+. ($PowerPass.CommonSourcePath)
 
 # ------------------------------------------------------------------------------------------------------------- #
 # FUNCTION: Clear-PowerPassLocker

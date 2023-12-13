@@ -29,6 +29,7 @@ $PowerPass = [PSCustomObject]@{
     ExtensionsSource   = Join-Path -Path $PSScriptRoot -ChildPath $ExtensionsSourceCode
     ModuleSaltFilePath = Join-Path -Path $PSScriptRoot -ChildPath $ModuleSaltFileName
     AesCryptoSource    = Join-Path -Path $PSScriptRoot -ChildPath $AesCryptoSourceCode
+    CommonSourcePath   = Join-Path -Path $PSScriptRoot -ChildPath "PowerPass.Common.cs"
     # These paths must always be a combination of the UserDataPath and the UserDataFolderName
     # The cmdlets in this module assume that the user data folder for PowerPass is $UserDataPath/$UserDataFolderName
     LockerFolderPath   = Join-Path -Path $UserDataPath -ChildPath "$UserDataFolderName"
@@ -49,6 +50,9 @@ Add-Type -Path $PowerPass.ExtensionsSource -ReferencedAssemblies $PowerPass.KeeP
 
 # Compile and load the AES crypto class
 Add-Type -Path $PowerPass.AesCryptoSource -ReferencedAssemblies "System.Security"
+
+# Dot Source the common functions
+. ($PowerPass.CommonSourcePath)
 
 # ------------------------------------------------------------------------------------------------------------- #
 # FUNCTION: Open-PowerPassTestDatabase
