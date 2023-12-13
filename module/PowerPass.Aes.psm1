@@ -260,7 +260,8 @@ function Read-PowerPassSecret {
     $locker = Get-PowerPassLocker
     if( -not $locker ) {
         throw "Could not create or fetch your locker"
-    } else {
+    }
+    if( $locker.Secrets ) {
         if( $Match ) {
             $secrets = $locker.Secrets | Where-Object { $_.Title -like $Match }
             if( $PlainTextPasswords ) {
@@ -283,6 +284,8 @@ function Read-PowerPassSecret {
                 }
             }
         }
+    } else {
+        Write-Output $null
     }
 }
 
