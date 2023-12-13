@@ -80,6 +80,10 @@ Outputs a random string of typable characters to the pipeline which can be used 
 Reads secrets from your PowerPass locker.
 ### PARAMETER Match
 An optional filter. If specified, only secrets whose Title matches this filter are output to the pipeline.
+Cannot be combined with Title as Title will be ignored if Match is specified.
+### PARAMETER Title
+An optional exact match filter. If specified, only the secret which exactly matches the Title will be
+output to the pipeline. Do not combine with Match as Title will be ignored if Match is specified.
 ### PARAMETER PlainTextPasswords
 An optional switch which instructs PowerPass to output the passwords in plain-text. By default, all
 passwords are output as `SecureString` objects. You cannot combine this with `-AsCredential`.
@@ -141,6 +145,13 @@ You can fetch a secret from your locker in this format automatically and pass it
 # Get all the Active Directory users
 $svcAccount = Read-PowerPassSecret -Match "Domain Reader Service" -AsCredential
 Get-ADUser -Credential $svcAccount
+```
+### EXAMPLE 5: Get a Secret by Exact Title
+In this example we fetch a secret using an exact Title match which we expect to find in our locker.
+If no secret matching the Title is found, nothing is returned.
+```powershell
+# Get a specific secret from the locker
+$sec = Read-PowerPassSecret -Title "Domain Admin Account"
 ```
 ##### ***[Back to Top](#powerpass-cmdlet-reference-for-aes-implementation)***
 # Remove-PowerPassSecret
