@@ -233,8 +233,6 @@ function Read-PowerPassSecret {
         .PARAMETER AsCredential
         An optional switch which instructs PowerPass to output the secrets as PSCredential objects. You cannot
         combine this with PlainTextPasswords.
-        .INPUTS
-        This cmdlet takes no input.
         .OUTPUTS
         This cmdlet outputs PowerPass secrets from your locker to the pipeline. Each secret is a PSCustomObject
         with these properties:

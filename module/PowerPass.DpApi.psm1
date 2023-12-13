@@ -571,14 +571,16 @@ function Read-PowerPassSecret {
         Reads secrets from your PowerPass locker.
         .PARAMETER Match
         An optional filter. If specified, only secrets whose Title matches this filter are output to the pipeline.
+        Do not combine with Title as Title will be ignored if Match is specified.
+        .PARAMETER Title
+        An optional exact match filter. If specified, only the one secret with the Title specified will be returned.
+        Cannot be combined with Match as Title will be ignored if Match is specified.
         .PARAMETER PlainTextPasswords
         An optional switch which instructs PowerPass to output the passwords in plain-text. By default, all
         passwords are output as SecureString objects. You cannot combine this with AsCredential.
         .PARAMETER AsCredential
         An optional switch which instructs PowerPass to output the secrets as a PSCredential object. You cannot
         combine this with PlainTextPasswords.
-        .INPUTS
-        This cmdlet takes no input.
         .OUTPUTS
         This cmdlet outputs PowerPass secrets from your locker to the pipeline. Each secret is a PSCustomObject
         with these properties:
@@ -600,6 +602,8 @@ function Read-PowerPassSecret {
         [Parameter(ValueFromPipeline,Position=0)]
         [string]
         $Match,
+        [string]
+        $Title,
         [switch]
         $PlainTextPasswords,
         [switch]
@@ -619,6 +623,20 @@ function Read-PowerPassSecret {
                     $secrets | Get-PowerPassCredential
                 } else {
                     $secrets | Set-PowerPassSecureString
+                }
+            }
+        } elseif( $Title ) {
+            foreach( $secret in $locker.Secrets ) {
+                if( $secret.Title -eq $Title ) {
+                    if( $PlainTextPasswords ) {
+                        Write-Output $secret
+                    } else {
+                        if( $AsCredential ) {
+                            Write-Output (Get-PowerPassCredential $secret)
+                        } else {
+                            Write-Output (Set-PowerPassSecureString $secret)
+                        }
+                    }
                 }
             }
         } else {

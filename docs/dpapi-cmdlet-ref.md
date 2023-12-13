@@ -270,14 +270,16 @@ This function will fail if the test database file is not found in the module fol
 Reads secrets from your PowerPass locker.
 ### PARAMETER Match
 An optional filter. If specified, only secrets whose Title matches this filter are output to the pipeline.
+Do not combine with Title as Title will be ignored if Match is specified.
+### PARAMETER Title
+An optional exact match filter. If specified, only the one secret with the Title specified will be returned.
+Cannot be combined with Match as Title will be ignored if Match is specified.
 ### PARAMETER PlainTextPasswords
 An optional switch which instructs PowerPass to output the passwords in plain-text. By default, all
 passwords are output as SecureString objects. You cannot combine this with AsCredential.
 ### PARAMETER AsCredential
 An optional switch which instructs PowerPass to output the secrets as a PSCredential object. You cannot
 combine this with PlainTextPasswords.
-### INPUTS
-This cmdlet takes no input.
 ### OUTPUTS
 This cmdlet outputs PowerPass secrets from your locker to the pipeline. Each secret is a PSCustomObject
 with these properties:
@@ -331,6 +333,13 @@ You can fetch a secret from your locker in this format automatically and pass it
 # Get all the Active Directory users
 $svcAccount = Read-PowerPassSecret -Match "Domain Reader Service" -AsCredential
 Get-ADUser -Credential $svcAccount
+```
+### EXAMPLE 5: Get a Specific Secret by Title
+In this example we fetch a single secret by Title of a known secret we expect to be in our locker, one that was added earlier.
+If the Title we specify is not found in the locker, nothing will be returned.
+```powershell
+# Get the secret with this exact Title
+$sec = Read-PowerPassSecret -Title "Domain Admin Login"
 ```
 ##### ***[Back to Top](#powerpass-cmdlet-reference-for-windows-powershell-dp-api--keepass-2-implementation)***
 # Remove-PowerPassSecret
