@@ -93,16 +93,10 @@ function Set-PowerPassSecureString {
         [Parameter(Mandatory=$true,ValueFromPipeline,Position=0)]
         $Secret
     )
-    begin {
-        # Start work on collection of secrets
-    } process {
-        if( $Secret.Password ) {
-            $Secret.Password = ConvertTo-SecureString -String ($Secret.Password) -AsPlainText -Force
-        }
-        Write-Output $Secret
-    } end {
-        # Complete work on collection of secrets
+    if( $Secret.Password ) {
+        $Secret.Password = ConvertTo-SecureString -String ($Secret.Password) -AsPlainText -Force
     }
+    Write-Output $Secret
 }
 
 # ------------------------------------------------------------------------------------------------------------- #
