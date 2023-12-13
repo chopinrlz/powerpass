@@ -5,26 +5,41 @@
     You may copy, modify or distribute this software under the terms of the GNU Public License 2.0.
 #>
 
-Write-Output "This test script will test the AES implementation of PowerPass"
-Write-Output "These tests should pass in both Windows PowerShell and PowerShell 7 on all operating systems"
-Write-Output "Testing module import"
+function Test-Mismatch {
+    param(
+        [Parameter(Mandatory)]
+        [PSCustomObject]
+        $Left,
+        [Parameter(Mandatory)]
+        [PSCustomObject]
+        $Right
+    )
+    $titleCheck = ($Left.Title -ne $Right.Title)
+    $pwCheck = ($Left.Password -ne $Right.Password)
+    $urlCheck = ($Left.URL -ne $Right.URL)
+    $notesCheck = ($Left.Notes -ne $Right.Notes)
+    $expCheck = ($Left.Expires -ne $Right.Expires)
+    $createCheck = ($Left.Created -ne $Right.Created)
+    $modCheck = ($Left.Modified -ne $Right.Modified)
+    Write-Output ($titleCheck -or $pwCheck -or $urlCheck -or $notesCheck -or $expCheck -or $createCheck -or $modCheck )
+}
+
+# Import the module
+
 Import-Module PowerPass
 $module = Get-Module | ? Name -eq "PowerPass"
 if( -not $module ) {
     throw "Failed to load PowerPass module, did you deploy it?"
-} else {
-    Write-Output "Verified PowerPass module present"
 }
 if( (Get-PowerPass).Implementation -ne "AES" ) {
     throw "This test is for the AES implementation of PowerPass, you have the $((Get-PowerPass).Implementation) implementation installed"
-} else {
-    Write-Output "Verified PowerPass AES implementation present"
 }
+
+# Issue warning to user
 
 $answer = Read-Host "WARNING: This test battery will erase ALL your locker secrets. Proceed? [N/y]"
 if( $answer ) {
     if( $answer -eq "y" ) {
-        Write-Output "Clearing the PowerPass locker"
         Clear-PowerPassLocker -Force
     } else {
         throw "Testing cancelled by user"
@@ -33,123 +48,195 @@ if( $answer ) {
     throw "Testing cancelled by user"
 }
 
-Write-Output "Setting up constants and variables"
+# Setup constants for testing
+
 $lockerExport = Join-Path -Path $PSScriptRoot -ChildPath "powerpass_locker.bin"
 
-Write-Output "Testing Read-PowerPassSecret with empty locker"
+# Test - reading secrets from an empty locker
+
 $secret = Read-PowerPassSecret | ? Title -eq "Default"
-if( $secret ) {
-    Write-Output "Pass"
+if( -not $secret ) {
+    Write-Warning "Test failed: reading secrets from empty locker"
 } else {
-    Write-Warning "Fail"
+    if( $secret.Length -eq 1 ) {
+        if( -not ($secret.Title -eq "Default") ) {
+            Write-Warning "Test failed: Default secret Title invalid"
+        }
+    } else {
+        Write-Warning "Test failed: multiple secrets returned"
+    }
 }
 
-Write-Output "Testing Write-PowerPassSecret unit test"
-Write-PowerPassSecret -Title "Unit Test"
+# Test - write a secret and read it back
 
-Write-Output "Testing Read function with parameter"
+Write-PowerPassSecret -Title "Unit Test"
+$secret = Read-PowerPassSecret -Match "Unit Test"
+if( -not $secret ) {
+    Write-Warning "Test failed: unit test secret not returned"
+} else {
+    if( $secret.Length -eq 1 ) {
+        if( -not ($secret.Title -eq "Unit Test") ) {
+            Write-Warning "Test failed: unit test secret title invalid"
+        }
+    } else {
+        Write-Warning "Test failed: multiple secrets returned"
+    }
+}
+$secret = $null
+
+# Test - read secret with pipeline input
+
+$secret = "Unit Test" | Read-PowerPassSecret
+if( -not $secret ) {
+    Write-Warning "Test failed: unit test secret not returned"
+} else {
+    if( $secret.Length -eq 1 ) {
+        if( -not ($secret.Title -eq "Unit Test") ) {
+            Write-Warning "Test failed: unit test secret title invalid"
+        }
+    } else {
+        Write-Warning "Test failed: multiple secrets returned"
+    }
+}
+$secret = $null
+
+# Test - read secret with pipeline filter
+
+$secret = Read-PowerPassSecret | ? Title -eq "Unit Test"
+if( -not $secret ) {
+    Write-Warning "Test failed: unit test secret not returned"
+} else {
+    if( $secret.Length -eq 1 ) {
+        if( -not ($secret.Title -eq "Unit Test") ) {
+            Write-Warning "Test failed: unit test secret title invalid"
+        }
+    } else {
+        Write-Warning "Test failed: multiple secrets returned"
+    }
+}
+$secret = $null
+
+# Clear out the locker to setup for the next tests
+
+Clear-PowerPassLocker -Force
+
+# Test - double check clear works and read results in Default secret
+
+$secret = Read-PowerPassSecret | ? Title -eq "Default"
+if( -not $secret ) {
+    Write-Warning "Test failed: unit test secret not returned"
+} else {
+    if( $secret.Length -eq 1 ) {
+        if( -not ($secret.Title -eq "Default") ) {
+            Write-Warning "Test failed: unit test secret title invalid"
+        }
+    } else {
+        Write-Warning "Test failed: multiple secrets returned"
+    }
+}
+$secret = $null
+
+# Test - make sure the unit test secret has been cleared
+
+$secret = Read-PowerPassSecret | ? Title -eq "Unit Test"
+if( $secret ) {
+    Write-Warning "Test failed: unit test secret not cleared"
+}
+$secret = $null
+$secret = Read-PowerPassSecret -Title "Unit Test"
+if( $secret ) {
+    Write-Warning "Test failed: cleared unit test secret found with Title search"
+}
+$secret = $null
 $secret = Read-PowerPassSecret -Match "Unit Test"
 if( $secret ) {
-    Write-Output "Pass"
-} else {
-    Write-Warning "Assert failed"
-}
-$secret = $null
-Write-Output "Testing Read function with no parameter name"
-$secret = Read-PowerPassSecret "Unit Test"
-if( $secret ) {
-    Write-Output "Pass"
-} else {
-    Write-Warning "Assert failed"
-}
-$secret = $null
-Write-Output "Testing Read function from pipeline"
-$secret = "Unit Test" | Read-PowerPassSecret
-if( $secret ) {
-    Write-Output "Pass"
-} else {
-    Write-Warning "Assert failed"
+    Write-Warning "Test failed: cleared unit test secret found with Match search"
 }
 $secret = $null
 
-Write-Output "Testing Read-PowerPassSecret unit test"
-$secret = Read-PowerPassSecret | ? Title -eq "Unit Test"
-if( $secret ) {
-    Write-Output "Pass"
+# Test - load locker with various test secrets via pipeline
+
+$numTempSecrets = 24
+$tempSecrets = 1..$numTempSecrets | % {
+    [PSCustomObject]@{
+        Title = "generator secret $_"
+        UserName = [System.Guid]::NewGuid().ToString()
+        Password = New-PowerPassRandomPassword
+        URL = "https://github.com/chopinrlz/powerpass"
+        Notes = "Generated during testing"
+        Expires = Get-Date
+    }
+}
+$tempSecrets | Write-PowerPassSecret
+$readSecrets = Read-PowerPassSecret -Match "generator secret*"
+if( -not $readSecrets ) {
+    Write-Warning "Test failed: generator secrets not read back from locker"
 } else {
-    Write-Warning "Fail"
+    if( $readSecrets.Length -ne $numTempSecrets ) {
+        Write-Warning "Test failed: should be $numTempSecrets generator secrets, actual is $($readSecrets.Length)"
+    } else {
+        for( $i = 0; $i -lt $numTempSecrets; $i++ ) {
+            $ts = $tempSecrets[$i]
+            $rs = $readSecrets[$i]
+            $fail = Test-Mismatch -Left $ts -Right $rs
+            if( $fail ) {
+                Write-Warning "Test failed: secret value mismatch on read"
+            }
+        }
+    }
 }
-$secret = $null
 
-Write-Output "Testing Clear-PowerPassLocker"
-Clear-PowerPassLocker -Force
+# Test - export locker
 
-Write-Output "Testing Read-PowerPassSecret after clear - default"
-$secret = Read-PowerPassSecret | ? Title -eq "Default"
-if( $secret ) {
-    Write-Output "Pass"
-} else {
-    Write-Warning "Fail"
-}
-$secret = $null
-
-Write-Output "Testing Read-PowerPassSecret after clear - unit test"
-$secret = Read-PowerPassSecret | ? Title -eq "Unit Test"
-if( $secret ) {
-    Write-Warning "Fail"
-} else {
-    Write-Output "Pass"
-}
-$secret = $null
-
-Write-Output "Testing Export-PowerPassLocker"
-if( Test-Path $lockerExport ) {
-    Remove-Item $lockerExport -Force
-}
+if( Test-Path $lockerExport ) { Remove-Item $lockerExport -Force }
 Write-PowerPassSecret -Title "Export Test"
 Export-PowerPassLocker -Path $PSScriptRoot
-if( Test-Path $lockerExport ) {
-    Write-Output "Pass"
-} else {
-    Write-Warning "Fail: no locker file"
+if( -not (Test-Path $lockerExport) ) {
+    Write-Warning "Test failed: export file not created"
 }
 
-Write-Output "Testing Import-PowerPassLocker"
+# Test - import locker
+
 Import-PowerPassLocker -LockerFile $lockerExport
 $secret = Read-PowerPassSecret | ? Title -eq "Export Test"
-if( $secret ) {
-    Write-Output "Pass"
+if( -not $secret ) {
+    Write-Warning "Test failed: export test not present after import"
 } else {
-    Write-Warning "Fail"
+    if( $secret.Length -eq 1 ) {
+        if( -not ($secret.Title -eq "Export Test") ) {
+            Write-Warning "Test failed: export test secret title invalid"
+        }
+    } else {
+        Write-Warning "Test failed: multiple export test secrets returned after import"
+    }
 }
 $secret = $null
 
-Write-Output "Cleaning up for next test"
+# Clean up for the next test by clearing the locker and the export file
+
 Clear-PowerPassLocker -Force
-if( Test-Path $lockerExport ) {
-    Remove-Item $lockerExport -Force
-}
+if( Test-Path $lockerExport ) { Remove-Item $lockerExport -Force }
 
-Write-Output "Testing New-PowerPassRandomPassword"
-$randomPassword = New-PowerPassRandomPassword
-if( $randomPassword ) {
-    Write-Output "Pass"
-} else {
-    Write-Output "Fail"
-}
+# Test - key rotation
 
-Write-Output "Testing Update-PowerPassKey"
-Write-PowerPassSecret -Title "Update Test"
+Write-PowerPassSecret -Title "Key Rotation"
 Update-PowerPassKey
-$secret = Read-PowerPassSecret | ? Title -eq "Update Test"
-if( $secret ) {
-    Write-Output "Pass"
+$secret = Read-PowerPassSecret | ? Title -eq "Key Rotation"
+if( -not $secret ) {
+    Write-Warning "Test failed: key rotation secret missing"
 } else {
-    Write-Warning "Fail"
+    if( $secret.Length -eq 1 ) {
+        if( -not ($secret.Title -eq "Key Rotation") ) {
+            Write-Warning "Test failed: Key Rotation secret Title invalid"
+        }
+    } else {
+        Write-Warning "Test failed: multiple key rotation secrets returned"
+    }
 }
 $secret = $null
 
-Write-Output "Testing Remove-PowerPassSecret"
+# Test - removing secrets
+
 Write-PowerPassSecret -Title "Delete Me"
 Write-PowerPassSecret -Title "Keep Me"
 $secret = Read-PowerPassSecret -Match "Delete Me"
@@ -157,22 +244,19 @@ if( $secret ) {
     Remove-PowerPassSecret -Title "Delete Me"
     $secret = Read-PowerPassSecret -Match "Delete Me"
     if( $secret ) {
-        Write-Warning "Fail"
+        Write-Warning "Test failed: delete me secret not deleted"
     } else {
         $secret = Read-PowerPassSecret -Match "Keep Me"
-        if( $secret ) {
-            Write-Output "Pass"
-        } else {
-            Write-Warning "Fail"
+        if( -not $secret ) {
+            Write-Warning "Test failed: keep me secret not retained"
         }
     }
 } else {
-    Write-Warning "Fail"
+    Write-Warning "Test failed: delete me secret should appear before test"
 }
 $secret = $null
 
-Write-Output "Cleanup"
+# Clean up everything
+
 Clear-PowerPassLocker -Force
-if( Test-Path $lockerExport ) {
-    Remove-Item $lockerExport -Force
-}
+if( Test-Path $lockerExport ) { Remove-Item $lockerExport -Force }
