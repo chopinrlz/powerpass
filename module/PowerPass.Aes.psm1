@@ -412,8 +412,7 @@ function Export-PowerPassLocker {
             throw "Export cancelled by user"
         }
     }
-    $json = ConvertTo-Json -InputObject $locker
-    $data = [System.Text.Encoding]::UTF8.GetBytes( $json )
+    $data = Get-PowerPassLockerBytes $locker
     $aes = New-Object -TypeName "PowerPass.AesCrypto"
     $aes.SetPaddedKey( $password )
     $aes.Encrypt( $data, $output )
@@ -573,7 +572,10 @@ function Remove-PowerPassSecret {
         }
         $newLocker = New-PowerPassLocker
         $newLocker.Created = $locker.Created
-        $newLocker.Modified = $locker.Modified
+        # Old lockers do not have a modified flag
+        if( $locker.Modified ) {
+            $newLocker.Modified = $locker.Modified
+        }
         $newLocker.Attachments = $locker.Attachments
         $changed = $false
     } process {
