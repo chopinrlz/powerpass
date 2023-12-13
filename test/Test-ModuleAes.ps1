@@ -55,10 +55,11 @@ $lockerExport = Join-Path -Path $PSScriptRoot -ChildPath "powerpass_locker.bin"
 # Test - reading secrets from an empty locker
 
 $secret = Read-PowerPassSecret | ? Title -eq "Default"
+$secretCount = (Measure-Object -InputObject $secret).Count
 if( -not $secret ) {
     Write-Warning "Test failed: reading secrets from empty locker"
 } else {
-    if( $secret.Length -eq 1 ) {
+    if( $secretCount -eq 1 ) {
         if( -not ($secret.Title -eq "Default") ) {
             Write-Warning "Test failed: Default secret Title invalid"
         }
@@ -71,10 +72,11 @@ if( -not $secret ) {
 
 Write-PowerPassSecret -Title "Unit Test"
 $secret = Read-PowerPassSecret -Match "Unit Test"
+$secretCount = (Measure-Object -InputObject $secret).Count
 if( -not $secret ) {
     Write-Warning "Test failed: unit test secret not returned"
 } else {
-    if( $secret.Length -eq 1 ) {
+    if( $secretCount -eq 1 ) {
         if( -not ($secret.Title -eq "Unit Test") ) {
             Write-Warning "Test failed: unit test secret title invalid"
         }
@@ -87,10 +89,11 @@ $secret = $null
 # Test - read secret with pipeline input
 
 $secret = "Unit Test" | Read-PowerPassSecret
+$secretCount = (Measure-Object -InputObject $secret).Count
 if( -not $secret ) {
     Write-Warning "Test failed: unit test secret not returned"
 } else {
-    if( $secret.Length -eq 1 ) {
+    if( $secretCount -eq 1 ) {
         if( -not ($secret.Title -eq "Unit Test") ) {
             Write-Warning "Test failed: unit test secret title invalid"
         }
@@ -103,10 +106,11 @@ $secret = $null
 # Test - read secret with pipeline filter
 
 $secret = Read-PowerPassSecret | ? Title -eq "Unit Test"
+$secretCount = (Measure-Object -InputObject $secret).Count
 if( -not $secret ) {
     Write-Warning "Test failed: unit test secret not returned"
 } else {
-    if( $secret.Length -eq 1 ) {
+    if( $secretCount -eq 1 ) {
         if( -not ($secret.Title -eq "Unit Test") ) {
             Write-Warning "Test failed: unit test secret title invalid"
         }
@@ -123,10 +127,11 @@ Clear-PowerPassLocker -Force
 # Test - double check clear works and read results in Default secret
 
 $secret = Read-PowerPassSecret | ? Title -eq "Default"
+$secretCount = (Measure-Object -InputObject $secret).Count
 if( -not $secret ) {
     Write-Warning "Test failed: unit test secret not returned"
 } else {
-    if( $secret.Length -eq 1 ) {
+    if( $secretCount -eq 1 ) {
         if( -not ($secret.Title -eq "Default") ) {
             Write-Warning "Test failed: unit test secret title invalid"
         }
@@ -168,7 +173,9 @@ $tempSecrets = 1..$numTempSecrets | % {
     }
 }
 $tempSecrets | Write-PowerPassSecret
-$readSecrets = Read-PowerPassSecret -Match "generator secret*"
+$readSecrets = Read-PowerPassSecret -Match "generator secret*" -PlainTextPasswords
+Write-Output "Emitting read secrets to output"
+Write-Output $readSecrets
 if( -not $readSecrets ) {
     Write-Warning "Test failed: generator secrets not read back from locker"
 } else {

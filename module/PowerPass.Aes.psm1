@@ -145,6 +145,7 @@ function Write-PowerPassSecret {
         .PARAMETER Expires
         Optional. Sets the Expiras property of the secret in your locker.
     #>
+    [CmdletBinding()]
     param(
         [Parameter(Mandatory,ValueFromPipeline,ValueFromPipelineByPropertyName,Position=0)]
         [string]
@@ -165,60 +166,55 @@ function Write-PowerPassSecret {
         [DateTime]
         $Expires = [DateTime]::MaxValue
     )
-    begin {
-        $locker = Get-PowerPassLocker
-        if( -not $locker ) {
-            throw "Could not create or fetch your locker"
-        }
-        $changed = $false
-    } process {
-        $existingSecret = $locker.Secrets | Where-Object { $_.Title -eq $Title }
-        if( $existingSecret ) {
-            if( $UserName ) {
-                $existingSecret.UserName = $UserName
-                $changed = $true
-            }
-            if( $Password ) {
-                $existingSecret.Password = $Password
-                $changed = $true
-            }
-            if( $URL ) {
-                $existingSecret.URL = $URL
-                $changed = $true
-            }
-            if( $Notes ) {
-                $existingSecret.Notes = $Notes
-                $changed = $true
-            }
-            if( $Expires -ne ($existing.Expires) ) {
-                $existingSecret.Expires = $Expires
-                $changed = $true
-            }
-            if( $changed ) {
-                $existingSecret.Modified = (Get-Date).ToUniversalTime()
-            }
-        } else {
+    $locker = Get-PowerPassLocker
+    if( -not $locker ) {
+        throw "Could not create or fetch your locker"
+    }
+    $changed = $false
+    $existingSecret = $locker.Secrets | Where-Object { $_.Title -eq $Title }
+    if( $existingSecret ) {
+        if( $UserName ) {
+            $existingSecret.UserName = $UserName
             $changed = $true
-            $newSecret = New-PowerPassSecret
-            $newSecret.Title = $Title
-            $newSecret.UserName = $UserName
-            $newSecret.Password = $Password
-            $newSecret.URL = $URL
-            $newSecret.Notes = $Notes
-            $newSecret.Expires = $Expires
-            $locker.Secrets += $newSecret
         }
-    } end {
+        if( $Password ) {
+            $existingSecret.Password = $Password
+            $changed = $true
+        }
+        if( $URL ) {
+            $existingSecret.URL = $URL
+            $changed = $true
+        }
+        if( $Notes ) {
+            $existingSecret.Notes = $Notes
+            $changed = $true
+        }
+        if( $Expires -ne ($existing.Expires) ) {
+            $existingSecret.Expires = $Expires
+            $changed = $true
+        }
         if( $changed ) {
-            $pathToLocker = $script:PowerPass.LockerFilePath
-            $pathToLockerKey = $script:PowerPass.LockerKeyFilePath
-            $json = ConvertTo-Json -InputObject $locker
-            $data = [System.Text.Encoding]::UTF8.GetBytes($json)
-            $aes = New-Object "PowerPass.AesCrypto"
-            $aes.ReadKeyFromDisk( $pathToLockerKey, [ref] (Get-PowerPassEphemeralKey) )
-            $aes.Encrypt( $data, $pathToLocker )
-            $aes.Dispose()
+            $existingSecret.Modified = (Get-Date).ToUniversalTime()
         }
+    } else {
+        $changed = $true
+        $newSecret = New-PowerPassSecret
+        $newSecret.Title = $Title
+        $newSecret.UserName = $UserName
+        $newSecret.Password = $Password
+        $newSecret.URL = $URL
+        $newSecret.Notes = $Notes
+        $newSecret.Expires = $Expires
+        $locker.Secrets += $newSecret
+    }
+    if( $changed ) {
+        $pathToLocker = $script:PowerPass.LockerFilePath
+        $pathToLockerKey = $script:PowerPass.LockerKeyFilePath
+        $data = Get-PowerPassLockerBytes $locker
+        $aes = New-Object "PowerPass.AesCrypto"
+        $aes.ReadKeyFromDisk( $pathToLockerKey, [ref] (Get-PowerPassEphemeralKey) )
+        $aes.Encrypt( $data, $pathToLocker )
+        $aes.Dispose()
     }
 }
 
