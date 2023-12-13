@@ -1,3 +1,10 @@
+<#
+    Test script for the AES flavor of PowerPass
+    Copyright 2023 by The Daltas Group LLC.
+    This software is provided AS IS WITHOUT WARRANTEE.
+    You may copy, modify or distribute this software under the terms of the GNU Public License 2.0.
+#>
+
 Write-Output "This test script will test the AES implementation of PowerPass"
 Write-Output "These tests should pass in both Windows PowerShell and PowerShell 7 on all operating systems"
 Write-Output "Testing module import"

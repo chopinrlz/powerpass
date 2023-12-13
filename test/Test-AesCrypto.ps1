@@ -1,3 +1,10 @@
+<#
+    Test script for the AesCrypto.cs class of PowerPass
+    Copyright 2023 by The Daltas Group LLC.
+    This software is provided AS IS WITHOUT WARRANTEE.
+    You may copy, modify or distribute this software under the terms of the GNU Public License 2.0.
+#>
+
 Write-Host "This script tests the AesCrypto.cs implementation"
 Write-Host "These tests should pass in both Windows PowerShell and PowerShell 7 on all operating systems"
 
