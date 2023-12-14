@@ -268,6 +268,35 @@ if( $secret ) {
 }
 $secret = $null
 
+# Test - performance
+
+$start = Get-Date
+$numTempSecrets = 100
+$tempSecrets = 1..$numTempSecrets | % {
+    [PSCustomObject]@{
+        Title = "generator secret $_"
+        UserName = [System.Guid]::NewGuid().ToString()
+        Password = New-PowerPassRandomPassword
+        URL = "https://github.com/chopinrlz/powerpass"
+        Notes = "Generated during testing"
+        Expires = (Get-Date).ToUniversalTime()
+    }
+}
+$tempSecrets | Write-PowerPassSecret
+$stop = Get-Date
+$duration = ($stop - $start).TotalMilliseconds
+$pace = ($numTempSecrets / ($duration / 1000)).ToString("0.00")
+Write-Output "Performance test (batch writes): $pace secrets per second"
+Clear-PowerPassLocker -Force
+$start = Get-Date
+foreach( $secret in $tempSecrets ) {
+    Write-PowerPassSecret -Title $secret.Title -UserName $secret.UserName -Password $secret.Password -URL $secret.URL -Notes $secret.Notes -Expires $secret.Expires
+}
+$stop = Get-Date
+$duration = ($stop - $start).TotalSeconds
+$pace = ($numTempSecrets / $duration).ToString("0.00")
+Write-Output "Performance test (single writes): $pace secrets per second"
+
 # Clean up everything
 
 Clear-PowerPassLocker -Force
