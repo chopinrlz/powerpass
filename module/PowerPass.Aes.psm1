@@ -144,6 +144,8 @@ function Write-PowerPassSecret {
         Optional. Sets the Notes property of the secret in your locker.
         .PARAMETER Expires
         Optional. Sets the Expiras property of the secret in your locker.
+        .PARAMETER MaskPassword
+        An optional switch that, when specified, will prompt you to enter a password rather than having to use the Password parameter.
     #>
     [CmdletBinding()]
     param(
@@ -164,7 +166,9 @@ function Write-PowerPassSecret {
         $Notes,
         [Parameter(ValueFromPipelineByPropertyName)]
         [DateTime]
-        $Expires = [DateTime]::MaxValue
+        $Expires = [DateTime]::MaxValue,
+        [switch]
+        $MaskPassword
     )
     begin {
         $locker = Get-PowerPassLocker
@@ -181,6 +185,10 @@ function Write-PowerPassSecret {
             }
             if( $Password ) {
                 $existingSecret.Password = $Password
+                $changed = $true
+            }
+            if( $MaskPassword ) {
+                $existingSecret.Password = Get-PowerPassMaskedPassword -Prompt "Enter the Password for the secret"
                 $changed = $true
             }
             if( $URL ) {
@@ -204,6 +212,10 @@ function Write-PowerPassSecret {
             $newSecret.Title = $Title
             $newSecret.UserName = $UserName
             $newSecret.Password = $Password
+            if( $MaskPassword ) {
+                $newSecret.Password = Get-PowerPassMaskedPassword -Prompt "Enter the Password for the secret"
+                $changed = $true
+            }
             $newSecret.URL = $URL
             $newSecret.Notes = $Notes
             $newSecret.Expires = $Expires

@@ -211,3 +211,30 @@ function Get-PowerPassCredential {
         # Do not remove
     }
 }
+
+# ------------------------------------------------------------------------------------------------------------- #
+# FUNCTION: Get-PowerPassMaskedPassword
+# ------------------------------------------------------------------------------------------------------------- #
+
+function Get-PowerPassMaskedPassword {
+    <#
+        .SYNOPSIS
+        Prompts the user to enter a password on the console while masking the entry.
+        .PARAMETER Prompt
+        Optional. The prompt to echo to the user.
+    #>
+    param(
+        [string]
+        $Prompt = "Enter a password"
+    )
+    $x = ""
+    if( $PSVersionTable.PSVersion.Major -eq 5 ) {
+        $secString = Read-Host "$Prompt" -AsSecureString
+        $bString = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR( $secString )
+        $x = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto( $bString )
+        [System.Runtime.InteropServices.Marshal]::ZeroFreeBSTR( $bString )
+    } else {
+        $x = Read-Host -Prompt "$Prompt" -MaskInput
+    }
+    Write-Output $x
+}

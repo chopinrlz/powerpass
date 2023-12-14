@@ -395,6 +395,8 @@ Can be set from the pipeline by property name.
 ### PARAMETER Expires
 Optional. Sets the Expiras property of the secret in your locker.
 Can be set from the pipeline by property name.
+### PARAMETER MaskPassword
+An optional switch that, when specified, will prompt you to enter a password rather than having to use the Password parameter.
 ### EXAMPLE 1: Saving a Secret with a UserName and Password
 Most secrets are combinations of usernames and passwords.
 In this example, we store a secret with a username and password we need to use later.
@@ -403,6 +405,13 @@ In this example, we store a secret with a username and password we need to use l
 Write-PowerPassSecret -Title "Domain Service Account" -UserName "DEV\svc_admin" -Password "jcnuetdghskfnrk"
 ```
 NOTE: It is important that you close your PowerShell terminal if you do this to avoid leaving the password on-screen to avoid exposing the password to others.
+You can also save a secret without having to specify the password as a parameter.
+Using the `-MaskPassword` parameter, PowerPass will prompt you for a password and mask the input.
+```powershell
+# Store our new secret
+PS C:\Users\me> Write-PowerPassSecret -Title "Domain Service Account" -UserName "DEV\svc_admin" -MaskPassword
+Enter the Password for the secret: *************
+```
 ### EXAMPLE 2: Saving a Secret with a Random Password
 You can completely avoid typing a password for a secret if you use the password generator.
 In this example, we create a new secret with a username and a randomly generated password.

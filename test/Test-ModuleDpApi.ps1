@@ -258,6 +258,25 @@ if( -not $secret ) {
 $secret = $null
 $secretCount = -1
 
+# Test - write a secret with a masked password and read it back
+
+Write-PowerPassSecret -Title "Masking Test" -MaskPassword
+$secret = Read-PowerPassSecret -Match "Masking Test"
+$secretCount = (Measure-Object -InputObject $secret).Count
+if( -not $secret ) {
+    Write-Warning "Test failed: masking test secret not returned"
+} else {
+    if( $secretCount -eq 1 ) {
+        if( -not ($secret.Title -eq "Masking Test") ) {
+            Write-Warning "Test failed: masking test secret title invalid"
+        }
+    } else {
+        Write-Warning "Test failed: multiple masking test secrets returned"
+    }
+}
+$secret = $null
+$secretCount = -1
+
 # Test - read secret with pipeline input
 
 $secret = "Unit Test" | Read-PowerPassSecret
