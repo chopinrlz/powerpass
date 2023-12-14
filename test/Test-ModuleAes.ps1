@@ -5,7 +5,16 @@
     You may copy, modify or distribute this software under the terms of the GNU Public License 2.0.
 #>
 
+# ------------------------------------------------------------------------------------------------------------- #
+# FUNCTION: Test-Mismatch
+# ------------------------------------------------------------------------------------------------------------- #
+
 function Test-Mismatch {
+    <#
+        .SYNOPSIS
+        Compares one secret with another to confirm they are identical. Does not check dates because DateTime
+        objects are not identical to their .NET counterparts after they are serialized to JSON.
+    #>
     param(
         [Parameter(Mandatory)]
         [PSCustomObject]
@@ -188,7 +197,30 @@ if( -not $readSecrets ) {
             $rs = $readSecrets[$i]
             $fail = Test-Mismatch -Left $ts -Right $rs
             if( $fail ) {
-                Write-Warning "Test failed: secret value mismatch on read"
+                Write-Warning "Test failed: generator secret value mismatch on read"
+            }
+        }
+    }
+}
+
+# Test - load the locker with secrets from a CSV file
+
+$csvFilePath = Join-Path -Path $PSScriptRoot -ChildPath "test-secrets.csv"
+$csvSecrets = Import-Csv $csvFilePath
+$csvSecrets | Write-PowerPassSecret
+$readSecrets = Read-PowerPassSecret -Match "Csv*" -PlainTextPasswords
+if( -not $readSecrets ) {
+    Write-Warning "Test failed: CSV secrets not read back from locker"
+} else {
+    if( $readSecrets.Length -ne 37 ) {
+        Write-Warning "Test failed: should be 37 CSV secrets, actual is $($readSecrets.Length)"
+    } else {
+        for( $i = 0; $i -lt 37; $i++ ) {
+            $ts = $csvSecrets[$i]
+            $rs = $readSecrets[$i]
+            $fail = Test-Mismatch -Left $ts -Right $rs
+            if( $fail ) {
+                Write-Warning "Test failed: CSV secret value mismatch on read"
             }
         }
     }

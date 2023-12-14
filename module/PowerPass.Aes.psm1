@@ -130,7 +130,7 @@ function Get-PowerPassLocker {
 function Write-PowerPassSecret {
     <#
         .SYNOPSIS
-        Writes a secret into your PowerPass locker.
+        Writes one or more secrets into your PowerPass locker.
         .PARAMETER Title
         Mandatory. The Title of the secret. This is unique to your locker. If you already have a secret in your
         locker with this Title, it will be updated, but only the parameters you specify will be updated.

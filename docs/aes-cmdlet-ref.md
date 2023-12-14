@@ -189,22 +189,28 @@ Update-PowerPassKey
 ##### ***[Back to Top](#powerpass-cmdlet-reference-for-aes-implementation)***
 # Write-PowerPassSecret
 ### SYNOPSIS
-Writes a secret into your PowerPass locker.
+Writes one or more secrets into your PowerPass locker.
 ### PARAMETER Title
 Mandatory.
 The Title of the secret.
 This is unique to your locker.
 If you already have a secret in your locker with this Title, it will be updated, but only the parameters you specify will be updated.
+Can be set from the pipeline by property name.
 ### PARAMETER UserName
 Optional. Sets the UserName property of the secret in your locker.
+Can be set from the pipeline by property name.
 ### PARAMETER Password
 Optional. Sets the Password property of the secret in your locker.
+Can be set from the pipeline by property name.
 ### PARAMETER URL
 Optional. Sets the URL property of the secret in your locker.
+Can be set from the pipeline by property name.
 ### PARAMETER Notes
 Optional. Sets the Notes property of the secret in your locker.
+Can be set from the pipeline by property name.
 ### PARAMETER Expires
 Optional. Sets the Expiras property of the secret in your locker.
+Can be set from the pipeline by property name.
 ### EXAMPLE 1: Saving a Secret with a UserName and Password
 Most secrets are combinations of usernames and passwords.
 In this example, we store a secret with a username and password we need to use later.
@@ -212,6 +218,7 @@ In this example, we store a secret with a username and password we need to use l
 # Store our new secret
 Write-PowerPassSecret -Title "Domain Service Account" -UserName "DEV\svc_admin" -Password "jcnuetdghskfnrk"
 ```
+NOTE: It is important that you close your PowerShell terminal if you do this to avoid leaving the password on-screen to avoid exposing the password to others.
 ### EXAMPLE 2: Saving a Secret with a Random Password
 You can completely avoid typing a password for a secret if you use the password generator.
 In this example, we create a new secret with a username and a randomly generated password.
@@ -226,6 +233,28 @@ In this example, we add some addition information to our `Domain Service Account
 ```powershell
 # Add some more info to our Domain Service Account
 Write-PowerPassSecret -Title "Domain Service Account" -URL "https://intranet.dev.local" -Notes "Use this account to access AD" -Expires ((Get-Date).AddDays(90))
+```
+### EXAMPLE 4: Bulk Loading Multiple Secrets
+In this example we show loading multiple secrets into your Locker from an external source in bulk.
+When you load multiple secrets into your Locker, it is more efficient to pipeline the collection of secrets into the Locker.
+The `Write-PowerPassSecret` cmdlet is optimized to load multiple records from the pipeline.
+Loading them one at a time is many times slower.
+In the code below, we import a CSV file and load its contents into the Locker.
+```powershell
+# Import the secrets from a CSV file
+Import-Csv "MySecrets.csv" | Write-PowerPassSecret
+```
+Assuming the CSV file is formatting to include a Title, an optionally a UserName, Password, URL, and Notes field, you can pass the imported CSV file object directly via the pipeline to the `Write-PowerPassSecret` cmdlet.
+### EXAMPLE 5: Bulk Loading Secrets from Custom Objects
+You can also use `PSCustomObject` instances to load secrets one at a time or in bulk such as from an array of secrets loaded from elsewhere.
+```powershell
+# Declare a new secret
+$mySecret = [PSCustomObject]@{
+    Title = "My New Secret"
+    UserName = "my_user_name"
+    Password = "myPassword"
+}
+$mySecret | Write-PowerPassSecret
 ```
 ##### ***[Back to Top](#powerpass-cmdlet-reference-for-aes-implementation)***
 # All PowerPass Topics
