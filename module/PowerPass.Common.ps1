@@ -89,14 +89,22 @@ function Set-PowerPassSecureString {
         .OUTPUTS
         This cmdlet writes the PowerPass secret to the pipeline after converting the password to a SecureString.
     #>
+    [CmdletBinding()]
     param(
         [Parameter(Mandatory=$true,ValueFromPipeline,Position=0)]
         $Secret
     )
-    if( $Secret.Password ) {
-        $Secret.Password = ConvertTo-SecureString -String ($Secret.Password) -AsPlainText -Force
+    # Process blocks are required for pipeline to correctly process reads on multiple items
+    begin {
+        # Do not remove
+    } process {
+        if( $Secret.Password ) {
+            $Secret.Password = ConvertTo-SecureString -String ($Secret.Password) -AsPlainText -Force
+        }
+        Write-Output $Secret
+    } end {
+        # Do not remove
     }
-    Write-Output $Secret
 }
 
 # ------------------------------------------------------------------------------------------------------------- #
@@ -186,11 +194,20 @@ function Get-PowerPassCredential {
         .PARAMETER Secret
         The PowerPass secret.
     #>
+    [CmdletBinding()]
     param(
         [Parameter(Mandatory,ValueFromPipeline,Position=0)]
         [PSCustomObject]
         $Secret
     )
-    $x = @(($Secret.UserName), (ConvertTo-SecureString -String ($Secret.Password) -AsPlainText -Force))
-    New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $x
+    # Process blocks are required for PowerPass to pipeline reads of multiple items
+    begin {
+        # Do not remove
+    } process {
+        $x = @(($Secret.UserName), (ConvertTo-SecureString -String ($Secret.Password) -AsPlainText -Force))
+        $c = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $x
+        Write-Output $c
+    } end {
+        # Do not remove
+    }
 }

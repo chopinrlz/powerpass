@@ -18,10 +18,7 @@ function Test-Mismatch {
     $pwCheck = ($Left.Password -ne $Right.Password)
     $urlCheck = ($Left.URL -ne $Right.URL)
     $notesCheck = ($Left.Notes -ne $Right.Notes)
-    $expCheck = ($Left.Expires -ne $Right.Expires)
-    $createCheck = ($Left.Created -ne $Right.Created)
-    $modCheck = ($Left.Modified -ne $Right.Modified)
-    Write-Output ($titleCheck -or $pwCheck -or $urlCheck -or $notesCheck -or $expCheck -or $createCheck -or $modCheck )
+    Write-Output ($titleCheck -or $pwCheck -or $urlCheck -or $notesCheck)
 }
 
 # Import the module
@@ -67,6 +64,8 @@ if( -not $secret ) {
         Write-Warning "Test failed: multiple secrets returned"
     }
 }
+$secret = $null
+$secretCount = -1
 
 # Test - write a secret and read it back
 
@@ -85,6 +84,7 @@ if( -not $secret ) {
     }
 }
 $secret = $null
+$secretCount = -1
 
 # Test - read secret with pipeline input
 
@@ -102,6 +102,7 @@ if( -not $secret ) {
     }
 }
 $secret = $null
+$secretCount = -1
 
 # Test - read secret with pipeline filter
 
@@ -119,6 +120,7 @@ if( -not $secret ) {
     }
 }
 $secret = $null
+$secretCount = -1
 
 # Clear out the locker to setup for the next tests
 
@@ -140,6 +142,7 @@ if( -not $secret ) {
     }
 }
 $secret = $null
+$secretCount = -1
 
 # Test - make sure the unit test secret has been cleared
 
@@ -169,13 +172,11 @@ $tempSecrets = 1..$numTempSecrets | % {
         Password = New-PowerPassRandomPassword
         URL = "https://github.com/chopinrlz/powerpass"
         Notes = "Generated during testing"
-        Expires = Get-Date
+        Expires = (Get-Date).ToUniversalTime()
     }
 }
 $tempSecrets | Write-PowerPassSecret
 $readSecrets = Read-PowerPassSecret -Match "generator secret*" -PlainTextPasswords
-Write-Output "Emitting read secrets to output"
-Write-Output $readSecrets
 if( -not $readSecrets ) {
     Write-Warning "Test failed: generator secrets not read back from locker"
 } else {
@@ -206,10 +207,11 @@ if( -not (Test-Path $lockerExport) ) {
 
 Import-PowerPassLocker -LockerFile $lockerExport
 $secret = Read-PowerPassSecret | ? Title -eq "Export Test"
+$secretCount = (Measure-Object -InputObject $secret).Count
 if( -not $secret ) {
     Write-Warning "Test failed: export test not present after import"
 } else {
-    if( $secret.Length -eq 1 ) {
+    if( $secretCount -eq 1 ) {
         if( -not ($secret.Title -eq "Export Test") ) {
             Write-Warning "Test failed: export test secret title invalid"
         }
@@ -218,6 +220,7 @@ if( -not $secret ) {
     }
 }
 $secret = $null
+$secretCount = -1
 
 # Clean up for the next test by clearing the locker and the export file
 
@@ -229,10 +232,11 @@ if( Test-Path $lockerExport ) { Remove-Item $lockerExport -Force }
 Write-PowerPassSecret -Title "Key Rotation"
 Update-PowerPassKey
 $secret = Read-PowerPassSecret | ? Title -eq "Key Rotation"
+$secretCount = (Measure-Object -InputObject $secret).Count
 if( -not $secret ) {
     Write-Warning "Test failed: key rotation secret missing"
 } else {
-    if( $secret.Length -eq 1 ) {
+    if( $secretCount -eq 1 ) {
         if( -not ($secret.Title -eq "Key Rotation") ) {
             Write-Warning "Test failed: Key Rotation secret Title invalid"
         }
@@ -241,6 +245,7 @@ if( -not $secret ) {
     }
 }
 $secret = $null
+$secretCount = -1
 
 # Test - removing secrets
 

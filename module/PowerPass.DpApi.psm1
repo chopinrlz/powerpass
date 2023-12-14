@@ -641,9 +641,9 @@ function Read-PowerPassSecret {
                         Write-Output $secret
                     } else {
                         if( $AsCredential ) {
-                            Write-Output (Get-PowerPassCredential $secret)
+                            $secret | Get-PowerPassCredential
                         } else {
-                            Write-Output (Set-PowerPassSecureString $secret)
+                            $secret | Set-PowerPassSecureString
                         }
                     }
                 }
