@@ -1,4 +1,4 @@
-The latest release of PowerPass version 1.5.0 adds support for masked password entry, locker searching by Title (not just match), pipeline optimization, includes more test coverage, and fixes a read bug when accessing an empty locker.
+The latest release of PowerPass version 1.5.0 adds support for masked password entry, locker searching by Title (not just match), pipeline optimization, includes more test coverage, and fixes a read bug when accessing an empty locker. PowerPass has been tested in PowerShell on Linux, MacOS, and Windows.
 # New Features and Optimization
 ## Masked Password Entry
 Up until now, the `Write-PowerPassSecret` cmdlet relied on the `-Password` parameter to set passwords for secrets in your locker. As such, passwords had to be shown on the console if typed them in. Now, a new parameter `-MaskPassword` gives you the option to be prompted to enter a password which is masked as you type. For more information please refer to the cmdlet reference for [AES cmdlets](https://chopinrlz.github.io/powerpass/aes-cmdlet-ref#write-powerpasssecret) and/or the [DP API cmdlets](https://chopinrlz.github.io/powerpass/dpapi-cmdlet-ref#write-powerpasssecret).
@@ -22,5 +22,5 @@ The deployment script has been modified and is now much quieter than before. To 
 # File Hashes
 | Release                 | SHA256 Hash                                                      |
 | ----------------------- | ---------------------------------------------------------------- |
-| PowerPass-1.5.0.tar.gz  | tbd |
-| PowerPass-1.5.0.zip     | tbd |
+| PowerPass-1.5.0.tar.gz  | 4BDEB339C5BC9D0E49971430A0784F3D479A860D36AEC3B97F3D0BED3646196E |
+| PowerPass-1.5.0.zip     | 5F94A7B9659DAF836DA98A9B43C81CC3FD061F0D4C003B23504249D75BCF7C0D |
