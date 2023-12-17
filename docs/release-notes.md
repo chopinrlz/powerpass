@@ -1,22 +1,26 @@
-The latest release of PowerPass version 1.4.3 updates the import and export functionality. It has been tested on Linux and Windows on PowerShell 7 and Windows PowerShell.
-# Changelog
-### Importing and Exporting Lockers
-On both the AES edition and Data Protection API edition of PowerPass, lockers are now exported using AES encryption to a single file. Keys and salts are not exported, nor are they replaced or rotated on import. Rotating keys and salts can be done using the built-in `Update-PowerPassKey` or `Update-PowerPassSalt` cmdlets at any time.
-### Importing and Exporting Across Editions
-Due to the changes in the way locker exporting and importing works, you can now export a locker from the AES edition and import it into the Data Protection API edition, or vice versa, across PowerShell versions or operating systems. This greatly increases the flexibility and portability of lockers from one system to another. It also facilitates the distribution of lockers across multiple systems.
-### Passwords for Importing and Exporting
-You are no longer able to use the `-Password` parameter with the import and export cmdlets. Instead, you will be prompted to enter a password (which will be masked on input) when you invoke the export or import cmdlet. This means that importing and exporting cannot be automated, but it also prevents passwords from being displayed on the console or inadvertently saved within a script.
+The latest release of PowerPass version 1.5.0 adds support for masked password entry, locker searching by Title (not just match), pipeline optimization, includes more test coverage, and fixes a read bug when accessing an empty locker.
+# New Features and Optimization
+## Masked Password Entry
+Up until now, the `Write-PowerPassSecret` cmdlet relied on the `-Password` parameter to set passwords for secrets in your locker. As such, passwords had to be shown on the console if typed them in. Now, a new parameter `-MaskPassword` gives you the option to be prompted to enter a password which is masked as you type. For more information please refer to the cmdlet reference for [AES cmdlets](https://chopinrlz.github.io/powerpass/aes-cmdlet-ref#write-powerpasssecret) and/or the [DP API cmdlets](https://chopinrlz.github.io/powerpass/dpapi-cmdlet-ref#write-powerpasssecret).
+## Title Parameter for Read-PowerPassLocker
+Up until now, the `Read-PowerPassSecret` cmdlet would only let you specify a `-Match` parameter despite the fact that the searching was done against the `Title` property of the secrets collection. For consistency and intuitiveness, a new exact-match `-Title` parameter has been added to the `Read-PowerPassSecret` cmdlet given that it makes the use of the cmdlet more intuitive. For more information please refer to the cmdlet reference for [AES cmdlets](https://chopinrlz.github.io/powerpass/aes-cmdlet-ref#read-powerpasssecret) and/or the [DP API cmdlets](https://chopinrlz.github.io/powerpass/dpapi-cmdlet-ref#read-powerpasssecret).
+## Pipeline Optimization
+The `Write-PowerPassSecret` cmdlet has been optimized for pipeline input. You can now pipeline secrets in bulk into the write cmdlet which will optimize the loading of secrets rather than invoking the cmdlet once for each secret in a large collection. The parameters for secrets can also be pipelined by name making things like this:
+```powershell
+Import-Csv "secrets.csv" | Write-PowerPassSecret
+```
+as easy as a single line of PowerShell. This example also executes significantly faster than if one were to use a loop.
+## Additional Test Coverage
+The unit testing scripts have been updated to cover more scenarios. Unit testing failed to catch several minor bugs and was also not configrued to verify optimizations. The unit tests have been updated to run a more comprehensive battery of tests and also to measure write performance.
 # Bug Fixes
-### MacOS App Data Folder Detected Incorrectly
-On previous versions of PowerPass, the MacOS user's app data folder was detected incorrectly, causing the module to fail on start. This has been corrected in version 1.4.2 with the local app data folder being used in lieu of the generic app data folder which Linux uses.
-### Existing Secrets Not Updating
-On previous version of PowerPass, when calling `Write-PowerPassSecret` the cmdlet was not finding existing secrets and causing duplicates to be created. This has been fixed in version 1.4.3.
+## Issue # 3: [Read throws an error if your locker is empty](https://github.com/chopinrlz/powerpass/issues/3)
+`Read-PowerPassSecret` no longer throws an error if you invoke it with an empty locker.
 # Deployment
-To install:
+The deployment script has been modified and is now much quieter than before. To install PowerPass:
 1. Clone the repo, download the release, or download the source code for this release
 2. Run `.\Deploy-PowerPass.ps1` in any PowerShell terminal (you will need write access to this folder)
 # File Hashes
 | Release                 | SHA256 Hash                                                      |
 | ----------------------- | ---------------------------------------------------------------- |
-| PowerPass-1.4.3.tar.gz  | 850D4439E33D2CD222205AF46F1F55A11370C8058EA476E832D6E2AC0CB1B1FE |
-| PowerPass-1.4.3.zip     | 820D7686A8D17D24C3A1B7255D97B913D4F1482CE64EF216DEFD0DEB5FFEAEFA |
+| PowerPass-1.5.0.tar.gz  | tbd |
+| PowerPass-1.5.0.zip     | tbd |
