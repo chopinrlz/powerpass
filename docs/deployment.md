@@ -7,9 +7,7 @@ You must have write permissions to this folder.
 ### Step 2: Run Deploy-PowerPass.ps1
 Open your target PowerShell environment and run `.\Deploy-PowerPass.ps1`.
 Follow the prompts to deploy PowerPass.
-```
-If you are using Windows PowerShell you will be prompted to install either the (1) AES or (2) DP API with KeePass support variant.
-```
+> If you are using Windows PowerShell you will be prompted to install either the (1) AES or (2) DP API with KeePass support variant.
 ### Step 3: Verify the Deployment
 You can test the deployment with these cmdlets:
 1. Open-PowerPassTestDatabase (DP API only)
@@ -42,7 +40,7 @@ Unit testing the AES edition of PowerPass can be done by running the `Test-Modul
 Unit testing the Data Protection API edition of PowerPass can be done by running the `Test-ModuleDpApi.ps1` script in Windows PowerShell.
 This test battery will also test the KeePass 2 integration.
 ## AES Crypto Unit Tests
-Unit testing the AES crypto class source code included with PowerPass can be done by running `Test-AesCrypto.cs` script in Windows PowerShell or PowerShell 7.
+Unit testing the AES crypto class source code included with PowerPass can be done by running `Test-AesCrypto.ps1` script in Windows PowerShell or PowerShell 7.
 This test battery tests the `AesCrypto.cs` implementation found in the `module` folder which implements the 256-bit AES encryption and decryption routines native to .NET and the underlying operating systems on which .NET runs.
 This source code uses the `Aes` and `CryptoStream` classes found in the `System.Security` or `System.Security.Cryptography` namespaces in the .NET Framework and .NET, respectively, to encrypt and decrypt data using symmetric key AES encryption.
 Keys are generated using the `RandomNumberGenerator` class from the aforementioned namespaces.
