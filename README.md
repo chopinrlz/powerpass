@@ -77,5 +77,15 @@ The Data Protection API does not allow you to explicitly rotate your user profil
 The copyright notice for PowerPass and KeePass can be found in the [COPYING](https://github.com/chopinrlz/powerpass/blob/main/COPYING.md) markdown file.
 ## License
 The license can be found in the [LICENSE](https://github.com/chopinrlz/powerpass/blob/main/LICENSE) file.
+## Online Documentation
+For cmdlet reference and usage information, please refer to the online documentation links below.
+1. [AES Cmdlet Reference](https://chopinrlz.github.io/powerpass/aes-cmdlet-ref)
+2. [Data Structures](https://chopinrlz.github.io/powerpass/data-structures)
+3. [Deployment](https://chopinrlz.github.io/powerpass/deployment)
+4. [DP API Cmdlet Reference](https://chopinrlz.github.io/powerpass/dpapi-cmdlet-ref)
+5. [OneDrive Backup](https://chopinrlz.github.io/powerpass/onedrivebackup)
+6. [Prerequisites](https://chopinrlz.github.io/powerpass/prerequisites)
+7. [Release Notes](https://chopinrlz.github.io/powerpass/release-notes)
+7. [Usage](https://chopinrlz.github.io/powerpass/usage)
 ## Repository Directory
 The directory of assets in this repo can be found in the [REPO](https://github.com/chopinrlz/powerpass/blob/main/REPO.md) markdown file.
