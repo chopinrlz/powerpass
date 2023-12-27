@@ -72,3 +72,10 @@ You can get the file paths using the `Get-PowerPass` cmdlet.
 You can export your locker and key to save a backup copy elsewhere.
 You can also rotate your locker salts automatically, but the locker key is built-in to your Windows profile.
 The Data Protection API does not allow you to explicitly rotate your user profile key.
+# Additional Resources
+## Copyright Notice
+The copyright notice for PowerPass and KeePass can be found in the [COPYING](https://github.com/chopinrlz/powerpass/blob/main/COPYING.md) markdown file.
+## License
+The license can be found in the [LICENSE](https://github.com/chopinrlz/powerpass/blob/main/LICENSE) file.
+## Repository Directory
+The directory of assets in this repo can be found in the [REPO](https://github.com/chopinrlz/powerpass/blob/main/REPO.md) markdown file.
