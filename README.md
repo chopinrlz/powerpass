@@ -72,4 +72,3 @@ You can get the file paths using the `Get-PowerPass` cmdlet.
 You can export your locker and key to save a backup copy elsewhere.
 You can also rotate your locker salts automatically, but the locker key is built-in to your Windows profile.
 The Data Protection API does not allow you to explicitly rotate your user profile key.
-##### *Copyright 2023 by The Daltas Group LLC. This software is provided AS IS WITHOUT WARRANTEE. You may copy, modify or distribute this software under the terms of the GNU Public License 2.0.*
