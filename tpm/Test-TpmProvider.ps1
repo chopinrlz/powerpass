@@ -12,4 +12,7 @@ if( Test-Path "libpptpm.so" ) { Remove-Item "libpptpm.so" -Force }
 $source = Get-Content "$PSScriptRoot/TpmProvider.cs" -Raw
 Add-Type -TypeDefinition $source -ReferencedAssemblies "System.Runtime.InteropServices"
 $provider = New-Object "PowerPass.TpmProvider"
+Write-Output "Invoking test function"
 $provider.Test()
+Write-Output "Invoking version function"
+$provider.Version()
