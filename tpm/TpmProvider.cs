@@ -8,6 +8,6 @@ namespace PowerPass {
 
         public TpmProvider() { }
 
-        public void Test() { pptpm_test(); }
+        public void Test() { TpmProvider.pptpm_test(); }
     }
 }
