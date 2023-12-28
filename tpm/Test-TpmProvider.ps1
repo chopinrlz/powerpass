@@ -5,11 +5,9 @@ if( -not $IsLinux ) {
     throw "TPM support is for the Linux OS"
 }
 Set-Location $PSScriptRoot
-if( Test-Path "powerpasstpm.o" ) { Remove-Item "powerpasstpm.o" -Force }
-if( Test-Path "libpptpm.so" ) { Remove-Item "libpptpm.so" -Force }
-& gcc @('-c','-fPIC','powerpasstpm.c','-o','powerpasstpm.o')
-& gcc @('-shared','powerpasstpm.o','-o','libpptpm.so')
-& sudo @('cp','-f','libpptpm.so','/usr/lib'
+if( -not (Test-Path "libpptpm.so") ) { 
+    throw "Run 'sudo build' first"
+}
 $source = Get-Content "$PSScriptRoot/TpmProvider.cs" -Raw
 Add-Type -TypeDefinition $source -ReferencedAssemblies "System.Runtime.InteropServices"
 $provider = New-Object "PowerPass.TpmProvider"
