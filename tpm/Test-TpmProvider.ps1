@@ -9,6 +9,7 @@ if( Test-Path "powerpasstpm.o" ) { Remove-Item "powerpasstpm.o" -Force }
 if( Test-Path "libpptpm.so" ) { Remove-Item "libpptpm.so" -Force }
 & gcc @('-c','-fPIC','powerpasstpm.c','-o','powerpasstpm.o')
 & gcc @('-shared','powerpasstpm.o','-o','libpptpm.so')
+& sudo @('cp','-f','libpptpm.so','/usr/lib'
 $source = Get-Content "$PSScriptRoot/TpmProvider.cs" -Raw
 Add-Type -TypeDefinition $source -ReferencedAssemblies "System.Runtime.InteropServices"
 $provider = New-Object "PowerPass.TpmProvider"
