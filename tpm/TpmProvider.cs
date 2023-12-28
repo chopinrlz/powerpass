@@ -2,7 +2,7 @@ using System;
 
 namespace PowerPass {
     public class TpmProvider {
-        [DllImport("powerpasstpm.so")]
+        [DllImport("libpptpm.so")]
         public static extern void pptpm_test();
 
         public TpmProvider() { }
