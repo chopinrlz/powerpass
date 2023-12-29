@@ -7,6 +7,7 @@
 #include <string.h>
 
 #include "powerpasstpm.h"
+#include "headers/tss2/tss2_fapi.h"
 
 void pptpm_test() {
     printf("Success\n");
