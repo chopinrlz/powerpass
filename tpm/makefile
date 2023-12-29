@@ -26,7 +26,7 @@ libpptpm: powerpass
 	gcc -shared powerpasstpm.o -o libpptpm.so
 powerpass: tpm2-tss
 	mkdir headers
-	cp -rf ./tpm2-tss-4.0.1/include ./headers
+	cp -rf ./tpm2-tss-4.0.1/include .
 	gcc -c -fPIC powerpasstpm.c -o powerpasstpm.o
 install2: libpptpm
 	cp -f libpptpm.so $(LIB_DIR)
@@ -35,4 +35,4 @@ clean:
 	@rm -f libpptpm.so
 	@rm -rf tpm2-tss-4.0.1
 	@rm -f tpm2-tss-4.0.1.tar.gz
-	@rm -rf headers
+	@rm -rf include
