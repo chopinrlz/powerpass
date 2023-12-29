@@ -5,14 +5,21 @@
 SHELL=/bin/bash
 
 LIB_DIR := /usr/lib
+TPM2_TSS_URL := https://github.com/tpm2-software/tpm2-tss/releases/download/4.0.1/tpm2-tss-4.0.1.tar.gz
+TPM2_TSS_TARBALL := tpm2-tss-4.0.1.tar.gz
 
 libpptpm: powerpasstpm
-	curl -LO https://github.com/tpm2-software/tpm2-tss/releases/download/4.0.1/tpm2-tss-4.0.1.tar.gz
 	gcc -shared powerpasstpm.o -o libpptpm.so
-powerpasstpm:
+powerpasstpm: tpm2-tss
 	gcc -c -fPIC powerpasstpm.c -o powerpasstpm.o
+tpm2-tss:
+	curl -LO $(TPM2_TSS_URL)
+	tar -xv -f $(TPM2_TSS_TARBALL)
+	cd ./tpm2-tss-4.0.1/
 install: libpptpm
 	cp -f libpptpm.so $(LIB_DIR)
 clean:
 	@rm -f powerpasstpm.o
 	@rm -f libpptpm.so
+	@rm -rf tpm2-tss-4.0.1
+	@rm -f tpm2-tss-4.0.1.tar.gz
