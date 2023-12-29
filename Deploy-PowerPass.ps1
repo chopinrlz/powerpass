@@ -48,6 +48,21 @@ if( $PSVersionTable.PSVersion.Major -eq 5 ) {
     throw "Unsupported PowerShell version"
 }
 
+# Prompt for use of TPM
+if( $IsLinux ) {
+    $tpmAnswer = Read-Host "PowerPass include TPM 2.0 support on Linux. Would you like to use it? [N/y]"
+    $tpmSetup = $false
+    switch( $tpmAnswer ) {
+        "y" { $tpmSetup = $true }
+        "Y" { $tpmSetup = $true }
+    }
+    if( $tpmSetup ) {
+        # Check for tpm2-tss
+        # Download tpm2-tss
+        & curl @('-LO','https://github.com/tpm2-software/tpm2-tss/releases/download/4.0.1/tpm2-tss-4.0.1.tar.gz')
+    }
+}
+
 # Check for OneDrive backup
 if( $oneDriveCheck ) {
     $path = $env:PSModulePath -split ";"
