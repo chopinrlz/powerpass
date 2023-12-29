@@ -7,5 +7,5 @@ powerpasstpm:
 install: libpptpm
 	cp -f libpptpm.so /usr/lib
 clean:
-	rm -f powerpasstpm.o
-	rm -f libpptpm.so
+	@rm -f powerpasstpm.o
+	@rm -f libpptpm.so
