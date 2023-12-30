@@ -8,23 +8,19 @@ LIB_DIR := /usr/lib
 NPROC != nproc
 
 # Instructions:
-# make
-# sudo make install-tpm2-tss
+# sudo make
 # make library
 # sudo make install
 
-tpm2-tss-make: tpm2-tss
-	tar -xv -f tpm2-tss-4.0.1.tar.gz
-	cd ./tpm2-tss-4.0.1/; ./configure --prefix=/usr; make -j$(NPROC)
-download:
-	curl -LO https://github.com/tpm2-software/tpm2-tss/releases/download/4.0.1/tpm2-tss-4.0.1.tar.gz
 tpm2-tss:
-	touch tpm2-tss-4.0.1.tar.gz
-install-tpm2-tss: tpm2-tss-make
-	cd ./tpm2-tss-4.0.1/; make install
+    if [ ! -d "./tpm2-tss-4.0.1" ]; then
+		curl -LO https://github.com/tpm2-software/tpm2-tss/releases/download/4.0.1/tpm2-tss-4.0.1.tar.gz
+		tar -xv -f tpm2-tss-4.0.1.tar.gz
+		cd ./tpm2-tss-4.0.1/; ./configure --prefix=/usr; make -j$(NPROC); make install
+	fi
 library: compile
 	gcc -shared powerpasstpm.o -o libpptpm.so
-compile:
+compile: tpm2-tss
 	mkdir headers
 	cp -rf ./tpm2-tss-4.0.1/include .
 	gcc -c -fPIC powerpasstpm.c -o powerpasstpm.o
