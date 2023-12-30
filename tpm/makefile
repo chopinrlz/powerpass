@@ -22,7 +22,6 @@ endif
 library: compile
 	gcc -shared powerpasstpm.o -o libpptpm.so
 compile: tpm2-tss
-	mkdir headers
 	cp -rf ./tpm2-tss-4.0.1/include .
 	gcc -c -fPIC powerpasstpm.c -o powerpasstpm.o
 install: library
