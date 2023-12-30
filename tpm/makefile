@@ -14,11 +14,11 @@ TPM2_TSS_DIR != if [ -d "./tpm2-tss-4.0.1" ]; then echo 1; fi
 # sudo make install
 
 tpm2-tss:
-	ifndef TPM2_TSS_DIR
-		curl -LO https://github.com/tpm2-software/tpm2-tss/releases/download/4.0.1/tpm2-tss-4.0.1.tar.gz
-		tar -xv -f tpm2-tss-4.0.1.tar.gz
-		cd ./tpm2-tss-4.0.1/; ./configure --prefix=/usr; make -j$(NPROC); make install
-	endif
+ifndef TPM2_TSS_DIR
+	curl -LO https://github.com/tpm2-software/tpm2-tss/releases/download/4.0.1/tpm2-tss-4.0.1.tar.gz
+	tar -xv -f tpm2-tss-4.0.1.tar.gz
+	cd ./tpm2-tss-4.0.1/; ./configure --prefix=/usr; make -j$(NPROC); make install
+endif
 library: compile
 	gcc -shared powerpasstpm.o -o libpptpm.so
 compile: tpm2-tss
