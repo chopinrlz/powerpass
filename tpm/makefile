@@ -28,4 +28,3 @@ clean:
 	@rm -f libpptpm.so
 	@rm -rf tpm2-tss-4.0.1
 	@rm -f tpm2-tss-4.0.1.tar.gz
-	@rm -rf include
