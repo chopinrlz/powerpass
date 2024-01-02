@@ -17,7 +17,7 @@ namespace PowerPass {
         public static extern int pptpm_ver();
 
         [DllImport("libpptpm.so")]
-        public static extern uint pptpm_exec();
+        public static extern UInt32 pptpm_exec();
 
         public TpmProvider() { }
 

@@ -6,6 +6,8 @@
 #ifndef POWERPASS_TPM
 #define POWERPASS_TPM
 
+#include <stdint.h>
+
 void pptpm_test();
 int pptpm_ver();
 uint32_t pptpm_exec();
