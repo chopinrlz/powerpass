@@ -4,23 +4,24 @@
 # You may copy, modify or distribute this software under the terms of the GNU Public License 2.0.
 SHELL=/bin/bash
 
-HOME_PREFIX != echo ~
+USR_LIB != echo /usr/lib
 LIB_DIR != echo ~/lib
 NPROC != nproc
 TPM2_TSS_DIR != if [ -d "./tpm2-tss-4.0.1" ]; then echo 1; fi
 
+# tpm2-tss must be deployed as root
+
 install: library
 	cp -f libpptpm.so $(LIB_DIR)
 library: compile
-	gcc -shared powerpasstpm.o -o libpptpm.so
-compile: tpm2-tss
-	cp -rf ./tpm2-tss-4.0.1/include .
+	gcc -shared -l$(USR_LIB)/libtss2-fapi powerpasstpm.o -o libpptpm.so
+compile:
 	gcc -c -fPIC powerpasstpm.c -o powerpasstpm.o
 tpm2-tss:
 ifndef TPM2_TSS_DIR
 	curl -LO https://github.com/tpm2-software/tpm2-tss/releases/download/4.0.1/tpm2-tss-4.0.1.tar.gz
 	tar -xv -f tpm2-tss-4.0.1.tar.gz
-	cd ./tpm2-tss-4.0.1/; ./configure --prefix=$(HOME_PREFIX); make -j$(NPROC); make install
+	cd ./tpm2-tss-4.0.1/; ./configure --prefix=$(USR_LIB); make -j$(NPROC); make install
 endif
 clean:
 	@rm -f powerpasstpm.o
