@@ -89,3 +89,12 @@ For cmdlet reference and usage information, please refer to the online documenta
 7. [Usage](https://chopinrlz.github.io/powerpass/usage)
 ## Repository Directory
 The directory of assets in this repo can be found in the [REPO](https://github.com/chopinrlz/powerpass/blob/main/REPO.md) markdown file.
+## Roadmap
+Here is the roadmap of upcoming features.
+### TPM Support on Linux
+Currently under development is TPM support for Linux.
+The library chosen to provide support is the open-source **[tpm2-tss](https://github.com/tpm2-software/tpm2-tss)** project.
+A TPM is a Trusted Platform Module which is a device that stores private keys which cannot be exported from the system by any user.
+The TPM device can be used to encrypt data without exposing the private keys to either admins or users.
+As such, an attacker with root privileges would have no means of acquiring the key to decrypt the data leaving brute-force as the only option.
+Check the [/tpm](https://github.com/chopinrlz/powerpass/tree/main/tpm) folder in this repo for ongoing updates.
