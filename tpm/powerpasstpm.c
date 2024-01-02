@@ -17,8 +17,12 @@ int pptpm_ver() {
     return 150;
 }
 
-void pptpm_exec() {
-    FAPI_CONTEXT* context;
-    Fapi_Initialize( context, NULL );
+int pptpm_exec() {
+    printf("Init context\n");
+    FAPI_CONTEXT** context;
+    printf("Fapi_Initalize\n");
+    TSS2_RC res = Fapi_Initialize( context, NULL );
+    printf("Fapi_Free")
     Fapi_Free(context);
+    return res;
 }

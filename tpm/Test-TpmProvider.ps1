@@ -20,3 +20,5 @@ Write-Output "Invoking test function"
 $provider.Test()
 Write-Output "Invoking version function"
 $provider.Version()
+Write-Output "Invoking execute function"
+$provider.Execute()

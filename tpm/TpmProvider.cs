@@ -10,16 +10,21 @@ using System.Runtime.InteropServices;
 
 namespace PowerPass {
     public class TpmProvider {
-        [DllImport("~/lib/libpptpm.so")]
+        [DllImport("libpptpm.so")]
         public static extern void pptpm_test();
 
-        [DllImport("~/lib/libpptpm.so")]
+        [DllImport("libpptpm.so")]
         public static extern int pptpm_ver();
+
+        [DllImport("libpptpm.so")]
+        public static extern int pptpm_exec();
 
         public TpmProvider() { }
 
         public void Test() { TpmProvider.pptpm_test(); }
 
         public int Version() { return TpmProvider.pptpm_ver(); }
+
+        public int Execute() { return TpmProvider.pptpm_exec(); }
     }
 }
