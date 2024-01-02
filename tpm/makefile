@@ -5,7 +5,6 @@
 SHELL=/bin/bash
 
 USR_LIB != echo /usr/lib
-LIB_DIR != echo ~/lib
 NPROC != nproc
 TPM2_TSS_DIR != if [ -d "./tpm2-tss-4.0.1" ]; then echo 1; fi
 
@@ -22,7 +21,7 @@ library: compile
 compile:
 	gcc -c -fPIC -l$(USR_LIB)/libtss2-fapi.so -static powerpasstpm.c -o powerpasstpm.o
 install: library
-	cp -f libpptpm.so $(LIB_DIR)
+	cp -f libpptpm.so $(USR_LIB)
 tpm2-tss:
 ifndef TPM2_TSS_DIR
 	curl -LO https://github.com/tpm2-software/tpm2-tss/releases/download/4.0.1/tpm2-tss-4.0.1.tar.gz
