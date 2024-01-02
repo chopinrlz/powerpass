@@ -13,10 +13,13 @@
 int main(int argc, char** argv) {
     if( argc == 2 ) {
         if( strcmp(argv[1],__POWERPASS_TEST) == 0 ) {
-            printf("Running test\n");   
+            printf("Running test\n");
             FAPI_CONTEXT** context;
+            printf("Calling Fapi_Initialize");
             TSS2_RC res = Fapi_Initialize( context, NULL );
+            printf("Calling Fapi_Finalize");
             Fapi_Finalize(context);
+            printf("Calling Fapi_Free");
             Fapi_Free(context);
             printf("Context initialize result %d\n",res);
         }
