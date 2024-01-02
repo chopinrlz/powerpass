@@ -8,5 +8,6 @@
 
 void pptpm_test();
 int pptpm_ver();
+void pptpm_exec();
 
 #endif

@@ -14,9 +14,9 @@ TPM2_TSS_DIR != if [ -d "./tpm2-tss-4.0.1" ]; then echo 1; fi
 install: library
 	cp -f libpptpm.so $(LIB_DIR)
 library: compile
-	gcc -shared -l$(USR_LIB)/libtss2-fapi powerpasstpm.o -o libpptpm.so
+	gcc -shared powerpasstpm.o -o libpptpm.so
 compile:
-	gcc -c -fPIC powerpasstpm.c -o powerpasstpm.o
+	gcc -c -fPIC -l$(USR_LIB)/libtss2-fapi.so -static powerpasstpm.c -o powerpasstpm.o
 tpm2-tss:
 ifndef TPM2_TSS_DIR
 	curl -LO https://github.com/tpm2-software/tpm2-tss/releases/download/4.0.1/tpm2-tss-4.0.1.tar.gz

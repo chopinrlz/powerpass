@@ -16,3 +16,9 @@ void pptpm_test() {
 int pptpm_ver() {
     return 150;
 }
+
+void pptpm_exec() {
+    FAPI_CONTEXT* context;
+    Fapi_Initialize( context, NULL );
+    Fapi_Free(context);
+}
