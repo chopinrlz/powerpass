@@ -17,7 +17,7 @@ namespace PowerPass {
         public static extern int pptpm_ver();
 
         [DllImport("libpptpm.so")]
-        public static extern int pptpm_exec();
+        public static extern uint pptpm_exec();
 
         public TpmProvider() { }
 
@@ -25,6 +25,6 @@ namespace PowerPass {
 
         public int Version() { return TpmProvider.pptpm_ver(); }
 
-        public int Execute() { return TpmProvider.pptpm_exec(); }
+        public uint Execute() { return TpmProvider.pptpm_exec(); }
     }
 }
