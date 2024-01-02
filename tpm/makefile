@@ -17,9 +17,9 @@ TPM2_TSS_DIR != if [ -d "./tpm2-tss-4.0.1" ]; then echo 1; fi
 # tpm2-tss must be deployed as root
 
 library: compile
-	gcc -shared powerpasstpm.o -o libpptpm.so
+	gcc -shared powerpasstpm.o -L$(USR_LIB) -llibtss2-fapi -o libpptpm.so
 compile:
-	gcc -c -fPIC -l$(USR_LIB)/libtss2-fapi.so -static powerpasstpm.c -o powerpasstpm.o
+	gcc -c -fPIC powerpasstpm.c -o powerpasstpm.o
 install: library
 	cp -f libpptpm.so $(USR_LIB)
 tpm2-tss:
