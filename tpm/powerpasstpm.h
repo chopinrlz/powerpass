@@ -8,7 +8,9 @@
 
 #include <stdint.h>
 
-int main(void);
+const char __POWERPASS_TEST[] = "test";
+
+int main(int argc, char** argv);
 void pptpm_test(void);
 int pptpm_ver(void);
 uint32_t pptpm_exec(void);

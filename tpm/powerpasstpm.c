@@ -10,7 +10,19 @@
 #include "powerpasstpm.h"
 #include "include/tss2/tss2_fapi.h"
 
-int main(void) {
+int main(int argc, char** argv) {
+    if( argc == 2 ) {
+        if( strcmp(argv[1],__POWERPASS_TEST) == 0 ) {
+            printf("Running test\n");   
+            FAPI_CONTEXT** context;
+            TSS2_RC res = Fapi_Initialize( context, NULL );
+            Fapi_Finalize(context);
+            Fapi_Free(context);
+            printf("Context initialize result %d\n",res);
+        }
+    } else {
+        printf("No arguments specified\n");
+    }
     return 0;
 }
 
@@ -27,6 +39,8 @@ uint32_t pptpm_exec(void) {
     FAPI_CONTEXT** context;
     printf("Fapi_Initalize\n");
     TSS2_RC res = Fapi_Initialize( context, NULL );
+    printf("Fapi_Finalize");
+    Fapi_Finalize(context);
     printf("Fapi_Free");
     Fapi_Free(context);
     return res;
