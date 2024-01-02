@@ -10,9 +10,6 @@ if( -not $IsLinux ) {
     throw "TPM support is for the Linux OS"
 }
 Set-Location $PSScriptRoot
-if( -not (Test-Path "/usr/lib/libpptpm.so") ) { 
-    throw "libpptpm not installed, run 'make' then 'sudo make install' from ./tpm directory"
-}
 $source = Get-Content "$PSScriptRoot/TpmProvider.cs" -Raw
 Add-Type -TypeDefinition $source -ReferencedAssemblies "System.Runtime.InteropServices"
 $provider = New-Object "PowerPass.TpmProvider"
