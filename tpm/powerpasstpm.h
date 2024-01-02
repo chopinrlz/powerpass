@@ -8,8 +8,9 @@
 
 #include <stdint.h>
 
-void pptpm_test();
-int pptpm_ver();
-uint32_t pptpm_exec();
+int main(void);
+void pptpm_test(void);
+int pptpm_ver(void);
+uint32_t pptpm_exec(void);
 
 #endif

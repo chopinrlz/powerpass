@@ -10,15 +10,19 @@
 #include "powerpasstpm.h"
 #include "include/tss2/tss2_fapi.h"
 
-void pptpm_test() {
+int main(void) {
+    return 0;
+}
+
+void pptpm_test(void) {
     printf("Success\n");
 }
 
-int pptpm_ver() {
+int pptpm_ver(void) {
     return 150;
 }
 
-uint32_t pptpm_exec() {
+uint32_t pptpm_exec(void) {
     printf("Init context\n");
     FAPI_CONTEXT** context;
     printf("Fapi_Initalize\n");
