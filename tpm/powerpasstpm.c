@@ -3,6 +3,7 @@
     This software is provided AS IS WITHOUT WARRANTEE.
     You may copy, modify or distribute this software under the terms of the GNU Public License 2.0. */
 
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 
