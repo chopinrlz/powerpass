@@ -8,7 +8,7 @@
 #include <string.h>
 
 #include "powerpasstpm.h"
-#include "include/tss2/tss2_fapi.h"
+#include "tss2/tss2_fapi.h"
 
 int main(int argc, char** argv) {
     if( argc == 2 ) {
