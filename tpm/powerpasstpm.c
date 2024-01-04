@@ -5,23 +5,26 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "powerpasstpm.h"
 #include "tss2/tss2_fapi.h"
 
-int main(int argc, char** argv) {
+int main( int argc, char** argv ) {
+    TSS2_RC res;
+    FAPI_CONTEXT* context;
     if( argc == 2 ) {
         if( strcmp(argv[1],__POWERPASS_TEST) == 0 ) {
-            printf("Running test\n");
-            FAPI_CONTEXT** context;
-            printf("Calling Fapi_Initialize");
-            TSS2_RC res = Fapi_Initialize( context, NULL );
-            printf("Calling Fapi_Finalize");
-            Fapi_Finalize(context);
-            printf("Calling Fapi_Free");
-            Fapi_Free(context);
-            printf("Context initialize result %d\n",res);
+            printf( "Running test\n" );
+            res = Fapi_Initialize( &context, NULL );
+            if( res != TSS2_RC_SUCCESS ) {
+                printf( "Failed to initialize FAPI context" );
+                return 1;
+            } else {
+                Fapi_Finalize( &context );
+                printf( "Context initialize result %d\n", res );
+            }
         }
     } else {
         printf("No arguments specified\n");
