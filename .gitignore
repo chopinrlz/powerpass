@@ -11,6 +11,8 @@
 /test/data.aes
 /test/.locker_key
 /test/.powerpass_locker
+/tpm/powerpasstpm
+/tpm/powerpasstpm.o
 /powerpass.sln
 /release/*
 cim.json
