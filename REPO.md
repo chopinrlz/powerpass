@@ -7,6 +7,7 @@
 | /KeePassLib | Source code for KeePassLib by Dominik Reichl <dominik.reichl@t-online.de> |
 | /module | Source code for the PowerPass module itself |
 | /test | Unit tests and test files for the modules and supporting code |
+| /tpm | libtss2-fapi TPM 2.0 support for Linux (under development) |
 | /util | Internal utility scripts, such as for building a release of PowerPass |
 | ~ | ~ |
 | **Files** | |
