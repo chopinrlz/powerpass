@@ -13,7 +13,7 @@ However, for those who are curious, the Locker is a `PSCustomObject` with these 
 It is serialized as JSON before being encrypted and converted to a base-64 encoded string for storage.
 
 <table>
-<tr><th>Property</th><th>Data Type</th></tr>
+<tr><th>Property Name</th><th>Data Type</th></tr>
 <tr><td>1. Secrets</td><td>PSCustomObject[]</td></tr>
 <tr><td>2. Attachments</td><td>PSCustomObject[]</td></tr>
 <tr><td>3. Created</td><td>System.DateTime (UTC)</td></tr>
@@ -24,7 +24,7 @@ It is serialized as JSON before being encrypted and converted to a base-64 encod
 The `Secrets` property is an array of `PSCustomObject` items with Title, UserName, Password, URL, Notes, Expires, Created, and Modified fields. When you call the `Read-PowerPassSecret` cmdlet one or more of these objects are output to the pipeline for you. The Password is stored as a `SecureString` unless you specify the `-PlainTextPasswords` parameter in which case the password is returned from your Locker in plain-text as a `String`.
 
 <table>
-<tr><th>Property</th><th>Data Type</th><th>Purpose</th></tr>
+<tr><th>Property Name</th><th>Data Type</th><th>Purpose</th></tr>
 <tr><td>1. Title</td><td>String</td><td>The unique identifier of the Secret in your Locker</td></tr>
 <tr><td>2. UserName</td><td>String</td><td>A place to store a username, such as an email address or login name</td></tr>
 <tr><td>3. Password</td><td>SecureString or plain-text String</td><td>A place to store a password or secret key, use `-PlainTextPasswords` to retrieve in plain-text</td></tr>
@@ -39,7 +39,7 @@ The `Secrets` property is an array of `PSCustomObject` items with Title, UserNam
 The `Attachments` property is an array of `PSCustomObject` items with FileName, Data, Created, and Modified fields. Data is output to you as a byte array, but is stored in the Locker as a base-64 encoded string.
 
 <table>
-<tr><th>Property</th><th>Data Type</th><th>Purpose</th></tr>
+<tr><th>Property Name</th><th>Data Type</th><th>Purpose</th></tr>
 <tr><td>1. FileName</td><td>String</td><td>The unique identifier of the attachment in your Locker, typically a filename</td></tr>
 <tr><td>2. Data</td><td>String</td><td>Base64-encoded string of the binary data of the attachment</td></tr>
 <tr><td>3. Created</td><td>DateTime (UTC)</td><td>This is automatically set to the date and time when this attachment was created</td></tr>
@@ -56,7 +56,7 @@ This data structure is unique to KeePass 2 and the DP API implementation of Powe
 When you run the `Open-PowerPassDatabase` cmdlet, the output is a `PSCustomObject` with these properties.
 
 <table>
-<tr><th>Property</th><th>Description</th></tr>
+<tr><th>Property Name</th><th>Description</th></tr>
 <tr><td>1. Connector</td><td>The `Connector` property contains the `KeePassLib.Serialization.IOConnectionInfo` instance which tells KeePassLib where to find the database on the local file system.</td></tr>
 <tr><td>2. Keys</td><td>The `Keys` property contains the collection of keys required to open the database. In this case, for testing, it is only the one `KeePassLib.Keys.KcpPassword` key 12345 which is required.</td></tr>
 <tr><td>3. LiteralPath</td><td>This is a string with the literal path of the database file on disk.</td></tr>
