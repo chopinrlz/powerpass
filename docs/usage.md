@@ -11,6 +11,8 @@ If you are opening KeePass databases which use master passwords, you can store t
 ## Cmdlet Reference
 1. For the AES edition: [PowerPass AES Cmdlet Reference](https://chopinrlz.github.io/powerpass/aes-cmdlet-ref)
 2. For the DP API edition: [PowerPass DP API Cmdlet Reference](https://chopinrlz.github.io/powerpass/dpapi-cmdlet-ref)
+
+All PowerPass topics can be found at the bottom of this page.
 # Incorporating PowerPass into your Scripts
 PowerPass relies on the current user file system for security.
 To incorporate PowerPass into you builds, follow these examples.
