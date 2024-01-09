@@ -12,11 +12,11 @@ The PowerPass Locker is not an exposed data type.
 However, for those who are curious, the Locker is a `PSCustomObject` with these properties.
 It is serialized as JSON before being encrypted and converted to a base-64 encoded string for storage.
 | Property | Data Type |
-| - | - |
-|1. Secrets|PSCustomObject[]|
-|2. Attachments|PSCustomObject[]|
-|3. Created|System.DateTime (UTC)|
-|4. Modified|System.DateTime (UTC)|
+| -------- | --------- |
+| 1. Secrets | PSCustomObject[] |
+| 2. Attachments| PSCustomObject[] |
+| 3. Created | System.DateTime (UTC) |
+| 4. Modified | System.DateTime (UTC) |
 ### Property: Secrets
 The `Secrets` property is an array of `PSCustomObject` items with Title, UserName, Password, URL, Notes, Expires, Created, and Modified fields. When you call the `Read-PowerPassSecret` cmdlet one or more of these objects are output to the pipeline for you. The Password is stored as a `SecureString` unless you specify the `-PlainTextPasswords` parameter in which case the password is returned from your Locker in plain-text as a `String`.
 | Property | Data Type | Purpose |
