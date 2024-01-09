@@ -57,11 +57,11 @@ When you run the `Open-PowerPassDatabase` cmdlet, the output is a `PSCustomObjec
 
 <table>
 <tr><th width="30%">Property Name</th><th>Description</th></tr>
-<tr><td width="30%">1. Connector</td><td>The `Connector` property contains the `KeePassLib.Serialization.IOConnectionInfo` instance which tells KeePassLib where to find the database on the local file system.</td></tr>
-<tr><td width="30%">2. Keys</td><td>The `Keys` property contains the collection of keys required to open the database. In this case, for testing, it is only the one `KeePassLib.Keys.KcpPassword` key 12345 which is required.</td></tr>
+<tr><td width="30%">1. Connector</td><td>The <code>Connector</code> property contains the <code>KeePassLib.Serialization.IOConnectionInfo</code> instance which tells KeePassLib where to find the database on the local file system.</td></tr>
+<tr><td width="30%">2. Keys</td><td>The <code>Keys</code> property contains the collection of keys required to open the database. In this case, for testing, it is only the one <code>KeePassLib.Keys.KcpPassword</code> key 12345 which is required.</td></tr>
 <tr><td width="30%">3. LiteralPath</td><td>This is a string with the literal path of the database file on disk.</td></tr>
-<tr><td width="30%">4. Secrets</td><td>This is the `KeePassLib.PwDatabase` instance from which you can access all the entries in the test database starting with the `RootGroup` property.</td></tr>
-<tr><td width="30%">5. StatusLogger</td><td>The custom `PowerPass.StatusLogger` instance which KeePassLib writes to as it operates on the database file.</td></tr>
+<tr><td width="30%">4. Secrets</td><td>This is the <code>KeePassLib.PwDatabase</code> instance from which you can access all the entries in the test database starting with the <code>RootGroup</code> property.</td></tr>
+<tr><td width="30%">5. StatusLogger</td><td>The custom <code>PowerPass.StatusLogger</code> instance which KeePassLib writes to as it operates on the database file.</td></tr>
 </table>
 
 # All PowerPass Topics
