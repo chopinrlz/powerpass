@@ -1,3 +1,16 @@
+# Usage
+#### _Revised: January 9, 2024_
+## KeePass Databases
+To open a KeePass database use the `Open-PowerPassDatabase` cmdlet.
+Pipe or pass the output to `Get-PowerPassSecret` to fetch secrets from the KeePass database.
+## PowerPass Locker
+To read a secret from your PowerPass Locker use the `Read-PowerPassSecret` cmdlet.
+To write a secret into your PowerPass Locker use the `Write-PowerPassSecret` cmdlet.
+## Storing KeePass Database Passwords
+If you are opening KeePass databases which use master passwords, you can store these passwords in your PowerPass Locker to keep them secure.
+## Cmdlet Reference
+1. For the AES edition: [PowerPass AES Cmdlet Reference](https://chopinrlz.github.io/powerpass/aes-cmdlet-ref)
+2. For the DP API edition: [PowerPass DP API Cmdlet Reference](https://chopinrlz.github.io/powerpass/dpapi-cmdlet-ref)
 # Incorporating PowerPass into your Scripts
 PowerPass relies on the current user file system for security.
 To incorporate PowerPass into you builds, follow these examples.
