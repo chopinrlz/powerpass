@@ -11,6 +11,10 @@ These objects are initialized in the common module file `PowerPass.Common.ps1` f
 The PowerPass Locker is not an exposed data type.
 However, for those who are curious, the Locker is a `PSCustomObject` with these properties.
 It is serialized as JSON before being encrypted and converted to a base-64 encoded string for storage.
+<table>
+<tr><th>Property</th><th>Data Type</th></tr>
+<tr><td>1. Secrets</td><td>PSCustomObject[]</td></tr>
+</table>
 | Property | Data Type |
 | -------- | --------- |
 | 1. Secrets | PSCustomObject[] |
