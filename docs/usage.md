@@ -43,6 +43,8 @@ $creds = Read-PowerPassSecret -Match "DEV Domain Admin" -AsCredential
 # Call out to Active Directory with the credential
 Get-ADUser -Credential $creds
 ```
+To create the `PSCredential`, the secret must have a `UserName` and a `Password` property set.
+If either property is blank, the operation may fail with an error.
 # All PowerPass Topics
 Select one of the links below to browse to another topic.
 ## [AES Cmdlet Reference](https://chopinrlz.github.io/powerpass/aes-cmdlet-ref) | [Data Structures](https://chopinrlz.github.io/powerpass/data-structures) | [Deployment](https://chopinrlz.github.io/powerpass/deployment) | [DP API Cmdlet Reference](https://chopinrlz.github.io/powerpass/dpapi-cmdlet-ref) | [OneDrive Backup](https://chopinrlz.github.io/powerpass/onedrivebackup) | [Prerequisites](https://chopinrlz.github.io/powerpass/prerequisites) | [Release Notes](https://chopinrlz.github.io/powerpass/release-notes) | [Usage](https://chopinrlz.github.io/powerpass/usage)

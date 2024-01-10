@@ -1,4 +1,5 @@
 # PowerPass Cmdlet Reference for Windows PowerShell DP API / KeePass 2 Implementation
+#### _Revised: January 9, 2024_
 The Windows PowerShell Data Protection API implementation supports Windows PowerShell 5.1 and includes support for KeePass 2 databases as well as PowerPass Lockers. Cmdlets for this implementation are as follows:
 1. [Clear-PowerPassLocker](#clear-powerpasslocker)
 2. [Export-PowerPassLocker](#export-powerpasslocker)
@@ -329,6 +330,8 @@ $clientSecret = $s.Password
 ### EXAMPLE 4: Get a Secret in PSCredential Format
 Many PowerShell cmdlets which require authentication support the PSCredential format.
 You can fetch a secret from your locker in this format automatically and pass it directly to the other cmdlet.
+To create the `PSCredential`, the secret must have a `UserName` and a `Password` property set.
+If either property is blank, the operation may fail with an error.
 ```powershell
 # Get all the Active Directory users
 $svcAccount = Read-PowerPassSecret -Match "Domain Reader Service" -AsCredential
@@ -340,6 +343,16 @@ If the Title we specify is not found in the locker, nothing will be returned.
 ```powershell
 # Get the secret with this exact Title
 $sec = Read-PowerPassSecret -Title "Domain Admin Login"
+```
+### EXAMPLE 6: Get a Specific Secret as a Credential by Title
+In this example we fetch a single secret as a `PSCredential` by Title of a known secret we expect to be in our locker.
+If the Title we specify is not found in the locker, nothing will be returned.
+To create the `PSCredential`, the secret must have a `UserName` and a `Password` property set.
+If either property is blank, the operation may fail with an error.
+```powershell
+# Get the Domain Admin Login credential
+$svcAccount = Read-PowerPassSecret -Title "Domain Admin Login" -AsCredential
+Get-ADUser -Credential $svcAccount
 ```
 ##### ***[Back to Top](#powerpass-cmdlet-reference-for-windows-powershell-dp-api--keepass-2-implementation)***
 # Remove-PowerPassSecret
