@@ -83,6 +83,8 @@ You can download Git from [here](https://git-scm.com/downloads), but on Linux yo
 ## Step 2: Run Deploy-PowerPass.ps1
 Open your target PowerShell environment, either PowerShell 7 or Windows PowerShell.
 Set the directory to the path where you cloned PowerPass or unpacked the release.
+<br/>
+
 Run `.\Deploy-PowerPass.ps1`
 Follow the prompts to deploy PowerPass.
 > If you are using Windows PowerShell you will be prompted to install either the (1) AES or (2) DP API with KeePass support variant.
