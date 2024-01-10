@@ -1,4 +1,4 @@
-# Deploying PowerPass
+# Deployment
 #### _Revised: January 9, 2024_
 PowerPass is not your typical PowerShell module.
 It works like a module, it's deployed like a module, but due to its nature it must be deployed using a deployment script packaged with PowerPass.
@@ -6,11 +6,12 @@ Depending on the edition of PowerPass that you want to use, the AES edition or t
 <br/>
 
 Some of these dependencies are tied to your specific local logon account and cannot be packaged in the way a standard PowerShell module is packaged.
-This guide will walk you through the deployment of PowerPass on Linux, MacOS, and Windows using the `Deploy-PowerPass.ps1` script provided with PowerPass.
+This guide will walk you through the deployment of PowerPass on Linux, MacOS, and Windows using the provided `Deploy-PowerPass.ps1` script.
 <br/>
 
-First, you must install [PowerShell](https://github.com/PowerShell/PowerShell) if you haven't done so already, unless you are on Windows and plan to use Windows PowerShell which is built-in. If you already have PowerShell installed, follow the [Quick Start](#quick-start-deploying-from-git-on-macos-and-linux) next or skip ahead to [Deploying PowerPass](#deploying-powerpass).
-# Quick Start: Deploying from Git on macOS and Linux
+First, you must install [PowerShell](https://github.com/PowerShell/PowerShell) if you haven't done so already, unless you are on Windows and plan to use Windows PowerShell which is built-in. If you already have PowerShell installed, follow the [Quick Start](#quick-start) next or skip ahead to [Deploying PowerPass](#deploying-powerpass).
+# Quick Start
+### Deploying from Git on macOS and Linux
 On Linux or macOS, you can open a terminal and use these commands to clone the repo and deploy PowerPass from your home directory.
 ```bash
 $ cd ~
@@ -18,6 +19,15 @@ $ git clone https://github.com/chopinrlz/powerpass.git
 $ cd powerpass
 $ pwsh
 PS> ./Deploy-PowerPass.ps1
+```
+### Deploying from Git on Windows
+On Windows, you can open the Terminal and use these commands to clone the repo and deploy PowerPass from your user profile folder on Windows PowerShell 5.1.
+```powershell
+C:\Users\janedoe> cd Documents
+C:\Users\janedoe\Documents> git clone https://github.com/chopinrlz/powerpass.git
+C:\Users\janedoe\Documents> cd powerpass
+C:\Users\janedoe\Documents\powerpass> powershell
+PS C:\Users\janedoe\Documents\powerpass> .\Deploy-PowerPass.ps1
 ```
 # Installing PowerShell
 ## Linux
@@ -34,7 +44,7 @@ Supported distros currently include:
 5. Red Hat Enterprise 7
 6. Ubuntu 16.04 through 22.04  
 
-Once PowerShell 7 is installed, simply run the [deployment](#deployment) script in PowerShell 7 to deploy PowerPass.
+Once PowerShell 7 is installed, simply run the [deployment](#deploying-powerpass) script in PowerShell 7 to deploy PowerPass.
 ## MacOS
 PowerPass runs on PowerShell 7 on macOS.
 ### _[Main Article: Installing PowerShell on macOS](https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell-on-macos?view=powershell-7.4)_
@@ -44,7 +54,7 @@ PowerPass on MacOS requires PowerShell 7 which is supported on macOS 10.13 and h
 If you do not already have PowerShell 7 installed on your Mac, you can browse the [PowerShell readme file](https://github.com/PowerShell/PowerShell/blob/master/README.md) on GitHub to find the release for your hardware and macOS version.
 <br/>
 
-Once PowerShell 7 is installed, simply run the [deployment](#deployment) script in PowerShell 7 to deploy PowerPass.
+Once PowerShell 7 is installed, simply run the [deployment](#deploying-powerpass) script in PowerShell 7 to deploy PowerPass.
 ## Windows
 PowerPass runs on Windows PowerShell 5.1 or PowerShell 7 on Windows.
 You will also need the .NET Framework 4.8.1 or higher if you use the Data Protection API edition.
@@ -59,17 +69,18 @@ PowerPass must be deployed once for each user who needs to use it.
 For details on prerequisites for each implementation, please see the [Prerequisites](https://chopinrlz.github.io/powerpass/prerequisites) page.
 
 ## Step 1: Clone the Repository or Download a Release
-Clone https://github.com/chopinrlz/powerpass.git to a **writeable** folder on your local machine OR download and unpack a release.
+Clone https://github.com/chopinrlz/powerpass.git to a **writeable** folder on your local machine OR download and unpack **[the latest release](https://github.com/chopinrlz/powerpass/releases)**.
 You must have write permissions to this folder.
 You must have `git` installed to clone the repo from GitHub.
 You can download Git from [here](https://git-scm.com/downloads), but on Linux your distro likely has a package which includes git.
-Rather than cloning the repo, you can download the latest release of PowerPass [here](https://github.com/chopinrlz/powerpass/releases).
 ## Step 2: Run Deploy-PowerPass.ps1
 Open your target PowerShell environment, either PowerShell 7 or Windows PowerShell.
 Set the directory to the path where you cloned PowerPass or unpacked the release.
 Run `.\Deploy-PowerPass.ps1`
 Follow the prompts to deploy PowerPass.
 > If you are using Windows PowerShell you will be prompted to install either the (1) AES or (2) DP API with KeePass support variant.
+</br>
+
 ## Step 3: Verify the Deployment
 After PowerPass is deployed, open a new PowerShell window and enter the following commands:
 ```powershell
