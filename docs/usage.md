@@ -26,6 +26,7 @@ To ensure these credentials are not compromised, you can store them with PowerPa
 3. Using the `Write-PowerPassSecret` cmdlet, write the credentials into the locker using a distinct `Title` to recall them later.
 4. Close PowerShell and log off.
 
+For detailed instructions on how to store and retrieve Active Directory Domain credentials with PowerPass, please see the [Domain Credentials](https://chopinrlz.github.io/powerpass/domain-credentials) article.
 Now that you have credentials in your locker, you can use them in your script.
 ### Update your Script
 1. Open your script in your favorite PowerShell editor.
