@@ -64,8 +64,15 @@ Installing PowerShell 7 on Windows can be done by downloading and running the in
 # Deploying PowerPass
 PowerPass comes with a deployment script which will verify and/or create all the prerequisites for you. For the Data Protection API edition it will compile the KeePassLib source code, generate a PowerPass module salt (for salting Locker keys), and deploy the module.
 For the AES edition it will generate a key for you and deploy the module.
+<br/>
+
 PowerPass is ALWAYS deployed to YOUR user's home directory.
 PowerPass must be deployed once for each user who needs to use it.
+PowerPass does NOT require administrative permissions.
+PowerPass should NOT be deployed with administrative permissions.
+PowerPass is designed to run under USER permissions within the user's home directory.
+<br/>
+
 For details on prerequisites for each implementation, please see the [Prerequisites](https://chopinrlz.github.io/powerpass/prerequisites) page.
 
 ## Step 1: Clone the Repository or Download a Release
