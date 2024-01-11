@@ -1194,7 +1194,7 @@ function Write-PowerPassAttachment {
             $bytes = Get-Content -Path $Path -Encoding Byte
             $fileData = [System.Convert]::ToBase64String( $bytes )
         } elseif( $LiteralPath ) {
-            $bytes = Get-Content -LiteralPath $Path -Encoding Byte
+            $bytes = Get-Content -LiteralPath $LiteralPath -Encoding Byte
             $fileData = [System.Convert]::ToBase64String( $bytes )
         } elseif( $Data ) {
             $dataType = $Data.GetType().FullName
