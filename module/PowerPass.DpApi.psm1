@@ -1084,9 +1084,11 @@ function Read-PowerPassAttachment {
         Outputs the attachment data in byte[] format, or the PSCustomObject if -Raw was specified, or a
         string if -AsText was specified, or $null if no file was found matching the specified filename.
     #>
-    [CmdletBinding()]
+    [CmdletBinding(DefaultParameterSetName="Default")]
     param(
-        [Parameter(Mandatory,ValueFromPipeline,Position=0)]
+        [Parameter(ParameterSetName="Default",Mandatory,ValueFromPipeline,Position=0)]
+        [Parameter(ParameterSetName="Raw",Mandatory,ValueFromPipeline,Position=0)]
+        [Parameter(ParameterSetName="AsText",Mandatory,ValueFromPipeline,Position=0)]
         [string]
         $FileName,
         [Parameter(ParameterSetName="Raw")]
@@ -1098,7 +1100,7 @@ function Read-PowerPassAttachment {
         [Parameter(ParameterSetName="AsText")]
         [ValidateSet("Ascii","Utf8","Unicode")]
         [string]
-        $Encoding = "Unicode"
+        $Encoding
     )
     $locker = Get-PowerPassLocker
     if( -not $locker ) {
