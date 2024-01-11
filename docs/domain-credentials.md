@@ -33,6 +33,7 @@ $psCredential = New-Object -TypeName System.Management.Automation.PSCredential -
 The assumption here is that the `UserName` field from your KeePass 2 database contains the Domain Name and Logon Name in one of these two formats:
 1. DOMAIN\logonName
 2. logonName@domain.local
+
 The first option uses the NetBIOS domain name while the second option uses the DNS domain name.
 # All PowerPass Topics
 Select one of the links below to browse to another topic.
