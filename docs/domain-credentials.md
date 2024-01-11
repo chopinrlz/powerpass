@@ -1,5 +1,5 @@
 # Storing and Retrieving Domain Credentials with PowerPass
-#### _Revised: January 10, 2024_
+#### _Revised: January 11, 2024_
 # Introduction
 PowerPass can be used to store and retrieve domain credentials from your Locker or from a KeePass 2 database.
 Many Windows PowerShell modules require the use of the `PSCredential` object to connect to resources protected by a domain account.
@@ -37,4 +37,4 @@ The assumption here is that the `UserName` field from your KeePass 2 database co
 The first option uses the NetBIOS domain name while the second option uses the DNS domain name.
 # All PowerPass Topics
 Select one of the links below to browse to another topic.
-## [AES Cmdlet Reference](https://chopinrlz.github.io/powerpass/aes-cmdlet-ref) | [Data Structures](https://chopinrlz.github.io/powerpass/data-structures) | [Domain Credentials](https://chopinrlz.github.io/powerpass/domain-credentials) | [Deployment](https://chopinrlz.github.io/powerpass/deployment) | [DP API Cmdlet Reference](https://chopinrlz.github.io/powerpass/dpapi-cmdlet-ref) | [OneDrive Backup](https://chopinrlz.github.io/powerpass/onedrivebackup) | [Prerequisites](https://chopinrlz.github.io/powerpass/prerequisites) | [Release Notes](https://chopinrlz.github.io/powerpass/release-notes) | [Usage](https://chopinrlz.github.io/powerpass/usage)
+## [AES Cmdlet Reference](https://chopinrlz.github.io/powerpass/aes-cmdlet-ref) | [Data Structures](https://chopinrlz.github.io/powerpass/data-structures) | [Deployment](https://chopinrlz.github.io/powerpass/deployment) | [Domain Credentials](https://chopinrlz.github.io/powerpass/domain-credentials) | [DP API Cmdlet Reference](https://chopinrlz.github.io/powerpass/dpapi-cmdlet-ref) | [Home](https://chopinrlz.github.io/powerpass) | [OneDrive Backup](https://chopinrlz.github.io/powerpass/onedrivebackup) | [Prerequisites](https://chopinrlz.github.io/powerpass/prerequisites) | [Release Notes](https://chopinrlz.github.io/powerpass/release-notes) | [Usage](https://chopinrlz.github.io/powerpass/usage)
