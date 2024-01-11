@@ -1077,9 +1077,12 @@ function Read-PowerPassAttachment {
         .PARAMETER AsText
         An optional parameter that, when specified, will return the attachment data as a Unicode string. Cannot
         be combined with Raw.
+        .PARAMETER Encoding
+        If -AsText is specified, you can optionally specify a specific encoding, otherwise the default encoding
+        Unicode is used since Unicode is the default encoding used when writing text attachments into your locker.
         .OUTPUTS
         Outputs the attachment data in byte[] format, or the PSCustomObject if -Raw was specified, or a
-        Unicode string if -AsText was specified, or $null if no file was found matching the specified filename.
+        string if -AsText was specified, or $null if no file was found matching the specified filename.
     #>
     [CmdletBinding()]
     param(
@@ -1091,7 +1094,11 @@ function Read-PowerPassAttachment {
         $Raw,
         [Parameter(ParameterSetName="AsText")]
         [switch]
-        $AsText
+        $AsText,
+        [Parameter(ParameterSetName="AsText")]
+        [ValidateSet("Ascii","Utf8","Unicode")]
+        [string]
+        $Encoding = "Unicode"
     )
     $locker = Get-PowerPassLocker
     if( -not $locker ) {
@@ -1105,7 +1112,20 @@ function Read-PowerPassAttachment {
                     Write-Output $attachment
                 } elseif( $AsText ) {
                     $bytes = [System.Convert]::FromBase64String($attachment.Data)
-                    Write-Output ([System.Text.Encoding]::Unicode).GetString($bytes)
+                    switch( $Encoding ) {
+                        "Ascii" {
+                            Write-Output ([System.Text.Encoding]::ASCII).GetString($bytes)
+                        }
+                        "Utf8" {
+                            Write-Output ([System.Text.Encoding]::UTF8).GetString($bytes)
+                        }
+                        "Unicode" {
+                            Write-Output ([System.Text.Encoding]::Unicode).GetString($bytes)
+                        }
+                        default {
+                            Write-Output ([System.Text.Encoding]::Unicode).GetString($bytes)
+                        }
+                    }
                 } else {
                     Write-Output ([System.Convert]::FromBase64String($attachment.Data))
                 }
