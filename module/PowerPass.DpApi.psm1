@@ -1060,3 +1060,169 @@ function Remove-PowerPassSecret {
         }
     }
 }
+
+# ------------------------------------------------------------------------------------------------------------- #
+# FUNCTION: Read-PowerPassAttachment
+# ------------------------------------------------------------------------------------------------------------- #
+
+function Read-PowerPassAttachment {
+    <#
+        .SYNOPSIS
+        Reads an attachment from your locker.
+        .PARAMETER FileName
+        The filename of the attachment to fetch.
+        .PARAMETER Raw
+        An optional parameter that, when specified, will return the entire PSCustomObject for the attachment.
+        Cannot be combined with Encoding.
+        .PARAMETER AsText
+        An optional parameter that, when specified, will return the attachment data as a Unicode string. Cannot
+        be combined with Raw.
+        .OUTPUTS
+        Outputs the attachment data in byte[] format, or the PSCustomObject if -Raw was specified, or a
+        Unicode string if -AsText was specified, or $null if no file was found matching the specified filename.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory,ValueFromPipeline,Position=0)]
+        [string]
+        $FileName,
+        [Parameter(ParameterSetName="Raw")]
+        [switch]
+        $Raw,
+        [Parameter(ParameterSetName="AsText")]
+        [switch]
+        $AsText
+    )
+    $locker = Get-PowerPassLocker
+    if( -not $locker ) {
+        throw "Could not create or fetch your locker"
+    }
+    if( $locker.Attachments ) {
+        if( $FileName ) {
+            $attachment = $locker.Attachments | Where-Object { $_.FileName -eq $FileName }
+            if( $attachment ) {
+                if( $Raw ) {
+                    Write-Output $attachment
+                } elseif( $AsText ) {
+                    $bytes = [System.Convert]::FromBase64String($attachment.Data)
+                    Write-Output [System.Text.Encoding]::Unicode.GetString($bytes)
+                } else {
+                    Write-Output ([System.Convert]::FromBase64String($attachment.Data))
+                }
+            } else {
+                Write-Output $null
+            }
+        } else {
+            Write-Output $null
+        }
+    } else {
+        Write-Output $null
+    }
+}
+
+# ------------------------------------------------------------------------------------------------------------- #
+# FUNCTION: Write-PowerPassAttachment
+# ------------------------------------------------------------------------------------------------------------- #
+
+function Write-PowerPassAttachment {
+    <#
+        .SYNOPSIS
+        Writes an attachment into your locker.
+        .PARAMETER FileName
+        The name of the file to write into your locker. If this file already exists, it will be updated.
+        .PARAMETER Path
+        Option 1: you may specify the Path to a file on disk.
+        .PARAMETER LiteralPath
+        Option 2: you may specify the LiteralPath to a file on disk.
+        .PARAMETER Data
+        Option 3: you may specify the Data for the file in any format, or from the pipeline such as from Get-ChildItem.
+        .PARAMETER Text
+        Option 4: you may specify the contents of the file as a text string.
+        .NOTES
+        Data and Text in string format is encoded with Unicode. Data in PSCustomObject format is converted to JSON then
+        encoded with Unicode. Byte arrays and FileInfo objects are stored natively. Data in any other formats is converted
+        to a string using the build-in .NET ToString function then encoded with Unicode. To fetch text back from your locker
+        saved as attachments use the -AsText parameter of Read-PowerPassAttachment to ensure the correct encoding is used.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory,Position=0)]
+        [string]
+        $FileName,
+        [Parameter(ParameterSetName="FromDisk")]
+        [string]
+        $Path,
+        [Parameter(ParameterSetName="FromDiskLiteral")]
+        [string]
+        $LiteralPath,
+        [Parameter(ParameterSetName="FromPipeline",ValueFromPipeline,Position=1)]
+        $Data,
+        [Parameter(ParameterSetName="FromString",Position=1)]
+        [string]
+        $Text
+    )
+    begin {
+        $locker = Get-PowerPassLocker
+        if( -not $locker ) {
+            throw "Could not create or fetch your locker"
+        }
+    } process {
+        [string]$fileData = ""
+        if( $Path ) {
+            $bytes = Get-Content -Path $Path -Encoding Byte
+            $fileData = [System.Convert]::ToBase64String( $bytes )
+        } elseif( $LiteralPath ) {
+            $bytes = Get-Content -LiteralPath $Path -Encoding Byte
+            $fileData = [System.Convert]::ToBase64String( $bytes )
+        } elseif( $Data ) {
+            $dataType = $Data.GetType().FullName
+            switch( $dataType ) {
+                "System.Byte[]" {
+                    $fileData = [System.Convert]::ToBase64String( $Data )
+                }
+                "System.IO.FileInfo" {
+                    $bytes = Get-Content -Path ($Data.FullName) -Encoding Byte
+                    $fileData = [System.Convert]::ToBase64String( $bytes )
+                }
+                "System.String" {
+                    $bytes = [System.Text.Encoding]::Unicode.GetBytes( $Data )
+                    $fileData = [System.Convert]::ToBase64String( $bytes )
+                }
+                "System.Management.Automation.PSCustomObject" {
+                    $json = ConvertTo-Json -InputObject $Data -Depth 99
+                    $bytes = [System.Text.Encoding]::Unicode.GetBytes( $json )
+                    $fileData = [System.Convert]::ToBase64String( $bytes )
+                }
+                default {
+                    $bytes = [System.Text.Encoding]::Unicode.GetBytes( $Data.ToString() )
+                    $fileData = [System.Convert]::ToBase64String( $bytes )
+                }
+            }
+        } elseif( $Text ) {
+            $bytes = [System.Text.Encoding]::Unicode.GetBytes( $Text )
+            $fileData = [System.Convert]::ToBase64String( $bytes )
+        } else {
+            throw "Error, no input specified"
+        }
+        $ex = $locker.Attachments | Where-Object { $_.FileName -eq $FileName }
+        if( $ex ) {
+            $ex.Data = $fileData
+            $ex.Modified = (Get-Date).ToUniversalTime()
+        } else {
+            $ex = New-PowerPassAttachment
+            $ex.FileName = $FileName
+            $ex.Data = $fileData
+            $locker.Attachments += $ex
+        }
+    } end {
+        $salt = Get-PowerPassLockerSalt
+        if( -not $salt ) {
+            throw "Error writing secret, no locker salt"
+        }
+        $pathToLocker = $script:PowerPass.LockerFilePath
+        $data = Get-PowerPassLockerBytes $locker
+        $encData = [System.Security.Cryptography.ProtectedData]::Protect($data,$salt,"CurrentUser")
+        $encDataText = [System.Convert]::ToBase64String($encData)
+        Out-File -FilePath $pathToLocker -InputObject $encDataText -Force
+    }
+}
