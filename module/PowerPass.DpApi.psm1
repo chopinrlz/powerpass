@@ -1105,7 +1105,7 @@ function Read-PowerPassAttachment {
                     Write-Output $attachment
                 } elseif( $AsText ) {
                     $bytes = [System.Convert]::FromBase64String($attachment.Data)
-                    Write-Output [System.Text.Encoding]::Unicode.GetString($bytes)
+                    Write-Output ([System.Text.Encoding]::Unicode).GetString($bytes)
                 } else {
                     Write-Output ([System.Convert]::FromBase64String($attachment.Data))
                 }
@@ -1185,21 +1185,21 @@ function Write-PowerPassAttachment {
                     $fileData = [System.Convert]::ToBase64String( $bytes )
                 }
                 "System.String" {
-                    $bytes = [System.Text.Encoding]::Unicode.GetBytes( $Data )
+                    $bytes = ([System.Text.Encoding]::Unicode).GetBytes( $Data )
                     $fileData = [System.Convert]::ToBase64String( $bytes )
                 }
                 "System.Management.Automation.PSCustomObject" {
                     $json = ConvertTo-Json -InputObject $Data -Depth 99
-                    $bytes = [System.Text.Encoding]::Unicode.GetBytes( $json )
+                    $bytes = ([System.Text.Encoding]::Unicode).GetBytes( $json )
                     $fileData = [System.Convert]::ToBase64String( $bytes )
                 }
                 default {
-                    $bytes = [System.Text.Encoding]::Unicode.GetBytes( $Data.ToString() )
+                    $bytes = ([System.Text.Encoding]::Unicode).GetBytes( $Data.ToString() )
                     $fileData = [System.Convert]::ToBase64String( $bytes )
                 }
             }
         } elseif( $Text ) {
-            $bytes = [System.Text.Encoding]::Unicode.GetBytes( $Text )
+            $bytes = ([System.Text.Encoding]::Unicode).GetBytes( $Text )
             $fileData = [System.Convert]::ToBase64String( $bytes )
         } else {
             throw "Error, no input specified"
