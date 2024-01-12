@@ -1177,7 +1177,7 @@ function Write-PowerPassAttachment {
         [Parameter(ParameterSetName="FromDiskLiteral")]
         [string]
         $LiteralPath,
-        [Parameter(ParameterSetName="FromPipeline",ValueFromPipeline,Position=1)]
+        [Parameter(ParameterSetName="FromPipeline",ValueFromPipeline)]
         $Data,
         [Parameter(ParameterSetName="FromString",Position=1)]
         [string]
@@ -1247,4 +1247,85 @@ function Write-PowerPassAttachment {
         $encDataText = [System.Convert]::ToBase64String($encData)
         Out-File -FilePath $pathToLocker -InputObject $encDataText -Force
     }
+}
+
+# ------------------------------------------------------------------------------------------------------------- #
+# FUNCTION: Add-PowerPassAttachment
+# ------------------------------------------------------------------------------------------------------------- #
+
+function Add-PowerPassAttachment {
+    <#
+        .SYNOPSIS
+        Adds files from the file system into your locker.
+        .PARAMETER FileInfo
+        One or more FileInfo objects collected from Get-ChildItem.
+        .PARAMETER FullPath
+        If specified, the full file path will be saved as the file name. If the file already exists, it will be
+        updated in your locker.
+        .NOTES
+        Rather than using Write-PowerPassAttachment, you can use Add-PowerPassAttachment to add multiple files
+        to your locker at once by piping the output of Get-ChildItem to Add-PowerPassAttachment. Each file fetched
+        by Get-ChildItem will be added to your locker using either the file name or the full path.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(ValueFromPipeline)]
+        $FileInfo,
+        [switch]
+        $FullPath
+    )
+    begin {
+        $locker = Get-PowerPassLocker
+        if( -not $locker ) {
+            throw "Could not create or fetch your locker"
+        }
+    } process {
+        $bytes = Get-Content -Path ($FileInfo.FullName) -Encoding Byte
+        $fileData = [System.Convert]::ToBase64String( $bytes )
+        $fileName = ""
+        if( $FullPath ) {
+            $fileName = $FileInfo.FullName
+        } else {
+            $fileName = $FileInfo.Name
+        }
+        $ex = $locker.Attachments | Where-Object { $_.FileName -eq $fileName }
+        if( $ex ) {
+            $ex.Data = $fileData
+            $ex.Modified = (Get-Date).ToUniversalTime()
+        } else {
+            $ex = New-PowerPassAttachment
+            $ex.FileName = $fileName
+            $ex.Data = $fileData
+            $locker.Attachments += $ex
+        }
+    } end {
+        $salt = Get-PowerPassLockerSalt
+        if( -not $salt ) {
+            throw "Error writing secret, no locker salt"
+        }
+        $pathToLocker = $script:PowerPass.LockerFilePath
+        $data = Get-PowerPassLockerBytes $locker
+        $encData = [System.Security.Cryptography.ProtectedData]::Protect($data,$salt,"CurrentUser")
+        $encDataText = [System.Convert]::ToBase64String($encData)
+        Out-File -FilePath $pathToLocker -InputObject $encDataText -Force
+    }
+}
+
+# ------------------------------------------------------------------------------------------------------------- #
+# FUNCTION: Add-PowerPassAttachment
+# ------------------------------------------------------------------------------------------------------------- #
+
+function Get-PowerPassAttachments {
+    <#
+        .SYNOPSIS
+        Exports all the attachments to a list so you can search for attachments and see what attachments are
+        in your locker without exposing the file data.
+        .OUTPUTS
+        Outputs each attachment from your locker including the FileName, Created date, and Modified date.
+    #>
+    $locker = Get-PowerPassLocker
+    if( -not $locker ) {
+        throw "Could not create or fetch your locker"
+    }
+    $locker.Attachments | Select-Object -Property FileName,Created,Modified
 }
