@@ -1062,87 +1062,6 @@ function Remove-PowerPassSecret {
 }
 
 # ------------------------------------------------------------------------------------------------------------- #
-# FUNCTION: Read-PowerPassAttachment
-# ------------------------------------------------------------------------------------------------------------- #
-
-function Read-PowerPassAttachment {
-    <#
-        .SYNOPSIS
-        Reads an attachment from your locker.
-        .PARAMETER FileName
-        The filename of the attachment to fetch.
-        .PARAMETER Raw
-        An optional parameter that, when specified, will return the entire PSCustomObject for the attachment.
-        Cannot be combined with Encoding.
-        .PARAMETER AsText
-        An optional parameter that, when specified, will return the attachment data as a Unicode string. Cannot
-        be combined with Raw.
-        .PARAMETER Encoding
-        If -AsText is specified, you can optionally specify a specific encoding, otherwise the default encoding
-        Unicode is used since Unicode is the default encoding used when writing text attachments into your locker.
-        .OUTPUTS
-        Outputs the attachment data in byte[] format, or the PSCustomObject if -Raw was specified, or a
-        string if -AsText was specified, or $null if no file was found matching the specified filename.
-    #>
-    [CmdletBinding(DefaultParameterSetName="Default")]
-    param(
-        [Parameter(ParameterSetName="Default",Mandatory,ValueFromPipeline,Position=0)]
-        [Parameter(ParameterSetName="Raw",Mandatory,ValueFromPipeline,Position=0)]
-        [Parameter(ParameterSetName="AsText",Mandatory,ValueFromPipeline,Position=0)]
-        [string]
-        $FileName,
-        [Parameter(ParameterSetName="Raw")]
-        [switch]
-        $Raw,
-        [Parameter(ParameterSetName="AsText")]
-        [switch]
-        $AsText,
-        [Parameter(ParameterSetName="AsText")]
-        [ValidateSet("Ascii","Utf8","Unicode")]
-        [string]
-        $Encoding
-    )
-    $locker = Get-PowerPassLocker
-    if( -not $locker ) {
-        throw "Could not create or fetch your locker"
-    }
-    if( $locker.Attachments ) {
-        if( $FileName ) {
-            $attachment = $locker.Attachments | Where-Object { $_.FileName -eq $FileName }
-            if( $attachment ) {
-                if( $Raw ) {
-                    Write-Output $attachment
-                } elseif( $AsText ) {
-                    $bytes = [System.Convert]::FromBase64String($attachment.Data)
-                    switch( $Encoding ) {
-                        "Ascii" {
-                            Write-Output ([System.Text.Encoding]::ASCII).GetString($bytes)
-                        }
-                        "Utf8" {
-                            Write-Output ([System.Text.Encoding]::UTF8).GetString($bytes)
-                        }
-                        "Unicode" {
-                            Write-Output ([System.Text.Encoding]::Unicode).GetString($bytes)
-                        }
-                        default {
-                            Write-Output ([System.Text.Encoding]::Unicode).GetString($bytes)
-                        }
-                    }
-                } else {
-                    Write-Output ([System.Convert]::FromBase64String($attachment.Data))
-                }
-            } else {
-                Write-Output $null
-            }
-        } else {
-            Write-Output $null
-        }
-    } else {
-        Write-Output $null
-    }
-}
-
-# ------------------------------------------------------------------------------------------------------------- #
 # FUNCTION: Write-PowerPassAttachment
 # ------------------------------------------------------------------------------------------------------------- #
 
@@ -1320,25 +1239,6 @@ function Add-PowerPassAttachment {
         $encDataText = [System.Convert]::ToBase64String($encData)
         Out-File -FilePath $pathToLocker -InputObject $encDataText -Force
     }
-}
-
-# ------------------------------------------------------------------------------------------------------------- #
-# FUNCTION: Add-PowerPassAttachment
-# ------------------------------------------------------------------------------------------------------------- #
-
-function Get-PowerPassAttachments {
-    <#
-        .SYNOPSIS
-        Exports all the attachments to a list so you can search for attachments and see what attachments are
-        in your locker without exposing the file data.
-        .OUTPUTS
-        Outputs each attachment from your locker including the FileName, Created date, and Modified date.
-    #>
-    $locker = Get-PowerPassLocker
-    if( -not $locker ) {
-        throw "Could not create or fetch your locker"
-    }
-    $locker.Attachments | Select-Object -Property FileName,Created,Modified
 }
 
 # ------------------------------------------------------------------------------------------------------------- #

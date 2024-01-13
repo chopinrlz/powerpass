@@ -684,3 +684,232 @@ function Get-PowerPassEphemeralKey {
     $sha = [System.Security.Cryptography.Sha256]::Create()
     Write-Output $sha.ComputeHash( $compKeyBytes )
 }
+
+# ------------------------------------------------------------------------------------------------------------- #
+# FUNCTION: Write-PowerPassAttachment
+# ------------------------------------------------------------------------------------------------------------- #
+
+function Write-PowerPassAttachment {
+    <#
+        .SYNOPSIS
+        Writes an attachment into your locker.
+        .PARAMETER FileName
+        The name of the file to write into your locker. If this file already exists, it will be updated.
+        .PARAMETER Path
+        Option 1: you may specify the Path to a file on disk.
+        .PARAMETER LiteralPath
+        Option 2: you may specify the LiteralPath to a file on disk.
+        .PARAMETER Data
+        Option 3: you may specify the Data for the file in any format, or from the pipeline such as from Get-ChildItem.
+        .PARAMETER Text
+        Option 4: you may specify the contents of the file as a text string.
+        .NOTES
+        Data and Text in string format is encoded with Unicode. Data in PSCustomObject format is converted to JSON then
+        encoded with Unicode. Byte arrays and FileInfo objects are stored natively. Data in any other formats is converted
+        to a string using the build-in .NET ToString function then encoded with Unicode. To fetch text back from your locker
+        saved as attachments use the -AsText parameter of Read-PowerPassAttachment to ensure the correct encoding is used.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory,Position=0)]
+        [string]
+        $FileName,
+        [Parameter(ParameterSetName="FromDisk")]
+        [string]
+        $Path,
+        [Parameter(ParameterSetName="FromDiskLiteral")]
+        [string]
+        $LiteralPath,
+        [Parameter(ParameterSetName="FromPipeline",ValueFromPipeline)]
+        $Data,
+        [Parameter(ParameterSetName="FromString",Position=1)]
+        [string]
+        $Text
+    )
+    begin {
+        $locker = Get-PowerPassLocker
+        if( -not $locker ) {
+            throw "Could not create or fetch your locker"
+        }
+    } process {
+        [byte[]]$bytes = $null
+        if( $Path ) {
+            $bytes = Get-Content -Path $Path -Encoding Byte
+        } elseif( $LiteralPath ) {
+            $bytes = Get-Content -LiteralPath $LiteralPath -Encoding Byte
+        } elseif( $Data ) {
+            $dataType = $Data.GetType().FullName
+            switch( $dataType ) {
+                "System.Object[]" {
+                    # Here we assume what happened is the caller ran Get-Content and it returned a
+                    # text file as an array of strings which is the default behavior. We also need
+                    # to guess what the file's hard return is since it has been removed from the
+                    # data itself by Get-Content.
+                    $hardReturn = "`r`n"
+                    if( $IsLinux -or $IsMacOS ) {
+                        $hardReturn = "`n"
+                    }
+                    $sb = New-Object "System.Text.StringBuilder"
+                    for( $i = 0; $i -lt ($Data.Length - 1); $i++ ) {
+                        $null = $sb.Append( $Data[$i].ToString() ).Append( $hardReturn )
+                    }
+                    # Avoid adding an extra hard return to the end of the data
+                    $null = $sb.Append( $Data[-1].ToString() )
+                    $bytes = ([System.Text.Encoding]::Unicode).GetBytes( $sb.ToString() )
+                }
+                "System.Byte[]" {
+                    $bytes = $Data
+                }
+                "System.IO.FileInfo" {
+                    $bytes = Get-Content -Path ($Data.FullName) -Encoding Byte
+                }
+                "System.String" {
+                    $bytes = ([System.Text.Encoding]::Unicode).GetBytes( $Data )
+                }
+                "System.Management.Automation.PSCustomObject" {
+                    $json = ConvertTo-Json -InputObject $Data -Depth 99
+                    $bytes = ([System.Text.Encoding]::Unicode).GetBytes( $json )
+                }
+                default {
+                    $bytes = ([System.Text.Encoding]::Unicode).GetBytes( $Data.ToString() )
+                }
+            }
+        } elseif( $Text ) {
+            $bytes = ([System.Text.Encoding]::Unicode).GetBytes( $Text )
+        } else {
+            throw "Error, no input specified"
+        }
+        $fileData = [System.Convert]::ToBase64String( $bytes )
+        $ex = $locker.Attachments | Where-Object { $_.FileName -eq $FileName }
+        if( $ex ) {
+            $ex.Data = $fileData
+            $ex.Modified = (Get-Date).ToUniversalTime()
+        } else {
+            $ex = New-PowerPassAttachment
+            $ex.FileName = $FileName
+            $ex.Data = $fileData
+            $locker.Attachments += $ex
+        }
+    } end {
+        $pathToLocker = $script:PowerPass.LockerFilePath
+        $pathToLockerKey = $script:PowerPass.LockerKeyFilePath
+        $data = Get-PowerPassLockerBytes -Locker $locker
+        $aes = New-Object "PowerPass.AesCrypto"
+        $aes.ReadKeyFromDisk( $pathToLockerKey, [ref] (Get-PowerPassEphemeralKey) )
+        $aes.Encrypt( $data, $pathToLocker )
+        $aes.Dispose()
+    }
+}
+
+# ------------------------------------------------------------------------------------------------------------- #
+# FUNCTION: Add-PowerPassAttachment
+# ------------------------------------------------------------------------------------------------------------- #
+
+function Add-PowerPassAttachment {
+    <#
+        .SYNOPSIS
+        Adds files from the file system into your locker.
+        .PARAMETER FileInfo
+        One or more FileInfo objects collected from Get-ChildItem.
+        .PARAMETER FullPath
+        If specified, the full file path will be saved as the file name. If the file already exists, it will be
+        updated in your locker.
+        .NOTES
+        Rather than using Write-PowerPassAttachment, you can use Add-PowerPassAttachment to add multiple files
+        to your locker at once by piping the output of Get-ChildItem to Add-PowerPassAttachment. Each file fetched
+        by Get-ChildItem will be added to your locker using either the file name or the full path.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(ValueFromPipeline)]
+        $FileInfo,
+        [switch]
+        $FullPath
+    )
+    begin {
+        $locker = Get-PowerPassLocker
+        if( -not $locker ) {
+            throw "Could not create or fetch your locker"
+        }
+    } process {
+        $bytes = Get-Content -Path ($FileInfo.FullName) -Encoding Byte
+        $fileData = [System.Convert]::ToBase64String( $bytes )
+        $fileName = ""
+        if( $FullPath ) {
+            $fileName = $FileInfo.FullName
+        } else {
+            $fileName = $FileInfo.Name
+        }
+        $ex = $locker.Attachments | Where-Object { $_.FileName -eq $fileName }
+        if( $ex ) {
+            $ex.Data = $fileData
+            $ex.Modified = (Get-Date).ToUniversalTime()
+        } else {
+            $ex = New-PowerPassAttachment
+            $ex.FileName = $fileName
+            $ex.Data = $fileData
+            $locker.Attachments += $ex
+        }
+    } end {
+        $pathToLocker = $script:PowerPass.LockerFilePath
+        $pathToLockerKey = $script:PowerPass.LockerKeyFilePath
+        $data = Get-PowerPassLockerBytes -Locker $locker
+        $aes = New-Object "PowerPass.AesCrypto"
+        $aes.ReadKeyFromDisk( $pathToLockerKey, [ref] (Get-PowerPassEphemeralKey) )
+        $aes.Encrypt( $data, $pathToLocker )
+        $aes.Dispose()
+    }
+}
+
+# ------------------------------------------------------------------------------------------------------------- #
+# FUNCTION: Remove-PowerPassAttachment
+# ------------------------------------------------------------------------------------------------------------- #
+
+function Remove-PowerPassAttachment {
+    <#
+        .SYNOPSIS
+        Removes an attachment from your locker.
+        .PARAMETER FileName
+        The filename of the attachment to remove from your locker.
+        .NOTES
+        The filename  parameter can be passed from the pipeline.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory,ValueFromPipeline,Position=0)]
+        [string]
+        $FileName
+    )
+    begin {
+        $locker = Get-PowerPassLocker
+        if( -not $locker ) {
+            throw "Could not load your PowerPass locker"
+        }
+        $newLocker = New-PowerPassLocker
+        # Old lockers do not have a Modified flag
+        if( $locker.Modified ) {
+            $newLocker.Modified = $locker.Modified
+        }
+        $newLocker.Created = $locker.Created
+        $newLocker.Secrets = $locker.Secrets
+        $changed = $false
+    } process {
+        foreach( $s in $locker.Attachments ) {
+            if( ($s.FileName) -eq $FileName ) {
+                $s.Mfd = $true
+                $changed = $true
+            }
+        }
+    } end {
+        if( $changed ) {
+            $newLocker.Attachments = $locker.Attachments | Where-Object { -not ($_.Mfd) }
+            $pathToLocker = $script:PowerPass.LockerFilePath
+            $pathToLockerKey = $script:PowerPass.LockerKeyFilePath
+            $data = Get-PowerPassLockerBytes $newLocker
+            $aes = New-Object "PowerPass.AesCrypto"
+            $aes.ReadKeyFromDisk( $pathToLockerKey, [ref] (Get-PowerPassEphemeralKey) )
+            $aes.Encrypt( $data, $pathToLocker )
+            $aes.Dispose()
+        }
+    }
+}
