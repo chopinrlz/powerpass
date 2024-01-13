@@ -1,8 +1,5 @@
-# New Cmdlets to Add:
-# ,'Read-PowerPassAttachment','Write-PowerPassAttachment','Add-PowerPassAttachment','Get-PowerPassAttachments','Remove-PowerPassAttachment'
-
 # PowerPass Cmdlet Reference for AES Implementation
-#### _Revised: January 11, 2024_
+#### _Revised: January 12, 2024_
 The AES implementation of PowerPass works on Windows PowerShell and PowerShell 7 on Linux, MacOS, and Windows.
 1. [Add-PowerPassAttachment](#add-powerpassattachment)
 2. [Clear-PowerPassLocker](#clear-powerpasslocker)
@@ -13,13 +10,42 @@ The AES implementation of PowerPass works on Windows PowerShell and PowerShell 7
 7. [New-PowerPassRandomPassword](#new-powerpassrandompassword)
 8. [Read-PowerPassAttachment](#read-powerpassattachment)
 9. [Read-PowerPassSecret](#read-powerpasssecret)
-10. [Remove-PowerPassAttachments](#remove-powerpassattachments)
+10. [Remove-PowerPassAttachment](#remove-powerpassattachment)
 11. [Remove-PowerPassSecret](#remove-powerpasssecret)
 12. [Update-PowerPassKey](#update-powerpasskey)
 13. [Write-PowerPassAttachment](#write-powerpassattachment)
 14. [Write-PowerPassSecret](#write-powerpasssecret)
 
 Here are the cmdlets for the AES implementation of PowerPass.
+# Add-PowerPassAttachment
+### SYNOPSIS
+Adds files from the file system into your locker. The difference between `Add-PowerPassAttachment` and
+`Write-PowerPassAttachment` is Add is optmized for bulk adds from the pipeline using `Get-ChildItem`. Also,
+Add does not prompt for a filename, but rather uses the filename, either the short name or full path, of
+the file on disk as the filename in your locker. Any files that already exist in your locker will be updated.
+### PARAMETER FileInfo
+One or more `FileInfo` objects collected from `Get-Item` or `Get-ChildItem`. Can be passed via pipeline.
+### PARAMETER FullPath
+If specified, the full file path will be saved as the file name.
+### EXAMPLE 1: Save All the Files in the Current Directory
+In this example we load all the files from the current directory into our locker.
+```powershell
+# Add all the files in the current directory as attachments with just the filename as the stored filename
+Get-ChildItem | Add-PowerPassAttachment
+```
+Note that directories will be ignored.
+### EXAMPLE 2: Save All the Files in the Current Directory with the Full Path
+In this example we load all the files from the current directory into our locker using the full path
+from the location on disk as the filename.
+```powershell
+# Add all the file in the current directory as attachments with the full path as the stored filename
+Get-ChildItem | Add-PowerPassAttachment -FullPath
+```
+##### ***[Back to Top](#powerpass-cmdlet-reference-for-aes-implementation)***
+### NOTES
+Rather than using Write-PowerPassAttachment, you can use Add-PowerPassAttachment to add multiple files
+to your locker at once by piping the output of Get-ChildItem to Add-PowerPassAttachment. Each file fetched
+by Get-ChildItem will be added to your locker using either the file name or the full path.
 # Clear-PowerPassLocker
 ### SYNOPSIS
 Deletes all your locker secrets and your locker key. PowerPass will generate a new locker and key
@@ -59,6 +85,13 @@ A PSCustomObject with these properties:
 * Implementation      : The implementation you are using, either AES or DPAPI
 
 You can access these properties after assigning the output of `Get-PowerPass` to a variable.
+##### ***[Back to Top](#powerpass-cmdlet-reference-for-aes-implementation)***
+# Get-PowerPassAttachments
+### SYNOPSIS
+Exports all the attachments to a list so you can search for attachments and see what attachments are
+in your locker without exposing the file data.
+### OUTPUTS
+Outputs each attachment from your locker including the FileName, Created date, and Modified date.
 ##### ***[Back to Top](#powerpass-cmdlet-reference-for-aes-implementation)***
 # Import-PowerPassLocker
 ### SYNOPSIS
@@ -220,6 +253,15 @@ If no secret matching the Title is found, nothing is returned.
 # Get a specific secret from the locker
 $sec = Read-PowerPassSecret -Title "Domain Admin Account"
 ```
+##### ***[Back to Top](#powerpass-cmdlet-reference-for-aes-implementation)***
+# Remove-PowerPassAttachment
+### SYNOPSIS
+Removes an attachment from your locker.
+### PARAMETER FileName
+The filename of the attachment to remove from your locker.
+### NOTES
+The filename parameter can be passed from the pipeline. You can see what attachments are in your locker
+by running [Get-PowerPassAttachments](#get-powerpassattachments). You are not prompted to remove attachments.
 ##### ***[Back to Top](#powerpass-cmdlet-reference-for-aes-implementation)***
 # Remove-PowerPassSecret
 ### SYNOPSIS
