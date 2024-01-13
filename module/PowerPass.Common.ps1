@@ -272,13 +272,15 @@ function Read-PowerPassAttachment {
         The filename of the attachment to fetch.
         .PARAMETER Raw
         An optional parameter that, when specified, will return the entire PSCustomObject for the attachment.
-        Cannot be combined with Encoding.
+        Cannot be combined with AsText or Encoding.
         .PARAMETER AsText
         An optional parameter that, when specified, will return the attachment data as a Unicode string. Cannot
         be combined with Raw.
         .PARAMETER Encoding
-        If -AsText is specified, you can optionally specify a specific encoding, otherwise the default encoding
+        If `-AsText` is specified, you can optionally specify a specific encoding, otherwise the default encoding
         Unicode is used since Unicode is the default encoding used when writing text attachments into your locker.
+        This parameter can be useful if you stored a text attachment into your locker from a byte array since the
+        contents of the file may be ASCII, UTF-8, or Unicode you can specify that with the `-Encoding` parameter.
         .OUTPUTS
         Outputs the attachment data in byte[] format, or the PSCustomObject if -Raw was specified, or a
         string if -AsText was specified, or $null if no file was found matching the specified filename.

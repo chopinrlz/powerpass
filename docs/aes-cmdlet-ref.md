@@ -1,15 +1,23 @@
+# New Cmdlets to Add:
+# ,'Read-PowerPassAttachment','Write-PowerPassAttachment','Add-PowerPassAttachment','Get-PowerPassAttachments','Remove-PowerPassAttachment'
+
 # PowerPass Cmdlet Reference for AES Implementation
 #### _Revised: January 11, 2024_
 The AES implementation of PowerPass works on Windows PowerShell and PowerShell 7 on Linux, MacOS, and Windows.
-1. [Clear-PowerPassLocker](#clear-powerpasslocker)
-2. [Export-PowerPassLocker](#export-powerpasslocker)
-3. [Get-PowerPass](#get-powerpass)
-4. [Import-PowerPassLocker](#import-powerpasslocker)
-5. [New-PowerPassRandomPassword](#new-powerpassrandompassword)
-6. [Read-PowerPassSecret](#read-powerpasssecret)
-7. [Remove-PowerPassSecret](#remove-powerpasssecret)
-8. [Update-PowerPassKey](#update-powerpasskey)
-9. [Write-PowerPassSecret](#write-powerpasssecret)
+1. [Add-PowerPassAttachment](#add-powerpassattachment)
+2. [Clear-PowerPassLocker](#clear-powerpasslocker)
+3. [Export-PowerPassLocker](#export-powerpasslocker)
+4. [Get-PowerPass](#get-powerpass)
+5. [Get-PowerPassAttachments](#get-powerpassattachments)
+6. [Import-PowerPassLocker](#import-powerpasslocker)
+7. [New-PowerPassRandomPassword](#new-powerpassrandompassword)
+8. [Read-PowerPassAttachment](#read-powerpassattachment)
+9. [Read-PowerPassSecret](#read-powerpasssecret)
+10. [Remove-PowerPassAttachments](#remove-powerpassattachments)
+11. [Remove-PowerPassSecret](#remove-powerpasssecret)
+12. [Update-PowerPassKey](#update-powerpasskey)
+13. [Write-PowerPassAttachment](#write-powerpassattachment)
+14. [Write-PowerPassSecret](#write-powerpasssecret)
 
 Here are the cmdlets for the AES implementation of PowerPass.
 # Clear-PowerPassLocker
@@ -76,6 +84,65 @@ The length of the password to generate. Can be between 1 and 65536 characters lo
 ### OUTPUTS
 Outputs a random string of typable characters to the pipeline which can be used as a password.
 ##### ***[Back to Top](#powerpass-cmdlet-reference-for-aes-implementation)***
+# Read-PowerPassAttachment
+### SYNOPSIS
+Reads an attachment from your locker.
+### PARAMETER FileName
+The filename of the attachment to fetch.
+### PARAMETER Raw
+An optional parameter that, when specified, will return the entire PSCustomObject for the attachment.
+Cannot be combined with AsText or Encoding.
+### PARAMETER AsText
+An optional parameter that, when specified, will return the attachment data as a Unicode string. Cannot
+be combined with Raw.
+### PARAMETER Encoding
+If `-AsText` is specified, you can optionally specify a specific encoding, otherwise the default encoding
+Unicode is used since Unicode is the default encoding used when writing text attachments into your locker.
+This parameter can be useful if you stored a text attachment into your locker from a byte array since the
+contents of the file may be ASCII, UTF-8, or Unicode you can specify that with the `-Encoding` parameter.
+### OUTPUTS
+Outputs the attachment data in byte[] format, or the PSCustomObject if -Raw was specified, or a
+string if -AsText was specified, or $null if no file was found matching the specified filename.
+### EXAMPLE 1
+In this example, we fetch a text file from our locker and convert it to a string using the UTF-8 encoding
+ourselves. The call to `Read-PowerPassAttachment` returns a `[byte[]]`.
+```powershell
+# Get the readme file and convert it to a string
+$bytes = Read-PowerPassAttachment -FileName "readme.txt"
+$str = ([System.Text.Encoding]::UTF8).GetString( $bytes )
+```
+### EXAMPLE 2
+In this example, we fetch a text file from our locker and have PowerPass convert it to a string using the
+Unicode encoding, the default encoding for text-based attachments. This example will not work properly if
+you write a UTF-8 text file attachment from a `[byte[]]` into your locker. In this case, follow Example 3.
+```powershell
+# Get the readme file and have PowerPass encode it as a string
+$str = Read-PowerPassAttachment -FileName "readme.txt" -AsText
+```
+### EXAMPLE 3
+In this example, we fetch a text file from our locker and have PowerPass convert it to a string using the
+UTF-8 encoding. We use UTF-8 because, when we added the attachment we added it using the `[byte[]]` of the
+file data itself, which is not encoded. Since we want the string back, we encode it to UTF-8 which is the
+encoding of the original file.
+```powershell
+# Get the readme file as a UTF-8 string
+$str = Read-PowerPassAttachment -FileName "readme.txt" -AsText -Encoding Utf8
+```
+### EXAMPLE 5
+In this example, we fetch a binary file from our locker. Binary files are returned as `[byte[]]` objects.
+```powershell
+# Get a certificate file as binary data
+$bin = Read-PowerPassAttachment -FileName "certificate.pfx"
+```
+Your PowerPass locker is a better place to store private key certificate files than sitting on the file system.
+This is the most useful purpose for attachments, but you can store anything you want.
+### EXAMPLE 6
+In this example, we get the raw `PSCustomObject` back from PowerPass and check its properties.
+File data for raw attachments is stored as base64-encoded text in the `Data` property.
+```powershell
+# Get the readme file as a raw PSCustomObject
+Read-PowerPassAttachment -FileName "readme.txt" -Raw | Get-Member
+```
 # Read-PowerPassSecret
 ### SYNOPSIS
 Reads secrets from your PowerPass locker.
