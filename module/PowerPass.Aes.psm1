@@ -640,9 +640,11 @@ function Write-PowerPassAttachment {
     } process {
         [byte[]]$bytes = $null
         if( $Path ) {
-            $bytes = Get-Content -Path $Path -Encoding Byte
+            $fileInfo = Get-Item -Path $Path
+            $bytes = [System.IO.File]::ReadAllBytes( $fileInfo.FullName )
         } elseif( $LiteralPath ) {
-            $bytes = Get-Content -LiteralPath $LiteralPath -Encoding Byte
+            $fileInfo = Get-Item -LiteralPath $LiteralPath
+            $bytes = [System.IO.File]::ReadAllBytes( $fileInfo.FullName )
         } elseif( $Data ) {
             $dataType = $Data.GetType().FullName
             switch( $dataType ) {
@@ -667,7 +669,7 @@ function Write-PowerPassAttachment {
                     $bytes = $Data
                 }
                 "System.IO.FileInfo" {
-                    $bytes = Get-Content -Path ($Data.FullName) -Encoding Byte
+                    $bytes = [System.IO.File]::ReadAllBytes( $Data.FullName )
                 }
                 "System.String" {
                     $bytes = ([System.Text.Encoding]::Unicode).GetBytes( $Data )
@@ -738,7 +740,7 @@ function Add-PowerPassAttachment {
             throw "Could not create or fetch your locker"
         }
     } process {
-        $bytes = Get-Content -Path ($FileInfo.FullName) -Encoding Byte
+        $bytes = [System.IO.File]::ReadAllBytes( $FileInfo.FullName )
         $fileData = [System.Convert]::ToBase64String( $bytes )
         $fileName = ""
         if( $FullPath ) {

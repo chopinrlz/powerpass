@@ -53,7 +53,7 @@ $testFileName = "hello_file.txt"
 $testFile = Join-Path -Path $PSScriptRoot -ChildPath $testFileName
 if( Test-Path $testFile ) { Remove-Item $testFile -Force }
 $testData | Out-File -FilePath $testFile
-$fileBytes = Get-Content -Path $testFile -Encoding Byte
+[byte[]]$fileBytes = [System.IO.File]::ReadAllBytes( $testFile )
 Write-PowerPassAttachment -FileName $testFileName -Path $testFile
 $readBytes = Read-PowerPassAttachment -FileName $testFileName
 if( $fileBytes.Length -ne $readBytes.Length ) {
@@ -77,7 +77,7 @@ $testFileName = "hello_literal_file.txt"
 $testFile = Join-Path -Path $PSScriptRoot -ChildPath $testFileName
 if( Test-Path $testFile ) { Remove-Item $testFile -Force }
 $testData | Out-File -FilePath $testFile
-$fileBytes = Get-Content -Path $testFile -Encoding Byte
+[byte[]]$fileBytes = [System.IO.File]::ReadAllBytes( $testFile )
 Write-PowerPassAttachment -FileName $testFileName -LiteralPath $testFile
 $readBytes = Read-PowerPassAttachment -FileName $testFileName
 if( $fileBytes.Length -ne $readBytes.Length ) {
@@ -101,7 +101,7 @@ $testFileName = "hello_byte_array_file.txt"
 $testFile = Join-Path -Path $PSScriptRoot -ChildPath $testFileName
 if( Test-Path $testFile ) { Remove-Item $testFile -Force }
 $testData | Out-File -FilePath $testFile
-[byte[]]$fileBytes = Get-Content -Path $testFile -Encoding Byte
+[byte[]]$fileBytes = [System.IO.File]::ReadAllBytes( $testFile )
 Write-PowerPassAttachment -FileName $testFileName -Data $fileBytes
 $readBytes = Read-PowerPassAttachment -FileName $testFileName
 if( $fileBytes.Length -ne $readBytes.Length ) {
@@ -153,7 +153,7 @@ $testData | Out-File -FilePath $testFile
 $fileInfo = Get-ChildItem -Path $testFile
 Write-PowerPassAttachment -FileName $testFileName -Data $fileInfo
 $readBytes = Read-PowerPassAttachment -FileName $testFileName
-$fileBytes = Get-Content -Path $testFile -Encoding Byte
+[byte[]]$fileBytes = [System.IO.File]::ReadAllBytes( $testFile )
 if( $fileBytes.Length -ne $readBytes.Length ) {
     Write-Warning "Test failed: byte array length mismatch"
 } else {
@@ -228,7 +228,7 @@ $testData | Out-File -FilePath $testFile
 # Pipe the file get operation to the write operation
 Get-ChildItem -Path $testFile | Write-PowerPassAttachment -FileName $testFileName
 $readBytes = Read-PowerPassAttachment -FileName $testFileName
-$fileBytes = Get-Content -Path $testFile -Encoding Byte
+[byte[]]$fileBytes = [System.IO.File]::ReadAllBytes( $testFile )
 if( $fileBytes.Length -ne $readBytes.Length ) {
     Write-Warning "Test failed: byte array length mismatch"
 } else {

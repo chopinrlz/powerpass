@@ -143,6 +143,7 @@ File data for raw attachments is stored as base64-encoded text in the `Data` pro
 # Get the readme file as a raw PSCustomObject
 Read-PowerPassAttachment -FileName "readme.txt" -Raw | Get-Member
 ```
+##### ***[Back to Top](#powerpass-cmdlet-reference-for-aes-implementation)***
 # Read-PowerPassSecret
 ### SYNOPSIS
 Reads secrets from your PowerPass locker.
@@ -253,6 +254,91 @@ Simply execute it and PowerPass with rotate your locker key.
 ```powershell
 # Rotate my locker key
 Update-PowerPassKey
+```
+##### ***[Back to Top](#powerpass-cmdlet-reference-for-aes-implementation)***
+# Write-PowerPassAttachment
+### SYNOPSIS
+Writes an attachment into your locker.
+### PARAMETER FileName
+The name of the file to write into your locker. If this file already exists, it will be updated.
+### PARAMETER Path
+Specify the Path to a file on disk. Cannot be combined with other parameters.
+### PARAMETER LiteralPath
+Specify the LiteralPath to a file on disk. Cannot be combined with other parameters.
+### PARAMETER Data
+Specify the Data for the file in any format, or from the pipeline such as from Get-ChildItem.
+See the examples below for how to use this parameter. Cannot be combined with other parameters.
+### PARAMETER Text
+Specify the contents of the file as a text string. Your attachment will be created with Unicode
+text encoding. Cannot be combined with other parameters.
+### NOTES
+Data and Text in string format is encoded with Unicode. Data in PSCustomObject format is converted to JSON then
+encoded with Unicode. Byte arrays and FileInfo objects are stored natively with Byte encoding. Data in any other
+formats is converted to a string using the build-in .NET `ToString()` function then encoded with Unicode. To
+fetch text back from your locker saved as attachments use the `-AsText` parameter of `Read-PowerPassAttachment`
+to ensure the correct encoding is used.
+### EXAMPLE 1
+In this example we load a binary certificate file into our locker from a relative path.
+```powershell
+# Add a certificate file from the current folder
+Write-PowerPassAttachment -FileName "certificate.pfx" -Path ".\cert.pfx"
+```
+### EXAMPLE 2
+In this example we local a binary certificate file into our locker from a literal path.
+```powershell
+# Add the certificate file from C:\Private into our locker
+Write-PowerPassAttachment -FileName "certificate.pfx" -LiteralPath "C:\Private\cert.pfx"
+```
+### EXAMPLE 3
+In this example we demonstrate using the `-Data` parameter to load a file from a byte array.
+This isn't necessary, as the `-Path` and `-LiteralPath` parameters provider better options,
+but this demonstrates the capability, for example if you are getting a `[byte[]]` from another
+library.
+```powershell
+# Read cert.pfx into a byte array then save it as an attachment
+[byte[]]$data = Get-Content ".\cert.pfx" -Encoding Byte
+Write-PowerPassAttachment -FileName "certificate.pfx" -Data $data
+```
+Keep in mind you cannot do this in PowerShell 7 because `-Encoding Byte` is not an option.
+Use the `-Path` or `-LiteralPath` parameters instead to save binary files as attachments.
+### EXAMPLE 4
+In this example we demonstrate using the `-Data` parameter from the pipeline. `Get-Item`
+outputs a `FileInfo` object which PowerPass will process automatically for you. To do this
+with multiple files, see [Add-PowerPassAttachment](#add-powerpassattachment) which is optimized
+for multiple files coming from the pipeline.
+```powershell
+# Get the file info for cert.pfx and save it as an attachment
+Get-Item ".\cert.pfx" | Write-PowerPassAttachment -FileName "certificate.pfx"
+```
+### EXAMPLE 5
+In this example we demonstrate using the `-Data` parameter with `Get-Content` to save a text
+file which is output by `Get-Content` as an `[object[]]` with hard returns removed. Keep in
+mind that when you use `Read-PowerPassAttachment` to get the data back, the hard returns in
+the returned attachment data may not match those in the original file because they are stripped
+from the data by `Get-Content`.
+```powershell
+# Save the text file readme.txt as an attachment
+Write-PowerPassAttachment -FileName "readme.txt" -Data (Get-Content ".\readme.txt")
+```
+### EXAMPLE 6
+In this example we demonstrate using the `-Data` parameter to store a custom object as an
+attachment. This is very useful if you want to save a complex object into your locker that
+isn't a simple set of credentials.
+```powershell
+# Save a complex object as an attachment
+$data = [PSCustomObject]@{
+    Hello = "World!"
+    MyArray = 1..5
+}
+Write-PowerPassAttachment -FileName "custom-data.json" -Data $data
+```
+### EXAMPLE 7
+In this example we demonstrate using the `-Text` parameter to save a text file as an attachment
+using the default encoding provided by PowerPass `Unicode`.
+```powershell
+# Save the LICENSE text file as an attachment
+$license = Get-Content ".\LICENSE" -Raw
+Write-PowerPassAttachment -FileName "license.txt" -Text $license
 ```
 ##### ***[Back to Top](#powerpass-cmdlet-reference-for-aes-implementation)***
 # Write-PowerPassSecret
