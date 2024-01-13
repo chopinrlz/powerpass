@@ -1189,43 +1189,54 @@ function Write-PowerPassAttachment {
             throw "Could not create or fetch your locker"
         }
     } process {
-        [string]$fileData = ""
+        [byte[]]$bytes = $null
         if( $Path ) {
             $bytes = Get-Content -Path $Path -Encoding Byte
-            $fileData = [System.Convert]::ToBase64String( $bytes )
         } elseif( $LiteralPath ) {
             $bytes = Get-Content -LiteralPath $LiteralPath -Encoding Byte
-            $fileData = [System.Convert]::ToBase64String( $bytes )
         } elseif( $Data ) {
             $dataType = $Data.GetType().FullName
             switch( $dataType ) {
+                "System.Object[]" {
+                    # Here we assume what happened is the caller ran Get-Content and it returned a
+                    # text file as an array of strings which is the default behavior. We also need
+                    # to guess what the system's hard return is since it has been removed from the
+                    # data itself by Get-Content.
+                    $hardReturn = "`r`n"
+                    if( $IsLinux -or $IsMacOS ) {
+                        $hardReturn = "`n"
+                    }
+                    $sb = New-Object "System.Text.StringBuilder"
+                    for( $i = 0; $i -lt ($Data.Length - 1); $i++ ) {
+                        $null = $sb.Append( $Data[$i].ToString() ).Append( $hardReturn )
+                    }
+                    # Avoid adding an extra hard return to the end of the data
+                    $null = $sb.Append( $Data[-1].ToString() )
+                    $bytes = ([System.Text.Encoding]::Unicode).GetBytes( $sb.ToString() )
+                }
                 "System.Byte[]" {
-                    $fileData = [System.Convert]::ToBase64String( $Data )
+                    $bytes = $Data
                 }
                 "System.IO.FileInfo" {
                     $bytes = Get-Content -Path ($Data.FullName) -Encoding Byte
-                    $fileData = [System.Convert]::ToBase64String( $bytes )
                 }
                 "System.String" {
                     $bytes = ([System.Text.Encoding]::Unicode).GetBytes( $Data )
-                    $fileData = [System.Convert]::ToBase64String( $bytes )
                 }
                 "System.Management.Automation.PSCustomObject" {
                     $json = ConvertTo-Json -InputObject $Data -Depth 99
                     $bytes = ([System.Text.Encoding]::Unicode).GetBytes( $json )
-                    $fileData = [System.Convert]::ToBase64String( $bytes )
                 }
                 default {
                     $bytes = ([System.Text.Encoding]::Unicode).GetBytes( $Data.ToString() )
-                    $fileData = [System.Convert]::ToBase64String( $bytes )
                 }
             }
         } elseif( $Text ) {
             $bytes = ([System.Text.Encoding]::Unicode).GetBytes( $Text )
-            $fileData = [System.Convert]::ToBase64String( $bytes )
         } else {
             throw "Error, no input specified"
         }
+        $fileData = [System.Convert]::ToBase64String( $bytes )
         $ex = $locker.Attachments | Where-Object { $_.FileName -eq $FileName }
         if( $ex ) {
             $ex.Data = $fileData

@@ -117,6 +117,28 @@ if( $fileBytes.Length -ne $readBytes.Length ) {
 }
 if( Test-Path $testFile ) { Remove-Item $testFile -Force }
 
+# Test attachment support - data (Get-Content) by parameter
+
+Write-Output "Testing attachment create from Get-Content by parameter"
+Write-PowerPassAttachment -FileName "the_last_train.txt" -Data (Get-Content "$PSScriptRoot\thelasttrain.txt")
+$readBytes = Read-PowerPassAttachment -FileName "the_last_train.txt"
+$readString = ([System.Text.Encoding]::Unicode).GetString( $readBytes )
+$fileString = Get-Content "$PSScriptRoot\thelasttrain.txt" -Raw
+if( $readString -ne $fileString ) {
+    Write-Warning "Test failed: data read not identical to file"
+    Write-Output "Read Data"
+    Write-Output $readString
+    Write-Output "File Data"
+    Write-Output $fileString
+}
+
+# Test attachment support - data (Get-Content) by pipeline
+# This cannot be implemented, because PowerShell's run-time sends one line from the file at a time
+# into the Write-PowerPassAttachment rather than the entire array at once
+#
+# Get-Content "$PSScriptRoot\thelasttrain.txt" | Write-PowerPassAttachment -FileName "the_last_train.txt"
+#
+
 # Test attachment support - data (FileInfo)
 
 Write-Output "Testing attachment create from FileInfo"
