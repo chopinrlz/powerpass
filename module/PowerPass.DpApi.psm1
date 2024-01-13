@@ -1164,7 +1164,7 @@ function Remove-PowerPassAttachment {
         .PARAMETER FileName
         The filename of the attachment to remove from your locker.
         .NOTES
-        The filename  parameter can be passed from the pipeline.
+        The filename parameter can be passed from the pipeline.
     #>
     [CmdletBinding()]
     param(
