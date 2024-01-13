@@ -41,6 +41,8 @@ function New-PowerPassAttachment {
         Data = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes("This is the default text file attachment."))
         Created = [DateTime]::Now.ToUniversalTime()
         Modified = [DateTime]::Now.ToUniversalTime()
+        # Marked For Deletion: flag used by Remove-PowerPassAttachment
+        Mfd = $false
     }
     Write-Output $npa
 }

@@ -1200,7 +1200,7 @@ function Write-PowerPassAttachment {
                 "System.Object[]" {
                     # Here we assume what happened is the caller ran Get-Content and it returned a
                     # text file as an array of strings which is the default behavior. We also need
-                    # to guess what the system's hard return is since it has been removed from the
+                    # to guess what the file's hard return is since it has been removed from the
                     # data itself by Get-Content.
                     $hardReturn = "`r`n"
                     if( $IsLinux -or $IsMacOS ) {
@@ -1339,4 +1339,59 @@ function Get-PowerPassAttachments {
         throw "Could not create or fetch your locker"
     }
     $locker.Attachments | Select-Object -Property FileName,Created,Modified
+}
+
+# ------------------------------------------------------------------------------------------------------------- #
+# FUNCTION: Remove-PowerPassAttachment
+# ------------------------------------------------------------------------------------------------------------- #
+
+function Remove-PowerPassAttachment {
+    <#
+        .SYNOPSIS
+        Removes an attachment from your locker.
+        .PARAMETER FileName
+        The filename of the attachment to remove from your locker.
+        .NOTES
+        The filename  parameter can be passed from the pipeline.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory,ValueFromPipeline,Position=0)]
+        [string]
+        $FileName
+    )
+    begin {
+        $locker = Get-PowerPassLocker
+        if( -not $locker ) {
+            throw "Could not load your PowerPass locker"
+        }
+        $newLocker = New-PowerPassLocker
+        # Old lockers do not have a Modified flag
+        if( $locker.Modified ) {
+            $newLocker.Modified = $locker.Modified
+        }
+        $newLocker.Created = $locker.Created
+        $newLocker.Secrets = $locker.Secrets
+        $changed = $false
+    } process {
+        foreach( $s in $locker.Attachments ) {
+            if( ($s.FileName) -eq $FileName ) {
+                $s.Mfd = $true
+                $changed = $true
+            }
+        }
+    } end {
+        if( $changed ) {
+            $salt = Get-PowerPassLockerSalt
+            if( -not $salt ) {
+                throw "Error writing secret, no locker salt"
+            }
+            $newLocker.Attachments = $locker.Attachments | Where-Object { -not ($_.Mfd) }
+            $pathToLocker = $script:PowerPass.LockerFilePath
+            $data = Get-PowerPassLockerBytes $newLocker
+            $encData = [System.Security.Cryptography.ProtectedData]::Protect($data,$salt,"CurrentUser")
+            $encDataText = [System.Convert]::ToBase64String($encData)
+            Out-File -FilePath $pathToLocker -InputObject $encDataText -Force
+        }
+    }
 }

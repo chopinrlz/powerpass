@@ -124,6 +124,9 @@ Write-PowerPassAttachment -FileName "the_last_train.txt" -Data (Get-Content "$PS
 $readBytes = Read-PowerPassAttachment -FileName "the_last_train.txt"
 $readString = ([System.Text.Encoding]::Unicode).GetString( $readBytes )
 $fileString = Get-Content "$PSScriptRoot\thelasttrain.txt" -Raw
+# Normalize the line endings because they are removed by Get-Content
+$readString = $readString -replace "`r`n","`n"
+$fileString = $fileString -replace "`r`n","`n"
 if( $readString -ne $fileString ) {
     Write-Warning "Test failed: data read not identical to file"
     Write-Output "Read Data"
@@ -272,3 +275,39 @@ if( $test3 -ne $actual3 ) {
 if( $test4 -ne $actual4 ) {
     Write-Warning "Test 4 failed: file contents not identical"
 }
+
+# Test attachment removal - by parameter
+
+Write-Output "Testing attachment removal by parameter"
+$file = Read-PowerPassAttachment -FileName "Test-AesCrypto.ps1"
+if( $file ) {
+    # Expected
+} else {
+    Write-Warning "Test failed: locker does not contain test file"
+}
+Remove-PowerPassAttachment -FileName "Test-AesCrypto.ps1"
+$file = Read-PowerPassAttachment -FileName "Test-AesCrypto.ps1"
+if( $file ) {
+    Write-Warning "Test failed: attachment not removed"
+} else {
+    # Expected
+}
+
+# Test attachment removal - by pipeline
+
+Write-Output "Testing attachment removal by pipeline"
+$file = Read-PowerPassAttachment -FileName "Test-Attachments.ps1"
+if( $file ) {
+    # Expected
+} else {
+    Write-Warning "Test failed: locker does not contain test file"
+}
+"Test-Attachments.ps1" | Remove-PowerPassAttachment 
+$file = Read-PowerPassAttachment -FileName "Test-Attachments.ps1"
+if( $file ) {
+    Write-Warning "Test failed: attachment not removed"
+} else {
+    # Expected
+}
+
+Clear-PowerPassLocker -Force
