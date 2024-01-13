@@ -1043,7 +1043,7 @@ function Write-PowerPassAttachment {
                     $bytes = $Data
                 }
                 "System.IO.FileInfo" {
-                    $bytes = Get-Content -Path ($Data.FullName) -Encoding Byte
+                    $bytes = [System.IO.File]::ReadAllBytes( $Data.FullName )
                 }
                 "System.String" {
                     $bytes = ([System.Text.Encoding]::Unicode).GetBytes( $Data )
@@ -1105,7 +1105,7 @@ function Add-PowerPassAttachment {
     #>
     [CmdletBinding()]
     param(
-        [Parameter(ValueFromPipeline)]
+        [Parameter(Mandatory,ValueFromPipeline)]
         $FileInfo,
         [switch]
         $FullPath
@@ -1115,35 +1115,41 @@ function Add-PowerPassAttachment {
         if( -not $locker ) {
             throw "Could not create or fetch your locker"
         }
+        $changed = $false
     } process {
-        $bytes = Get-Content -Path ($FileInfo.FullName) -Encoding Byte
-        $fileData = [System.Convert]::ToBase64String( $bytes )
-        $fileName = ""
-        if( $FullPath ) {
-            $fileName = $FileInfo.FullName
-        } else {
-            $fileName = $FileInfo.Name
-        }
-        $ex = $locker.Attachments | Where-Object { $_.FileName -eq $fileName }
-        if( $ex ) {
-            $ex.Data = $fileData
-            $ex.Modified = (Get-Date).ToUniversalTime()
-        } else {
-            $ex = New-PowerPassAttachment
-            $ex.FileName = $fileName
-            $ex.Data = $fileData
-            $locker.Attachments += $ex
+        if( $FileInfo.GetType().FullName -eq "System.IO.FileInfo" ) {
+            $changed = $true
+            $bytes = [System.IO.File]::ReadAllBytes( $FileInfo.FullName )
+            $fileData = [System.Convert]::ToBase64String( $bytes )
+            $fileName = ""
+            if( $FullPath ) {
+                $fileName = $FileInfo.FullName
+            } else {
+                $fileName = $FileInfo.Name
+            }
+            $ex = $locker.Attachments | Where-Object { $_.FileName -eq $fileName }
+            if( $ex ) {
+                $ex.Data = $fileData
+                $ex.Modified = (Get-Date).ToUniversalTime()
+            } else {
+                $ex = New-PowerPassAttachment
+                $ex.FileName = $fileName
+                $ex.Data = $fileData
+                $locker.Attachments += $ex
+            }
         }
     } end {
-        $salt = Get-PowerPassLockerSalt
-        if( -not $salt ) {
-            throw "Error writing secret, no locker salt"
+        if( $changed ) {
+            $salt = Get-PowerPassLockerSalt
+            if( -not $salt ) {
+                throw "Error writing secret, no locker salt"
+            }
+            $pathToLocker = $script:PowerPass.LockerFilePath
+            $data = Get-PowerPassLockerBytes $locker
+            $encData = [System.Security.Cryptography.ProtectedData]::Protect($data,$salt,"CurrentUser")
+            $encDataText = [System.Convert]::ToBase64String($encData)
+            Out-File -FilePath $pathToLocker -InputObject $encDataText -Force
         }
-        $pathToLocker = $script:PowerPass.LockerFilePath
-        $data = Get-PowerPassLockerBytes $locker
-        $encData = [System.Security.Cryptography.ProtectedData]::Protect($data,$salt,"CurrentUser")
-        $encDataText = [System.Convert]::ToBase64String($encData)
-        Out-File -FilePath $pathToLocker -InputObject $encDataText -Force
     }
 }
 

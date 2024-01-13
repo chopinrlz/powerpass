@@ -729,7 +729,7 @@ function Add-PowerPassAttachment {
     #>
     [CmdletBinding()]
     param(
-        [Parameter(ValueFromPipeline)]
+        [Parameter(Mandatory,ValueFromPipeline)]
         $FileInfo,
         [switch]
         $FullPath
@@ -739,33 +739,39 @@ function Add-PowerPassAttachment {
         if( -not $locker ) {
             throw "Could not create or fetch your locker"
         }
+        $changed = $false
     } process {
-        $bytes = [System.IO.File]::ReadAllBytes( $FileInfo.FullName )
-        $fileData = [System.Convert]::ToBase64String( $bytes )
-        $fileName = ""
-        if( $FullPath ) {
-            $fileName = $FileInfo.FullName
-        } else {
-            $fileName = $FileInfo.Name
-        }
-        $ex = $locker.Attachments | Where-Object { $_.FileName -eq $fileName }
-        if( $ex ) {
-            $ex.Data = $fileData
-            $ex.Modified = (Get-Date).ToUniversalTime()
-        } else {
-            $ex = New-PowerPassAttachment
-            $ex.FileName = $fileName
-            $ex.Data = $fileData
-            $locker.Attachments += $ex
+        if( $FileInfo.GetType().FullName -eq "System.IO.FileInfo" ) {
+            $changed = $true
+            $bytes = [System.IO.File]::ReadAllBytes( $FileInfo.FullName )
+            $fileData = [System.Convert]::ToBase64String( $bytes )
+            $fileName = ""
+            if( $FullPath ) {
+                $fileName = $FileInfo.FullName
+            } else {
+                $fileName = $FileInfo.Name
+            }
+            $ex = $locker.Attachments | Where-Object { $_.FileName -eq $fileName }
+            if( $ex ) {
+                $ex.Data = $fileData
+                $ex.Modified = (Get-Date).ToUniversalTime()
+            } else {
+                $ex = New-PowerPassAttachment
+                $ex.FileName = $fileName
+                $ex.Data = $fileData
+                $locker.Attachments += $ex
+            }
         }
     } end {
-        $pathToLocker = $script:PowerPass.LockerFilePath
-        $pathToLockerKey = $script:PowerPass.LockerKeyFilePath
-        $data = Get-PowerPassLockerBytes -Locker $locker
-        $aes = New-Object "PowerPass.AesCrypto"
-        $aes.ReadKeyFromDisk( $pathToLockerKey, [ref] (Get-PowerPassEphemeralKey) )
-        $aes.Encrypt( $data, $pathToLocker )
-        $aes.Dispose()
+        if( $changed ) {
+            $pathToLocker = $script:PowerPass.LockerFilePath
+            $pathToLockerKey = $script:PowerPass.LockerKeyFilePath
+            $data = Get-PowerPassLockerBytes -Locker $locker
+            $aes = New-Object "PowerPass.AesCrypto"
+            $aes.ReadKeyFromDisk( $pathToLockerKey, [ref] (Get-PowerPassEphemeralKey) )
+            $aes.Encrypt( $data, $pathToLocker )
+            $aes.Dispose()
+        }
     }
 }
 
