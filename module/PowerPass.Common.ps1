@@ -38,7 +38,7 @@ function New-PowerPassAttachment {
     #>
     $npa = [PSCustomObject]@{
         FileName = "PowerPass.txt"
-        Data = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes("This is the default text file attachment."))
+        Data = [System.Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes("This is the default text file attachment."))
         Created = [DateTime]::Now.ToUniversalTime()
         Modified = [DateTime]::Now.ToUniversalTime()
         # Marked For Deletion: flag used by Remove-PowerPassAttachment
@@ -434,5 +434,101 @@ function Read-PowerPassSecret {
         }
     } else {
         Write-Output $null
+    }
+}
+
+# ------------------------------------------------------------------------------------------------------------- #
+# FUNCTION: Export-PowerPassAttachment
+# ------------------------------------------------------------------------------------------------------------- #
+
+function Export-PowerPassAttachment {
+    <#
+        .SYNOPSIS
+        Exports one or more attachments from your locker.
+        .PARAMETER FileName
+        The filename of the attachment to fetch. Supports wildcard matching.
+        .PARAMETER Path
+        The Path to the directory to output the file(s). Overrides LiteralPath.
+        .PARAMETER LiteralPath
+        The LiteralPath to the directory to output the file(s).
+        .PARAMETER OriginalPath
+        An optional switch that, when specified, uses the path of the file in the locker,
+        assuming that file in the locker has a full path, otherwise the file will be
+        exprted to the current directory. Cannot be combined with Path or LiteralPath.
+        .PARAMETER Force
+        An optional switch that will force-overwrite any existing files on disk.
+        .OUTPUTS
+        This cmdlet outputs the FileInfo for each exported file.
+    #>
+    [CmdletBinding(DefaultParameterSetName="Default")]
+    param(
+        [Parameter(ParameterSetName="Default",Mandatory,ValueFromPipeline,Position=0)]
+        [Parameter(ParameterSetName="Path",Mandatory,ValueFromPipeline,Position=0)]
+        [Parameter(ParameterSetName="LiteralPath",Mandatory,ValueFromPipeline,Position=0)]
+        [Parameter(ParameterSetName="OriginalPath",Mandatory,ValueFromPipeline,Position=0)]
+        [string]
+        $FileName,
+        [Parameter(ParameterSetName="Path",Position=1)]
+        [string]
+        $Path,
+        [Parameter(ParameterSetName="LiteralPath",Position=1)]
+        [string]
+        $LiteralPath,
+        [Parameter(ParameterSetName="OriginalPath")]
+        [switch]
+        $OriginalPath,
+        [switch]
+        $Force
+    )
+    begin {
+        $locker = Get-PowerPassLocker
+        if( -not $locker ) {
+            throw "Could not create or fetch your locker"
+        }
+        $targetDir = Get-Item -Path "."
+        $testDir = if( $Path ) {
+            $Path
+        } elseif( $LiteralPath ) {
+            $LiteralPath
+        } else {
+            ""
+        }
+        if( Test-Path $testDir ) {
+            $pathInfo = Get-Item -Path $testDir
+            switch( ($pathInfo.GetType()).FullName ) {
+                "System.IO.DirectoryInfo" {
+                    $targetDir = $pathInfo
+                }
+                default {
+                    throw "Output target is not a directory"
+                }
+            }
+        }
+    }
+    process {
+        $atts = $locker.Attachments | Where-Object { $_.FileName -like $FileName }
+        foreach( $a in $atts ) {
+            $bytes = [System.Convert]::FromBase64String($a.Data)
+            $targetFile = if( $OriginalPath ) {
+                $a.FileName
+            } else {
+                Join-Path -Path ($targetDir.FullName) -ChildPath ($a.FileName)
+            }
+            if( $Force ) {
+                [System.IO.File]::WriteAllBytes( $targetFile, $bytes )
+                Write-Output (Get-Item -LiteralPath $targetFile)
+            } else {
+                if( Test-Path $targetFile ) {
+                    $answer = Read-Host "$targetFile already exists, overwrite? [N/y]"
+                    if( $answer -eq 'y' ) {
+                        [System.IO.File]::WriteAllBytes( $targetFile, $bytes )
+                        Write-Output (Get-Item -LiteralPath $targetFile)
+                    }
+                } else {
+                    [System.IO.File]::WriteAllBytes( $targetFile, $bytes )
+                    Write-Output (Get-Item -LiteralPath $targetFile)
+                }
+            }
+        }
     }
 }
