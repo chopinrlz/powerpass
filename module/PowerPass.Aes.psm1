@@ -637,6 +637,9 @@ function Write-PowerPassAttachment {
         if( -not $locker ) {
             throw "Could not create or fetch your locker"
         }
+        if( $locker.Attachments.Length -le 0 ) {
+            $locker.Attachments = @()
+        }
     } process {
         [byte[]]$bytes = $null
         if( $Path ) {
@@ -740,6 +743,9 @@ function Add-PowerPassAttachment {
             throw "Could not create or fetch your locker"
         }
         $changed = $false
+        if( $locker.Attachments.Length -le 0 ) {
+            $locker.Attachments = @()
+        }
     } process {
         if( $FileInfo.GetType().FullName -eq "System.IO.FileInfo" ) {
             $changed = $true

@@ -1,30 +1,26 @@
 # Release Notes
-The latest release of PowerPass version 1.5.0 adds support for masked password entry, locker searching by Title (not just match), pipeline optimization, includes more test coverage, and fixes a read bug when accessing an empty locker. PowerPass has been tested in PowerShell on Linux, MacOS, and Windows.
-# New Features and Optimization
-## Masked Password Entry
-Up until now, the `Write-PowerPassSecret` cmdlet relied on the `-Password` parameter to set passwords for secrets in your locker. As such, passwords had to be shown on the console if typed them in. Now, a new parameter `-MaskPassword` gives you the option to be prompted to enter a password which is masked as you type. For more information please refer to the cmdlet reference for [AES cmdlets](https://chopinrlz.github.io/powerpass/aes-cmdlet-ref#write-powerpasssecret) and/or the [DP API cmdlets](https://chopinrlz.github.io/powerpass/dpapi-cmdlet-ref#write-powerpasssecret).
-## Title Parameter for Read-PowerPassLocker
-Up until now, the `Read-PowerPassSecret` cmdlet would only let you specify a `-Match` parameter despite the fact that the searching was done against the `Title` property of the secrets collection. For consistency and intuitiveness, a new exact-match `-Title` parameter has been added to the `Read-PowerPassSecret` cmdlet given that it makes the use of the cmdlet more intuitive. For more information please refer to the cmdlet reference for [AES cmdlets](https://chopinrlz.github.io/powerpass/aes-cmdlet-ref#read-powerpasssecret) and/or the [DP API cmdlets](https://chopinrlz.github.io/powerpass/dpapi-cmdlet-ref#read-powerpasssecret).
-## Pipeline Optimization
-The `Write-PowerPassSecret` cmdlet has been optimized for pipeline input. You can now pipeline secrets in bulk into the write cmdlet which will optimize the loading of secrets rather than invoking the cmdlet once for each secret in a large collection. The parameters for secrets can also be pipelined by name making things like this:
-```powershell
-Import-Csv "secrets.csv" | Write-PowerPassSecret
-```
-as easy as a single line of PowerShell. This example also executes significantly faster than if one were to use a loop.
-## Additional Test Coverage
-The unit testing scripts have been updated to cover more scenarios. Unit testing failed to catch several minor bugs and was also not configrued to verify optimizations. The unit tests have been updated to run a more comprehensive battery of tests and also to measure write performance.
-# Bug Fixes
-## Issue # 3: [Read throws an error if your locker is empty](https://github.com/chopinrlz/powerpass/issues/3)
-`Read-PowerPassSecret` no longer throws an error if you invoke it with an empty locker.
+The latest release of PowerPass version 1.6.0 adds support for attachments. You can now add, update and remove attachments from your PowerPass locker. Attachments can be added with any filename, including a full path, so they can easily be exported to the current directory, an arbitrary directory, or the original location from where they were imported.
+# Attachments
+Release 1.6.0 of PowerPass adds six (6) new cmdlets:
+1. `Add-PowerPassAttachment` - add attachments in bulk from the file system
+2. `Export-PowerPassAttachment` - save attachments from your locker to files on disk
+3. `Get-PowerPassAttachments` - list all attachments in your locker
+4. `Read-PowerPassAttachment` - get an attachment from your locker
+5. `Remove-PowerPassAttachment` - delete an attachment from your locker
+6. `Write-PowerPassAttachment` - add a single attachment to your locker
+
+Using these cmdlets you can easily add attachments to your encrypted PowerPass locker, fetch their contents at a later date, or hide files from the file system by adding files to your locker, deleting them from the file system, then exporting them later when they are needed.
 # Deployment
 The deployment script has been modified and is now much quieter than before. To install PowerPass:
 1. Clone the repo, download the release, or download the source code for this release
 2. Run `.\Deploy-PowerPass.ps1` in any PowerShell terminal (you will need write access to this folder)
+
+For detailed information about deployment see the [Deployment](https://chopinrlz.github.io/powerpass/deployment) article in the online documentation.
 # File Hashes
 | Release                 | SHA256 Hash                                                      |
 | ----------------------- | ---------------------------------------------------------------- |
-| PowerPass-1.5.0.tar.gz  | 4BDEB339C5BC9D0E49971430A0784F3D479A860D36AEC3B97F3D0BED3646196E |
-| PowerPass-1.5.0.zip     | 5F94A7B9659DAF836DA98A9B43C81CC3FD061F0D4C003B23504249D75BCF7C0D |
+| PowerPass-1.5.0.tar.gz  | D1A79F98FFE3B57BD0C7E06D94B8D2ECD0894E6FF2D7DDCE443288CCD4716230 |
+| PowerPass-1.6.0.zip     | 83157F25C5329881779202B78DF5463EE0B1736EE691EB41A34669D59EE81A00 |
 
 # All PowerPass Topics
 Select one of the links below to browse to another topic.

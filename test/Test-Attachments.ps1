@@ -310,4 +310,37 @@ if( $file ) {
     # Expected
 }
 
+# Test attachment import and export - current directory
+
+Write-Output "Testing export of the default attachment"
+$readData = Export-PowerPassAttachment -FileName "PowerPass.txt" | Get-Content -Raw
+if( $readData -ne "This is the default text file attachment." ) {
+    Write-Warning "Test failed: output file does not contain expected data"
+}
+Remove-Item -Path (Join-Path -Path $PSScriptRoot -ChildPath "PowerPass.txt") -Force
+
+# Test attachment import and export - current directory specific
+
+Write-Output "Testing export to specified path"
+$readData = Export-PowerPassAttachment -FileName "PowerPass.txt" -Path $PSScriptRoot | Get-Content -Raw
+if( $readData -ne "This is the default text file attachment." ) {
+    Write-Warning "Test failed: output file does not contain expected data"
+}
+Remove-Item -Path (Join-Path -Path $PSScriptRoot -ChildPath "PowerPass.txt") -Force
+
+# Test attachment import and export - add and export this whole directory
+
+Write-Output "Testing attachment import and export"
+Clear-PowerPassLocker -Force
+Remove-PowerPassAttachment -FileName "PowerPass.txt"
+$actualHash = Get-ChildItem -File | Get-FileHash
+Get-ChildItem -File | Add-PowerPassAttachment -FullPath
+Export-PowerPassAttachment -FileName "*" -OriginalPath -Force
+foreach( $ath in $actualHash ) {
+    $hash = Get-FileHash -Path ($ath.Path)
+    if( $hash.Hash -ne $ath.Hash ) {
+        Write-Warning "Test failed: $($ath.Path) not identical"
+    }
+}
+
 Clear-PowerPassLocker -Force

@@ -1,20 +1,21 @@
 # PowerPass Cmdlet Reference for AES Implementation
-#### _Revised: January 12, 2024_
+#### _Revised: January 14, 2024_
 The AES implementation of PowerPass works on Windows PowerShell and PowerShell 7 on Linux, MacOS, and Windows.
 1. [Add-PowerPassAttachment](#add-powerpassattachment)
 2. [Clear-PowerPassLocker](#clear-powerpasslocker)
-3. [Export-PowerPassLocker](#export-powerpasslocker)
-4. [Get-PowerPass](#get-powerpass)
-5. [Get-PowerPassAttachments](#get-powerpassattachments)
-6. [Import-PowerPassLocker](#import-powerpasslocker)
-7. [New-PowerPassRandomPassword](#new-powerpassrandompassword)
-8. [Read-PowerPassAttachment](#read-powerpassattachment)
-9. [Read-PowerPassSecret](#read-powerpasssecret)
-10. [Remove-PowerPassAttachment](#remove-powerpassattachment)
-11. [Remove-PowerPassSecret](#remove-powerpasssecret)
-12. [Update-PowerPassKey](#update-powerpasskey)
-13. [Write-PowerPassAttachment](#write-powerpassattachment)
-14. [Write-PowerPassSecret](#write-powerpasssecret)
+3. [Export-PowerPassAttachment](#export-powerpassattachment)
+4. [Export-PowerPassLocker](#export-powerpasslocker)
+5. [Get-PowerPass](#get-powerpass)
+6. [Get-PowerPassAttachments](#get-powerpassattachments)
+7. [Import-PowerPassLocker](#import-powerpasslocker)
+8. [New-PowerPassRandomPassword](#new-powerpassrandompassword)
+9. [Read-PowerPassAttachment](#read-powerpassattachment)
+10. [Read-PowerPassSecret](#read-powerpasssecret)
+11. [Remove-PowerPassAttachment](#remove-powerpassattachment)
+12. [Remove-PowerPassSecret](#remove-powerpasssecret)
+13. [Update-PowerPassKey](#update-powerpasskey)
+14. [Write-PowerPassAttachment](#write-powerpassattachment)
+15. [Write-PowerPassSecret](#write-powerpasssecret)
 
 Here are the cmdlets for the AES implementation of PowerPass.
 # Add-PowerPassAttachment
@@ -52,6 +53,37 @@ Deletes all your locker secrets and your locker key. PowerPass will generate a n
 for you the next time you write or read secrets to or from your locker.
 ### PARAMETER Force
 WARNING: If you specify Force, your locker and salt will be removed WITHOUT confirmation.
+##### ***[Back to Top](#powerpass-cmdlet-reference-for-aes-implementation)***
+# Export-PowerPassAttachment
+### SYNOPSIS
+Exports one or more attachments from your locker.
+### PARAMETER FileName
+The filename of the attachment to fetch. Supports wildcard matching.
+### PARAMETER Path
+The Path to the directory to output the file(s). Overrides LiteralPath.
+### PARAMETER LiteralPath
+The LiteralPath to the directory to output the file(s).
+### PARAMETER OriginalPath
+An optional switch that, when specified, uses the path of the file in the locker,
+assuming that file in the locker has a full path, otherwise the file will be
+exprted to the current directory. Cannot be combined with Path or LiteralPath.
+### PARAMETER Force
+An optional switch that will force-overwrite any existing files on disk.
+### OUTPUTS
+This cmdlet outputs the FileInfo for each exported file.
+### EXAMPLE 1
+In this example we export a specific attachment to a specified directory.
+```powershell
+# Export the certificate file
+Export-PowerPassAttachment -FileName "private.pfx" -Path "C:\Secrets"
+```
+### EXAMPLE 2
+In this example we export a set of attachments back to their original locations.
+These attachments were loaded into our locker using `Add-PowerPassAttachment` with the `-FullPath` parameter specified.
+```powershell
+# Save our attachments back to their original location
+Export-PowerPassAttachment -FileName "C:\Secrets\*" -OriginalPath
+```
 ##### ***[Back to Top](#powerpass-cmdlet-reference-for-aes-implementation)***
 # Export-PowerPassLocker
 ### SYNOPSIS

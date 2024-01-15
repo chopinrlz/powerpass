@@ -491,17 +491,21 @@ function Export-PowerPassAttachment {
         } elseif( $LiteralPath ) {
             $LiteralPath
         } else {
-            ""
+            $null
         }
-        if( Test-Path $testDir ) {
+        if( $testDir ) {
             $pathInfo = Get-Item -Path $testDir
-            switch( ($pathInfo.GetType()).FullName ) {
-                "System.IO.DirectoryInfo" {
-                    $targetDir = $pathInfo
+            if( $pathInfo ) {
+                switch( ($pathInfo.GetType()).FullName ) {
+                    "System.IO.DirectoryInfo" {
+                        $targetDir = $pathInfo
+                    }
+                    default {
+                        throw "Output target is not a directory"
+                    }
                 }
-                default {
-                    throw "Output target is not a directory"
-                }
+            } else {
+                throw "Specified path does not exist"
             }
         }
     }

@@ -1,23 +1,24 @@
 # PowerPass Cmdlet Reference for Windows PowerShell DP API / KeePass 2 Implementation
-#### _Revised: January 12, 2024_
+#### _Revised: January 14, 2024_
 The Windows PowerShell Data Protection API implementation supports Windows PowerShell 5.1 and includes support for KeePass 2 databases as well as PowerPass Lockers. Cmdlets for this implementation are as follows:
 1. [Add-PowerPassAttachment](#add-powerpassattachment)
 2. [Clear-PowerPassLocker](#clear-powerpasslocker)
-3. [Export-PowerPassLocker](#export-powerpasslocker)
-4. [Import-PowerPassLocker](#import-powerpasslocker)
-5. [Get-PowerPassAttachments](#get-powerpassattachments)
-6. [Get-PowerPassSecret](#get-powerpasssecret)
-7. [Get-PowerPass](#get-powerpass)
-8. [New-PowerPassRandomPassword](#new-powerpassrandompassword)
-9. [Open-PowerPassDatabase](#open-powerpassdatabase)
-10. [Open-PowerPassTestDatabase](#open-powerpasstestdatabase)
-11. [Read-PowerPassAttachment](#read-powerpassattachment)
-12. [Read-PowerPassSecret](#read-powerpasssecret)
-13. [Remove-PowerPassAttachment](#remove-powerpassattachment)
-14. [Remove-PowerPassSecret](#remove-powerpasssecret)
-15. [Update-PowerPassSalt](#update-powerpasssalt)
-16. [Write-PowerPassAttachment](#write-powerpassattachment)
-17. [Write-PowerPassSecret](#write-powerpasssecret)
+3. [Export-PowerPassAttachment](#export-powerpassattachment)
+4. [Export-PowerPassLocker](#export-powerpasslocker)
+5. [Import-PowerPassLocker](#import-powerpasslocker)
+6. [Get-PowerPassAttachments](#get-powerpassattachments)
+7. [Get-PowerPassSecret](#get-powerpasssecret)
+8. [Get-PowerPass](#get-powerpass)
+9. [New-PowerPassRandomPassword](#new-powerpassrandompassword)
+10. [Open-PowerPassDatabase](#open-powerpassdatabase)
+11. [Open-PowerPassTestDatabase](#open-powerpasstestdatabase)
+12. [Read-PowerPassAttachment](#read-powerpassattachment)
+13. [Read-PowerPassSecret](#read-powerpasssecret)
+14. [Remove-PowerPassAttachment](#remove-powerpassattachment)
+15. [Remove-PowerPassSecret](#remove-powerpasssecret)
+16. [Update-PowerPassSalt](#update-powerpasssalt)
+17. [Write-PowerPassAttachment](#write-powerpassattachment)
+18. [Write-PowerPassSecret](#write-powerpasssecret)
 
 Continue reading for the cmdlet details.
 # Add-PowerPassAttachment
@@ -56,6 +57,37 @@ redeploying the module, you will no longer be able to access your locker and wil
 clean locker.
 ### PARAMETER Force
 WARNING: If you specify Force, your locker and salt will be removed WITHOUT confirmation.
+##### ***[Back to Top](#powerpass-cmdlet-reference-for-windows-powershell-dp-api--keepass-2-implementation)***
+# Export-PowerPassAttachment
+### SYNOPSIS
+Exports one or more attachments from your locker.
+### PARAMETER FileName
+The filename of the attachment to fetch. Supports wildcard matching.
+### PARAMETER Path
+The Path to the directory to output the file(s). Overrides LiteralPath.
+### PARAMETER LiteralPath
+The LiteralPath to the directory to output the file(s).
+### PARAMETER OriginalPath
+An optional switch that, when specified, uses the path of the file in the locker,
+assuming that file in the locker has a full path, otherwise the file will be
+exprted to the current directory. Cannot be combined with Path or LiteralPath.
+### PARAMETER Force
+An optional switch that will force-overwrite any existing files on disk.
+### OUTPUTS
+This cmdlet outputs the FileInfo for each exported file.
+### EXAMPLE 1
+In this example we export a specific attachment to a specified directory.
+```powershell
+# Export the certificate file
+Export-PowerPassAttachment -FileName "private.pfx" -Path "C:\Secrets"
+```
+### EXAMPLE 2
+In this example we export a set of attachments back to their original locations.
+These attachments were loaded into our locker using `Add-PowerPassAttachment` with the `-FullPath` parameter specified.
+```powershell
+# Save our attachments back to their original location
+Export-PowerPassAttachment -FileName "C:\Secrets\*" -OriginalPath
+```
 ##### ***[Back to Top](#powerpass-cmdlet-reference-for-windows-powershell-dp-api--keepass-2-implementation)***
 # Export-PowerPassLocker
 ### SYNOPSIS
