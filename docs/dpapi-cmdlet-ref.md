@@ -24,9 +24,10 @@ Continue reading for the cmdlet details.
 # Add-PowerPassAttachment
 ### SYNOPSIS
 Adds files from the file system into your locker. The difference between `Add-PowerPassAttachment` and
-`Write-PowerPassAttachment` is Add is optmized for bulk adds from the pipeline using `Get-ChildItem`. Also,
-Add does not prompt for a filename, but rather uses the filename, either the short name or full path, of
-the file on disk as the filename in your locker. Any files that already exist in your locker will be updated.
+`Write-PowerPassAttachment` is Add cmdlet is optimized for bulk adds from the pipeline using `Get-ChildItem`.
+Also, the Add cmdlet does not prompt for a filename, but rather uses the filename, either the short name
+or full path, of the file on disk as the filename in your locker.
+Any files that already exist in your locker will be updated.
 ### PARAMETER FileInfo
 One or more `FileInfo` objects collected from `Get-Item` or `Get-ChildItem`. Can be passed via pipeline.
 ### PARAMETER FullPath
@@ -50,7 +51,7 @@ Get-ChildItem | Add-PowerPassAttachment -FullPath
 ### SYNOPSIS
 Deletes all your locker secrets.
 ### DESCRIPTION
-If you want to delete your locker secrets and start with a clean locker, you can use thie cmdlet to do so.
+If you want to delete your locker secrets and start with a clean locker, you can use this cmdlet to do so.
 When you deploy PowerPass using the Deploy-Module.ps1 script provided with this module, it generates a
 unique salt for this deployment which is used to encrypt your locker's salt. If you replace this salt by
 redeploying the module, you will no longer be able to access your locker and will need to start with a
@@ -70,7 +71,7 @@ The LiteralPath to the directory to output the file(s).
 ### PARAMETER OriginalPath
 An optional switch that, when specified, uses the path of the file in the locker,
 assuming that file in the locker has a full path, otherwise the file will be
-exprted to the current directory. Cannot be combined with Path or LiteralPath.
+exported to the current directory. Cannot be combined with Path or LiteralPath.
 ### PARAMETER Force
 An optional switch that will force-overwrite any existing files on disk.
 ### OUTPUTS
@@ -276,7 +277,7 @@ In this example we demonstrate opening a KeePass 2 database with a KeePass key f
 
 $db = Open-PowerPassDatabase -Path "C:\Secrets\MyKeePassDatabase.kdbx" -KeyFile "C:\Users\me\Documents\DatabaseKeyFile.keyx"
 ```
-### EXAMPLE 4: Open a KeePass 2 Databae with your Windows User Account
+### EXAMPLE 4: Open a KeePass 2 Database with your Windows User Account
 In this example we demonstrate opening a KeePass 2 database with your Windows user account.
 KeePass 2 databases support Windows Data Protection API encryption.
 When you create your KeePass 2 database, you can elect to encrypt it with your Windows user account.
@@ -299,7 +300,7 @@ Opens the TestDatabase.kdbx database bundled with PowerPass for testing.
 ### DESCRIPTION
 When you use Open-PowerPassTestDatabase the PowerPass module will load the
 KeePass database TestDatabase.kdbx bundled with this module. By default,
-this database contains one key requried to open it: the password 12345. You
+this database contains one key required to open it: the password 12345. You
 can open this database in KeePass 2. It was originally created with KeePass 2.
 The output from this cmdlet includes all the relevant properties and data
 required to access and read data from KeePass databases. It also showcases
@@ -516,8 +517,8 @@ In this example we demonstrate removing several secrets from the Locker at once.
 ### SYNOPSIS
 Rotates the Locker salt to a new random key.
 ### DESCRIPTION
-As a reoutine precaution, key rotation is recommended as a best practice when dealing with sensitive,
-encrypted data. When you rotate a key, PowerPass reencrypts your PowerPass Locker with a new Locker
+As a routine precaution, key rotation is recommended as a best practice when dealing with sensitive,
+encrypted data. When you rotate a key, PowerPass re-encrypts your PowerPass Locker with a new Locker
 salt. This ensures that even if a previous encryption was broken, a new attempt must be made if an
 attacker regains access to your encrypted Locker.
 ##### ***[Back to Top](#powerpass-cmdlet-reference-for-windows-powershell-dp-api--keepass-2-implementation)***
@@ -629,7 +630,7 @@ Can be set from the pipeline by property name.
 Optional. Sets the Notes property of the secret in your locker.
 Can be set from the pipeline by property name.
 ### PARAMETER Expires
-Optional. Sets the Expiras property of the secret in your locker.
+Optional. Sets the Expires property of the secret in your locker.
 Can be set from the pipeline by property name.
 ### PARAMETER MaskPassword
 An optional switch that, when specified, will prompt you to enter a password rather than having to use the Password parameter.

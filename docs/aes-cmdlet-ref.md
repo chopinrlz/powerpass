@@ -1,6 +1,6 @@
 # PowerPass Cmdlet Reference for AES Implementation
-#### _Revised: January 14, 2024_
-The AES implementation of PowerPass works on Windows PowerShell and PowerShell 7 on Linux, MacOS, and Windows.
+#### _Revised: January 15, 2024_
+The AES implementation of PowerPass works on Windows PowerShell and PowerShell 7 on Linux, MacOS, and Windows. These are the cmdlets:
 1. [Add-PowerPassAttachment](#add-powerpassattachment)
 2. [Clear-PowerPassLocker](#clear-powerpasslocker)
 3. [Export-PowerPassAttachment](#export-powerpassattachment)
@@ -21,9 +21,10 @@ Here are the cmdlets for the AES implementation of PowerPass.
 # Add-PowerPassAttachment
 ### SYNOPSIS
 Adds files from the file system into your locker. The difference between `Add-PowerPassAttachment` and
-`Write-PowerPassAttachment` is Add is optmized for bulk adds from the pipeline using `Get-ChildItem`. Also,
-Add does not prompt for a filename, but rather uses the filename, either the short name or full path, of
-the file on disk as the filename in your locker. Any files that already exist in your locker will be updated.
+`Write-PowerPassAttachment` is the Add amdlet is optimized for bulk adds from the pipeline using `Get-ChildItem`.
+Also, the Add cmdlet does not prompt for a filename, but rather uses the filename, either the short name or
+full path, of the file on disk as the filename in your locker.
+Any files that already exist in your locker will be updated.
 ### PARAMETER FileInfo
 One or more `FileInfo` objects collected from `Get-Item` or `Get-ChildItem`. Can be passed via pipeline.
 ### PARAMETER FullPath
@@ -66,7 +67,7 @@ The LiteralPath to the directory to output the file(s).
 ### PARAMETER OriginalPath
 An optional switch that, when specified, uses the path of the file in the locker,
 assuming that file in the locker has a full path, otherwise the file will be
-exprted to the current directory. Cannot be combined with Path or LiteralPath.
+exported to the current directory. Cannot be combined with Path or LiteralPath.
 ### PARAMETER Force
 An optional switch that will force-overwrite any existing files on disk.
 ### OUTPUTS
@@ -314,12 +315,13 @@ In this example we demonstrate removing several secrets from the Locker at once.
 # Remove all the service accounts
 "svc_sqlserver","svc_sharepoint","svc_spadmin" | Remove-PowerPassSecret
 ```
+##### ***[Back to Top](#powerpass-cmdlet-reference-for-aes-implementation)***
 # Update-PowerPassKey
 ### SYNOPSIS
 Rotates the Locker key to a new random key.
 ### DESCRIPTION
-As a reoutine precaution, key rotation is recommended as a best practice when dealing with sensitive,
-encrypted data. When you rotate a key, PowerPass reencrypts your PowerPass Locker with a new random
+As a routine precaution, key rotation is recommended as a best practice when dealing with sensitive,
+encrypted data. When you rotate a key, PowerPass re-encrypts your PowerPass Locker with a new random
 key. This ensures that even if a previous encryption was broken, a new attempt must be made if an
 attacker regains access to your encrypted Locker.
 ### USAGE
@@ -437,7 +439,7 @@ Can be set from the pipeline by property name.
 Optional. Sets the Notes property of the secret in your locker.
 Can be set from the pipeline by property name.
 ### PARAMETER Expires
-Optional. Sets the Expiras property of the secret in your locker.
+Optional. Sets the Expires property of the secret in your locker.
 Can be set from the pipeline by property name.
 ### PARAMETER MaskPassword
 An optional switch that, when specified, will prompt you to enter a password rather than having to use the Password parameter.
@@ -453,7 +455,7 @@ You can also save a secret without having to specify the password as a parameter
 Using the `-MaskPassword` parameter, PowerPass will prompt you for a password and mask the input.
 ```powershell
 # Store our new secret
-PS C:\Users\me> Write-PowerPassSecret -Title "Domain Service Account" -UserName "DEV\svc_admin" -MaskPassword
+PS> Write-PowerPassSecret -Title "Domain Service Account" -UserName "DEV\svc_admin" -MaskPassword
 Enter the Password for the secret: *************
 ```
 ### EXAMPLE 2: Saving a Secret with a Random Password
