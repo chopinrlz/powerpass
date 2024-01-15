@@ -73,10 +73,12 @@ You can export your locker and key to save a backup copy elsewhere.
 You can also rotate your locker salts automatically, but the locker key is built-in to your Windows profile.
 The Data Protection API does not allow you to explicitly rotate your user profile key.
 # Additional Resources
-## Copyright Notice
-The copyright notice for PowerPass and KeePass can be found in the [COPYING](https://github.com/chopinrlz/powerpass/blob/main/COPYING.md) markdown file.
-## License
+## License and Copyright
+PowerPass is copyright 2023-2024 by The Daltas Group LLC.
+PowerPass is open-source, free software. You may use PowerPass for any purpose.
+PowerPass is licensed under the GNU Public License v2.0.
 The license can be found in the [LICENSE](https://github.com/chopinrlz/powerpass/blob/main/LICENSE) file.
+You may copy, modify, and distribute PowerPass for personal or commercial use under the terms of the GNU Public License v2.0.
 ## Online Documentation
 For cmdlet reference and usage information, please refer to the online documentation links below.
 1. [AES Cmdlet Reference](https://chopinrlz.github.io/powerpass/aes-cmdlet-ref)
