@@ -1,21 +1,14 @@
-# Usage
-#### _Revised: January 10, 2024_
-## KeePass Databases
-To open a KeePass database use the `Open-PowerPassDatabase` cmdlet.
-Pipe or pass the output to `Get-PowerPassSecret` to fetch secrets from the KeePass database.
-## PowerPass Locker
-To read a secret from your PowerPass Locker use the `Read-PowerPassSecret` cmdlet.
-To write a secret into your PowerPass Locker use the `Write-PowerPassSecret` cmdlet.
-## Storing KeePass Database Passwords
-If you are opening KeePass databases which use master passwords, you can store these passwords in your PowerPass Locker to keep them secure.
-## Cmdlet Reference
-1. For the AES edition: [PowerPass AES Cmdlet Reference](https://chopinrlz.github.io/powerpass/aes-cmdlet-ref)
-2. For the DP API edition: [PowerPass DP API Cmdlet Reference](https://chopinrlz.github.io/powerpass/dpapi-cmdlet-ref)
-
-All PowerPass topics can be found at the bottom of this page.
 # Incorporating PowerPass into your Scripts
-PowerPass relies on the current user file system for security.
-To incorporate PowerPass into you builds, follow these examples.
+#### _Revised: January 26, 2024_
+Service accounts and other non-interactive logins can access credentials you store for them.
+And of course you can always user PowerPass with your own login, too.
+Login to the system with your service account, deploy PowerPass, and use `Write-PowerPassSecret` to store a credential for that service account.
+
+**The credentials you store while logged in as that service account will only be accessible to that same service account.**
+
+The PowerPass module, Lockers, keys, and salts are all contained within the user's profile directory and everything is encrypted.
+The [README](https://github.com/chopinrlz/powerpass?tab=readme-ov-file#powerpass) file explains all of this is detail.
+To incorporate PowerPass into your scritps and modules, follow these examples.
 ## Automating Access to Active Directory
 One of the most common scenarios is automating access to Active Directory.
 Configuring a script to run with Domain Admin permissions is risky as the script must have access to highly privileged credentials.
@@ -46,6 +39,21 @@ Get-ADUser -Credential $creds
 ```
 To create the `PSCredential`, the secret must have a `UserName` and a `Password` property set.
 If either property is blank, the operation may fail with an error.
+# Usage
+For general usage of PowerPass, please see below.
+## KeePass Databases
+To open a KeePass database use the `Open-PowerPassDatabase` cmdlet.
+Pipe or pass the output to `Get-PowerPassSecret` to fetch secrets from the KeePass database.
+## PowerPass Locker
+To read a secret from your PowerPass Locker use the `Read-PowerPassSecret` cmdlet.
+To write a secret into your PowerPass Locker use the `Write-PowerPassSecret` cmdlet.
+## Storing KeePass Database Passwords
+If you are opening KeePass databases which use master passwords, you can store these passwords in your PowerPass Locker to keep them secure.
+## Cmdlet Reference
+1. For the AES edition: [PowerPass AES Cmdlet Reference](https://chopinrlz.github.io/powerpass/aes-cmdlet-ref)
+2. For the DP API edition: [PowerPass DP API Cmdlet Reference](https://chopinrlz.github.io/powerpass/dpapi-cmdlet-ref)
+
+All PowerPass topics can be found at the bottom of this page.
 # All PowerPass Topics
 Select one of the links below to browse to another topic.
 ## [AES Cmdlet Reference](https://chopinrlz.github.io/powerpass/aes-cmdlet-ref) | [Data Structures](https://chopinrlz.github.io/powerpass/data-structures) | [Deployment](https://chopinrlz.github.io/powerpass/deployment) | [Domain Credentials](https://chopinrlz.github.io/powerpass/domain-credentials) | [DP API Cmdlet Reference](https://chopinrlz.github.io/powerpass/dpapi-cmdlet-ref) | [Home](https://chopinrlz.github.io/powerpass) | [OneDrive Backup](https://chopinrlz.github.io/powerpass/onedrivebackup) | [Prerequisites](https://chopinrlz.github.io/powerpass/prerequisites) | [Release Notes](https://chopinrlz.github.io/powerpass/release-notes) | [Usage](https://chopinrlz.github.io/powerpass/usage)
