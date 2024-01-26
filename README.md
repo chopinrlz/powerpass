@@ -151,4 +151,4 @@ You can test `powerpasstpm` with the included `Test-TpmProvider.ps1` PowerShell 
 | ./powerpasstpm test | Runs in test mode | Outputs TPM info in JSON format to the console |
 | ./powerpasstpm test > info.json | Runs in test mode | Saves TPM info to JSON file for review |
 
-The `test` action for `powerpasstpm` invokes the `Fapi_GetInfo` function of the TCG TPM2 Feature API which echoes all the TPM capabilities of your system in JSON format.
+The `test` action for `powerpasstpm` invokes the `Fapi_GetInfo` function of the [TCG TPM2 Feature API](https://trustedcomputinggroup.org/resource/tss-fapi/) which echoes all the TPM capabilities of your system in JSON format.
