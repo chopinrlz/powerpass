@@ -2,9 +2,9 @@
 A cross-platform PowerShell module for secret storage and retrieval on Linux, MacOS, and Windows.
 PowerPass supports Windows PowerShell 5 and PowerShell 7.
 ## Purpose
+PowerPass provides an easy to use set of cmdlets for securely storing and retrieving credentials automatically without user input.
 In automated scenarios, there is no user present to type in a set of credentials.
 PowerPass facilitates the use of credentials in automated scenarios.
-PowerPass provides an easy to use set of cmdlets for securely storing and retrieving credentials automatically without user input.
 PowerPass credentials are locked down so that only the user who stored them can access them.
 PowerPass retrieves credentials automatically for the current user.
 For more information on how to use PowerPass, please review [Incorporating PowerPass into your Scripts](https://chopinrlz.github.io/powerpass/usage).
