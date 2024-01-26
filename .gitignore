@@ -13,6 +13,7 @@
 /test/.powerpass_locker
 /tpm/powerpasstpm
 /tpm/powerpasstpm.o
+/tpm/info.json
 /powerpass.sln
 /release/*
 cim.json
