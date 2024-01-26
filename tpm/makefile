@@ -10,15 +10,14 @@ TPM2_TSS_DIR != if [ -d "./tpm2-tss-4.0.1" ]; then echo 1; fi
 
 # Instructions:
 #  make
-#  sudo make install
 # Optional:
 #  sudo make tpm2-tss
-#  sudo make clean
+#  make clean
 # tpm2-tss must be deployed as root
 
 powerpasstpm:
 	gcc -c powerpasstpm.c -o powerpasstpm.o
-	gcc powerpasstpm.o -ltss2-fapi -o powerpasstpm
+	gcc powerpasstpm.o -L/usr/local/lib -ltss2-fapi -o powerpasstpm
 tpm2-tss:
 ifndef TPM2_TSS_DIR
 	curl -LO https://github.com/tpm2-software/tpm2-tss/releases/download/4.0.1/tpm2-tss-4.0.1.tar.gz
