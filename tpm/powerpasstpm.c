@@ -28,9 +28,12 @@
 
 int main( int argc, char** argv ) {
     int result = 0;
-    if( argc == 2 ) {
+    if( argc > 1 ) {
         if( strcmp(argv[1],__POWERPASS_TEST) == 0 ) {
             result = pptpm_test();
+        }
+        if( strcmp(argv[1],__POWERPASS_INIT) == 0 ) {
+            result = pptpm_init();
         }
     } else {
         printf("No arguments specified\n");
@@ -59,6 +62,7 @@ int pptpm_test(void) {
         res = Fapi_GetInfo( context, &info );
         if( res != TSS2_FAPI_RC_BAD_REFERENCE ) {
             printf( "%s\n", info );
+            Fapi_Free( info );
         } else {
             printf( "{\n\terror: get info returned bad reference\n\tcode: %d\n}", res );
         }
@@ -69,6 +73,37 @@ int pptpm_test(void) {
     } else {
         // Notify user of error
         printf( "{\n\terror: failed to initialize context\n\tcode: %d\n}", res );
+        return 1;
+    }
+}
+
+/*
+    -------------------------------------------------------------------
+    Function: int pptpm_init(void)
+    Initializes the PowerPass Locker key in the TPM
+    -------------------------------------------------------------------
+*/
+
+int pptpm_init(void) {
+    TSS2_RC res;
+    FAPI_CONTEXT* context;
+    res = Fapi_Initialize( &context, NULL );
+    if( res == TSS2_RC_SUCCESS ) {
+        res = Fapi_CreateKey( context, __POWERPASS_KEY_PATH, __POWERPASS_KEY_TYPE, NULL, NULL );
+        switch( res ) {
+            case TSS2_RC_SUCCESS:
+                printf( "Successfully created key at %s\n", __POWERPASS_KEY_PATH );
+                break;
+            case TSS2_FAPI_RC_PATH_ALREADY_EXISTS:
+                printf( "Key already exists\n" );
+                break;
+            default:
+                printf( "Error creating TPM key for PowerPass Locker\n" );
+                break;
+        }
+        Fapi_Finalize( &context );
+    } else {
+        printf( "Error initializing FAPI context\n" );
         return 1;
     }
 }

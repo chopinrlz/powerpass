@@ -10,9 +10,13 @@
 
 #include <stdint.h>
 
-const char __POWERPASS_TEST[] = "test";
+const char __POWERPASS_TEST[]     = "test";
+const char __POWERPASS_INIT[]     = "init";
+const char __POWERPASS_KEY_PATH[] = "/P_ECCP256SHA256/HS/srk/daltas-powerpass-locker";
+const char __POWERPASS_KEY_TYPE[] = "sign,decrypt";
 
 int main(int argc, char** argv);
 int pptpm_test(void);
+int pptpm_init(void);
 
 #endif
