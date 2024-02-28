@@ -135,9 +135,15 @@ if( Test-path $releaseDir ) { Remove-Item -Path $releaseDir -Recurse -Force }
 
 # Compute the hash of each release file
 Write-Progress -Activity "Building KeePass Release" -Status "Generating release hashes" -PercentComplete 90
-$hashFile = Join-Path -Path (Get-Location) -ChildPath "hash.json"
+$hashFile = Join-Path -Path (Get-Location) -ChildPath "hash.md"
 if( Test-Path $hashFile ) { Remove-Item -Path $hashFile -Force }
-(Get-FileHash -Path $releaseZip),(Get-FileHash -Path $releaseTarGz) | ConvertTo-Json | Out-File -FilePath $hashFile -Append
+@"
+# File Hashes
+| Release                 | SHA256 Hash                                                        |
+| ----------------------- | ------------------------------------------------------------------ |
+| $tarGzFileName  | ``$((Get-FileHash -Path $releaseTarGz).Hash)`` |
+| $zipFileName     | ``$((Get-FileHash -Path $releaseZip).Hash)`` |
+"@ | Out-File -FilePath $hashFile -Append
 
 # Move the user back to the path the called from
 Write-Progress -Activity "Building KeePass Release" -Status "Complete" -PercentComplete 100
