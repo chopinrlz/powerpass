@@ -12,7 +12,6 @@
 | ~ | ~ |
 | **Files** | |
 | .gitignore | The ignore file for Git which tells Git to ignore certain files like compiled binaries among others |
-| COPYING.md | The copyright notice for the assets in this repo |
 | Deploy-PowerPass.ps1 | The script for deploying PowerPass on Windows PowerShell or PowerShell 7 on MacOS, Linux, or Windows. See the online documentation [here](https://chopinrlz.github.io/powerpass/deployment) for deployment and usage instructions. |
 | LICENSE | The end-user license agreement for PowerPass. This module is licensed under the GPL version 2.0 as is the KeePass 2 source code included in this repo. |
 | omnisharp.json | Code formatting rules for OmniSharp to format the C# source files which accompany the module. |
