@@ -536,3 +536,71 @@ function Export-PowerPassAttachment {
         }
     }
 }
+
+# ------------------------------------------------------------------------------------------------------------- #
+# FUNCTION: Get-PowerPassEphemeralKey
+# ------------------------------------------------------------------------------------------------------------- #
+
+function Get-PowerPassEphemeralKey {
+    <#
+        .SYNOPSIS
+        Creates an ephemeral key from the host, user, and active network adapter.
+        .DESCRIPTION
+        Very few cryptographically strong identifiers for the current operating environment
+        of PowerShell exist across all operating systems which support PowerShell. The processor
+        ID, for example, requires elevated privileges. As such, in order to create a moderately
+        strong key to encrypt the AES key used to encrypt the PowerPass Locker, we build a
+        composite key using the hostname, user name, domain name (if there is one), and the MAC
+        address of the primary, active network adapter, all of which can be accessed from user
+        space without elevated permissions and all of which are highly unlikely to change. For
+        an attacker to successfully guess the key for an encrypted AES key they would need to know
+        what user generated the key and on what specific machine. The MAC address adds entropy
+        which makes a brute-force attack more difficult. And chances are if an attacker
+        compromised a user's private home directory they will already know the user's name and
+        computer name, but if they can no longer access the machine they will not be able to get
+        the final component the MAC address to unlock the key. The same applies if the key was
+        compromised from a remote system, like a cloud share, where the attacker does not know
+        where it came from, and thus only a brute-force attack would be possible.
+    #>
+
+    # Set the $IsWindows variable on Windows PowerShell
+    if( $PSVersionTable.PSVersion.Major -eq 5 ) {
+        # Legal in PowerShell 5, ignore warning
+        $IsWindows = $true
+    }
+
+    # Setup the composite key variables
+    [string]$hostName = [System.Environment]::MachineName
+    [string]$userName = [System.Environment]::UserName
+    [string]$domainName = [System.Environment]::UserDomainName
+    if( -not $domainName ) { $domainName = "none" }
+    [string]$macAddress = "00:00:00:00:00:00"
+
+    # Define the types of network adapters which contain MAC addresses we are looking for
+    $macTypes = @("Ethernet","FastEthernetFx","FastEthernetT","GigabitEthernet","Wireless80211")
+
+    # Search through all network interfaces for candidates
+    $adapters = [System.Net.NetworkInformation.NetworkInterface]::GetAllNetworkInterfaces()
+    $candidates = @()
+    foreach( $nic in $adapters ) {
+        if( $nic.OperationalStatus -eq "Up" ) {
+            if( $nic.NetworkInterfaceType -in $macTypes ) {
+                $candidates += $nic
+            }
+        }
+    }
+
+    # Sort by description and pick the top result
+    if( $candidates ) {
+        $nics = $candidates | Sort-Object { $_.Description }
+        $macAddress = $nics[0].GetPhysicalAddress()
+    } else {
+        Write-Warning "Security warning, no active network adapters"
+    }
+    
+    # Build the ephemeral key from the composite parts
+    $compKey = "$hostName|$userName|$domainName|$macAddress"
+    $compKeyBytes = [System.Text.Encoding]::UTF8.GetBytes( $compKey )
+    $sha = [System.Security.Cryptography.Sha256]::Create()
+    Write-Output $sha.ComputeHash( $compKeyBytes )
+}

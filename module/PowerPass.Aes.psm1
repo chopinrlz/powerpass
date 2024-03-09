@@ -545,53 +545,6 @@ function Remove-PowerPassSecret {
 }
 
 # ------------------------------------------------------------------------------------------------------------- #
-# FUNCTION: Get-PowerPassEphemeralKey
-# ------------------------------------------------------------------------------------------------------------- #
-
-function Get-PowerPassEphemeralKey {
-    <#
-        .SYNOPSIS
-        Creates an ephemeral key using the username, hostname, and primary MAC address of the current
-        user and local system, respectively.
-    #>
-    if( $PSVersionTable.PSVersion.Major -eq 5 ) {
-        # Legal in PowerShell 5, ignore warning
-        $IsWindows = $true
-    }
-    [string]$hostName = & hostname
-    [string]$userName = & whoami
-    [string]$macAddress = ""
-    if( $IsLinux -or $IsMacOS ) {
-        $macRegEx = "([0-9A-Fa-f]{2}[:]){5}([0-9A-Fa-f]{2}){1}"
-        $mac = & ifconfig | grep -E ether
-        if( $mac ) {
-            $macAddress = (Select-String -InputObject $mac -Pattern $macRegEx).Matches[0].Value
-        } else {
-            throw "Could not locate an Ethernet adapter with ifconfig"
-        }
-    } elseif( $IsWindows ) {
-        $nics = Get-CimInstance -ClassName "CIM_NetworkAdapter" | ? PhysicalAdapter
-        if( $nics ) {
-            if( $nics.Count -gt 1 ) {
-                $nics = $nics[0]
-            }
-            $macAddress = $nics.MACAddress
-        } else {
-            throw "Could not locate an Ethernet adapter with CIM"
-        }
-    } else {
-        throw "This script will only support MacOS, Linux and Windows at the moment"
-    }
-    if( -not $hostName ) { throw "No hostname found" }
-    if( -not $userName ) { throw "No username found" }
-    if( -not $macAddress ) { throw "No MAC address found" }
-    $compKey = "$hostName|$userName|$macAddress"
-    $compKeyBytes = [System.Text.Encoding]::UTF8.GetBytes( $compKey )
-    $sha = [System.Security.Cryptography.Sha256]::Create()
-    Write-Output $sha.ComputeHash( $compKeyBytes )
-}
-
-# ------------------------------------------------------------------------------------------------------------- #
 # FUNCTION: Write-PowerPassAttachment
 # ------------------------------------------------------------------------------------------------------------- #
 
