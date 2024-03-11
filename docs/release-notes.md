@@ -1,26 +1,29 @@
+**NOTE: This is a BREAKING CHANGE from v1.x. If you are on v1.x please EXPORT your Locker before deploying v2.x.**
+If your forget to do this, simply go back to v1.6.2, export your Locker, then deploy v2.0.0.
+PowerPass will not overwrite your Locker or your Locker keys if they already exist.
 # Release Notes
-The latest release of PowerPass version 1.6.0 adds support for attachments. You can now add, update and remove attachments from your PowerPass locker. Attachments can be added with any filename, including a full path, so they can easily be exported to the current directory, an arbitrary directory, or the original location from where they were imported.
-# Attachments
-Release 1.6.0 of PowerPass adds six (6) new cmdlets:
-1. `Add-PowerPassAttachment` - add attachments in bulk from the file system
-2. `Export-PowerPassAttachment` - save attachments from your locker to files on disk
-3. `Get-PowerPassAttachments` - list all attachments in your locker
-4. `Read-PowerPassAttachment` - get an attachment from your locker
-5. `Remove-PowerPassAttachment` - delete an attachment from your locker
-6. `Write-PowerPassAttachment` - add a single attachment to your locker
-
-Using these cmdlets you can easily add attachments to your encrypted PowerPass locker, fetch their contents at a later date, or hide files from the file system by adding files to your locker, deleting them from the file system, then exporting them later when they are needed.
+The latest release of PowerPass version 2.0.0 breaks away from an old methodology for generating ephemeral keys within the AES edition of PowerPass.
+v2.x will not be able to open v1.x Lockers on the AES edition.
+The key format is not the same.
+## Key Generation
+In the v1.x branch of PowerPass, AES-encrypted Locker keys were protected with an ephemeral key based on the current environment.
+This key was generated using command-line utilities, and while it was functional, it was liable to fail and throw an error, halting execution of the module.
+In the v2.x branch of PowerPass, ephemeral keys are generated using the cross-platform .NET `System.Net.NetworkInformation` namespace and the `System.Environment` class.
+While this makes the implementation more durable and tolerant to more scenarios, it effectively causes a change in the key format and thus breaks from the v1.x branch of PowerPass.
+# Data Protection Edition
+The DP API edition of PowerPass in v2.0.0 is identical to v1.6.2.
+Nothing has changed other than the fact that the `Get-PowerPassEphemeralKey` cmdlet is now part of `PowerPass.Common.ps1` since it is now compatible with Linux, MacOS, and Windows using a single implementation available in both .NET and the .NET Framework.
 # Deployment
-The deployment script has been modified and is now much quieter than before. To install PowerPass:
-1. Clone the repo, download the release, or download the source code for this release
+To install PowerPass:
+1. Clone the repo, download this release, or download the source code for this release
 2. Run `.\Deploy-PowerPass.ps1` in any PowerShell terminal (you will need write access to this folder)
 
 For detailed information about deployment see the [Deployment](https://chopinrlz.github.io/powerpass/deployment) article in the online documentation.
 # File Hashes
-| Release                 | SHA256 Hash                                                      |
-| ----------------------- | ---------------------------------------------------------------- |
-| PowerPass-1.6.0.tar.gz  | `D1A79F98FFE3B57BD0C7E06D94B8D2ECD0894E6FF2D7DDCE443288CCD4716230` |
-| PowerPass-1.6.0.zip     | `83157F25C5329881779202B78DF5463EE0B1736EE691EB41A34669D59EE81A00` |
+| Release                 | SHA256 Hash                                                        |
+| ----------------------- | ------------------------------------------------------------------ |
+| PowerPass-2.0.0.tar.gz  | `6CE4F0EC8B360AABC2152BF6491A193D7015DD57A7EE0B3DEC40D2A527B66BD0` |
+| PowerPass-2.0.0.zip     | `D2F9BF9EF903F54BAE18F8E8F5DA61E9DA2C7D3A3B186BFA0A3374532BC2C3D7` |
 
 # All PowerPass Topics
 Select one of the links below to browse to another topic.
