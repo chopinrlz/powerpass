@@ -16,14 +16,14 @@ namespace PowerPass {
 			}
 		}
 
-		public static byte[] DecompressFromBase64( string data ) {
+		public static byte[] DecompressFromBase64( string text ) {
 			using( MemoryStream ms = new MemoryStream() ) {
 				using( MemoryStream cd = new MemoryStream() ) {
-					byte[] data = Convert.FromBase64String( data );
+					byte[] data = Convert.FromBase64String( text );
 					cd.Write( data, 0, data.Length );
 					cd.Position = 0;
-					using( GZipStream gz = new GZipStream( ms, CompressionMode.Decompress ) ) {
-						cd.CopyTo( gz );
+					using( GZipStream gz = new GZipStream( cd, CompressionMode.Decompress ) ) {
+						gz.CopyTo( ms );
 					}
 				}
 				return ms.ToArray();

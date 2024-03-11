@@ -720,7 +720,7 @@ function Add-PowerPassAttachment {
         $FileInfo,
         [switch]
         $FullPath,
-        [swtich]
+        [switch]
         $GZip
     )
     begin {
