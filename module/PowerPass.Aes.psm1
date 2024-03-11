@@ -28,6 +28,7 @@ $UserDataPath = if( $IsLinux -or $IsMacOS ) {
 $PowerPass = [PSCustomObject]@{
     AesCryptoSourcePath = Join-Path -Path $PSScriptRoot -ChildPath "AesCrypto.cs"
     CommonSourcePath    = Join-Path -Path $PSScriptRoot -ChildPath "PowerPass.Common.ps1"
+    CompressorPath      = Join-Path -Path $PSScriptRoot -ChildPath "Compression.cs"
     LockerFolderPath    = $UserDataPath
     LockerFilePath      = Join-Path -Path $UserDataPath -ChildPath $LockerFileName
     LockerKeyFolderPath = Join-Path -Path $AppDataPath -ChildPath $PowerPassEdition
@@ -41,6 +42,9 @@ if( $PSVersionTable.PSVersion.Major -eq 5 ) {
 } else {
     Add-Type -Path $PowerPass.AesCryptoSourcePath -ReferencedAssemblies "System.Security.Cryptography"
 }
+
+# Compile and load the GZip implementation
+Add-Type -Path $PowerPass.CompressorPath
 
 # Dot Source the common functions
 . ($PowerPass.CommonSourcePath)
@@ -562,6 +566,8 @@ function Write-PowerPassAttachment {
         Option 3: you may specify the Data for the file in any format, or from the pipeline such as from Get-ChildItem.
         .PARAMETER Text
         Option 4: you may specify the contents of the file as a text string.
+        .PARAMETER GZip
+        An optional parameter to compress the attachment using GZip before storing it.
         .NOTES
         Data and Text in string format is encoded with Unicode. Data in PSCustomObject format is converted to JSON then
         encoded with Unicode. Byte arrays and FileInfo objects are stored natively. Data in any other formats is converted
@@ -583,7 +589,9 @@ function Write-PowerPassAttachment {
         $Data,
         [Parameter(ParameterSetName="FromString",Position=1)]
         [string]
-        $Text
+        $Text,
+        [switch]
+        $GZip
     )
     begin {
         $locker = Get-PowerPassLocker
@@ -595,12 +603,23 @@ function Write-PowerPassAttachment {
         }
     } process {
         [byte[]]$bytes = $null
+        $setGZipFlag = $false
         if( $Path ) {
             $fileInfo = Get-Item -Path $Path
-            $bytes = [System.IO.File]::ReadAllBytes( $fileInfo.FullName )
+            if( $GZip ) {
+                $bytes = [PowerPass.Compressor]::CompressFromDisk( $fileInfo.FullName )
+                $setGZipFlag = $true
+            } else {
+                $bytes = [System.IO.File]::ReadAllBytes( $fileInfo.FullName )
+            }
         } elseif( $LiteralPath ) {
             $fileInfo = Get-Item -LiteralPath $LiteralPath
-            $bytes = [System.IO.File]::ReadAllBytes( $fileInfo.FullName )
+            if( $GZip ) {
+                $bytes = [PowerPass.Compressor]::CompressFromDisk( $fileInfo.FullName )
+                $setGZipFlag = $true
+            } else {
+                $bytes = [System.IO.File]::ReadAllBytes( $fileInfo.FullName )
+            }
         } elseif( $Data ) {
             $dataType = $Data.GetType().FullName
             switch( $dataType ) {
@@ -625,7 +644,12 @@ function Write-PowerPassAttachment {
                     $bytes = $Data
                 }
                 "System.IO.FileInfo" {
-                    $bytes = [System.IO.File]::ReadAllBytes( $Data.FullName )
+                    if( $GZip ) {
+                        $bytes = [PowerPass.Compression]::CompressFromDisk( $Data.FullName )
+                        $setGZipFlag = $true
+                    } else {
+                        $bytes = [System.IO.File]::ReadAllBytes( $Data.FullName )
+                    }
                 }
                 "System.String" {
                     $bytes = ([System.Text.Encoding]::Unicode).GetBytes( $Data )
@@ -648,10 +672,15 @@ function Write-PowerPassAttachment {
         if( $ex ) {
             $ex.Data = $fileData
             $ex.Modified = (Get-Date).ToUniversalTime()
+            if( -not (Get-Member -InputObject $ex -Name "GZip") ) {
+                Add-Member -InputObject $ex -Name "GZip" -Value $false
+            }
+            $ex.GZip = $setGZipFlag
         } else {
             $ex = New-PowerPassAttachment
             $ex.FileName = $FileName
             $ex.Data = $fileData
+            $ex.GZip = $setGZipFlag
             $locker.Attachments += $ex
         }
     } end {
@@ -678,6 +707,8 @@ function Add-PowerPassAttachment {
         .PARAMETER FullPath
         If specified, the full file path will be saved as the file name. If the file already exists, it will be
         updated in your locker.
+        .PARAMETER GZip
+        Enable GZip compression.
         .NOTES
         Rather than using Write-PowerPassAttachment, you can use Add-PowerPassAttachment to add multiple files
         to your locker at once by piping the output of Get-ChildItem to Add-PowerPassAttachment. Each file fetched
@@ -688,7 +719,9 @@ function Add-PowerPassAttachment {
         [Parameter(Mandatory,ValueFromPipeline)]
         $FileInfo,
         [switch]
-        $FullPath
+        $FullPath,
+        [swtich]
+        $GZip
     )
     begin {
         $locker = Get-PowerPassLocker
@@ -702,7 +735,12 @@ function Add-PowerPassAttachment {
     } process {
         if( $FileInfo.GetType().FullName -eq "System.IO.FileInfo" ) {
             $changed = $true
-            $bytes = [System.IO.File]::ReadAllBytes( $FileInfo.FullName )
+            [byte[]]$bytes = $null
+            if( $GZip ) {
+                $bytes = [PowerPass.Compressor]::CompressFromDisk( $FileInfo.FullName )
+            } else {
+                $bytes = [System.IO.File]::ReadAllBytes( $FileInfo.FullName )
+            }
             $fileData = [System.Convert]::ToBase64String( $bytes )
             $fileName = ""
             if( $FullPath ) {
@@ -714,10 +752,23 @@ function Add-PowerPassAttachment {
             if( $ex ) {
                 $ex.Data = $fileData
                 $ex.Modified = (Get-Date).ToUniversalTime()
+                if( -not (Get-Member -InputObject $ex -Name "GZip") ) {
+                    Add-Member -InputObject $ex -Name "GZip" -Value $false
+                }
+                if( $GZip ) {
+                    $ex.GZip = $true
+                } else {
+                    $ex.GZip = $false
+                }
             } else {
                 $ex = New-PowerPassAttachment
                 $ex.FileName = $fileName
                 $ex.Data = $fileData
+                if( $GZip ) {
+                    $ex.GZip = $true
+                } else {
+                    $ex.GZip = $false
+                }
                 $locker.Attachments += $ex
             }
         }

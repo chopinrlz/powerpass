@@ -43,6 +43,8 @@ function New-PowerPassAttachment {
         Modified = [DateTime]::Now.ToUniversalTime()
         # Marked For Deletion: flag used by Remove-PowerPassAttachment
         Mfd = $false
+        # GZip Compression flag - added v2.1.0
+        GZip = $false
     }
     Write-Output $npa
 }
@@ -314,7 +316,12 @@ function Read-PowerPassAttachment {
                 if( $Raw ) {
                     Write-Output $attachment
                 } elseif( $AsText ) {
-                    $bytes = [System.Convert]::FromBase64String($attachment.Data)
+                    [byte[]]$bytes = $null
+                    if( $attachment.GZip ) {
+                        $bytes = [PowerPass.Compressor]::DecompressFromBase64( $attachment.Data )
+                    } else {
+                        $bytes = [System.Convert]::FromBase64String($attachment.Data)
+                    }
                     switch( $Encoding ) {
                         "Ascii" {
                             Write-Output ([System.Text.Encoding]::ASCII).GetString($bytes)
@@ -330,7 +337,11 @@ function Read-PowerPassAttachment {
                         }
                     }
                 } else {
-                    Write-Output ([System.Convert]::FromBase64String($attachment.Data))
+                    if( $attachment.GZip ) {
+                        Write-Output ([PowerPass.Compressor]::DecompressFromBase64( $attachment.Data ))
+                    } else {
+                        Write-Output ([System.Convert]::FromBase64String($attachment.Data))
+                    }
                 }
             } else {
                 Write-Output $null
@@ -512,7 +523,12 @@ function Export-PowerPassAttachment {
     process {
         $atts = $locker.Attachments | Where-Object { $_.FileName -like $FileName }
         foreach( $a in $atts ) {
-            $bytes = [System.Convert]::FromBase64String($a.Data)
+            [byte[]]$bytes = $null
+            if( $a.GZip ) {
+                $bytes = [PowerPass.Compressor]::DecompressFromBase64($a.Data)
+            } else {
+                $bytes = [System.Convert]::FromBase64String($a.Data)
+            }            
             $targetFile = if( $OriginalPath ) {
                 $a.FileName
             } else {

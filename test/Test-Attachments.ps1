@@ -343,4 +343,19 @@ foreach( $ath in $actualHash ) {
     }
 }
 
+# Test attachment import and export - add and export this whole directory - GZip enabled
+
+Write-Output "Testing attachment import and export with GZip"
+Clear-PowerPassLocker -Force
+Remove-PowerPassAttachment -FileName "PowerPass.txt"
+$actualHash = Get-ChildItem -File | Get-FileHash
+Get-ChildItem -File | Add-PowerPassAttachment -FullPath -GZip
+Export-PowerPassAttachment -FileName "*" -OriginalPath -Force
+foreach( $ath in $actualHash ) {
+    $hash = Get-FileHash -Path ($ath.Path)
+    if( $hash.Hash -ne $ath.Hash ) {
+        Write-Warning "Test failed: $($ath.Path) not identical"
+    }
+}
+
 Clear-PowerPassLocker -Force
