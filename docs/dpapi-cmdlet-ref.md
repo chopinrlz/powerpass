@@ -1,5 +1,5 @@
 # PowerPass Cmdlet Reference for Windows PowerShell DP API / KeePass 2 Implementation
-#### _Revised: January 14, 2024_
+#### _Revised: March 12, 2024_
 The Windows PowerShell Data Protection API implementation supports Windows PowerShell 5.1 and includes support for KeePass 2 databases as well as PowerPass Lockers. Cmdlets for this implementation are as follows:
 1. [Add-PowerPassAttachment](#add-powerpassattachment)
 2. [Clear-PowerPassLocker](#clear-powerpasslocker)
