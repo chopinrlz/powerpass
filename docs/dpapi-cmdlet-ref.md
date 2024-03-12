@@ -32,6 +32,8 @@ Any files that already exist in your locker will be updated.
 One or more `FileInfo` objects collected from `Get-Item` or `Get-ChildItem`. Can be passed via pipeline.
 ### PARAMETER FullPath
 If specified, the full file path will be saved as the file name.
+### PARAMETER GZip
+Enable GZip compression.
 ### EXAMPLE 1: Save All the Files in the Current Directory
 In this example we load all the files from the current directory into our locker.
 ```powershell
@@ -45,6 +47,11 @@ from the location on disk as the filename.
 ```powershell
 # Add all the file in the current directory as attachments with the full path as the stored filename
 Get-ChildItem | Add-PowerPassAttachment -FullPath
+```
+This example also supports adding GZip compression to all the files in the current directory.
+```powershell
+# Add all the file in the current directory as attachments with the full path as the stored filename
+Get-ChildItem | Add-PowerPassAttachment -FullPath -GZip
 ```
 ##### ***[Back to Top](#powerpass-cmdlet-reference-for-windows-powershell-dp-api--keepass-2-implementation)***
 # Clear-PowerPassLocker
@@ -537,6 +544,8 @@ See the examples below for how to use this parameter. Cannot be combined with ot
 ### PARAMETER Text
 Specify the contents of the file as a text string. Your attachment will be created with Unicode
 text encoding. Cannot be combined with other parameters.
+### PARAMETER GZip
+Enable GZip compression. Can only be used with Path, LiteralPath, or Data if Data is a FileInfo object.
 ### NOTES
 Data and Text in string format is encoded with Unicode. Data in PSCustomObject format is converted to JSON then
 encoded with Unicode. Byte arrays and FileInfo objects are stored natively with Byte encoding. Data in any other
@@ -549,11 +558,21 @@ In this example we load a binary certificate file into our locker from a relativ
 # Add a certificate file from the current folder
 Write-PowerPassAttachment -FileName "certificate.pfx" -Path ".\cert.pfx"
 ```
+This example also supports adding GZip compression:
+```powershell
+# Add a certificate file from the current folder
+Write-PowerPassAttachment -FileName "certificate.pfx" -Path ".\cert.pfx" -GZip
+```
 ### EXAMPLE 2
 In this example we local a binary certificate file into our locker from a literal path.
 ```powershell
 # Add the certificate file from C:\Private into our locker
 Write-PowerPassAttachment -FileName "certificate.pfx" -LiteralPath "C:\Private\cert.pfx"
+```
+This example also supports adding GZip compression:
+```powershell
+# Add the certificate file from C:\Private into our locker
+Write-PowerPassAttachment -FileName "certificate.pfx" -LiteralPath "C:\Private\cert.pfx" -GZip
 ```
 ### EXAMPLE 3
 In this example we demonstrate using the `-Data` parameter to load a file from a byte array.
@@ -575,6 +594,11 @@ for multiple files coming from the pipeline.
 ```powershell
 # Get the file info for cert.pfx and save it as an attachment
 Get-Item ".\cert.pfx" | Write-PowerPassAttachment -FileName "certificate.pfx"
+```
+This example also supports adding GZip compression:
+```powershell
+# Get the file info for cert.pfx and save it as an attachment
+Get-Item ".\cert.pfx" | Write-PowerPassAttachment -FileName "certificate.pfx" -GZip
 ```
 ### EXAMPLE 5
 In this example we demonstrate using the `-Data` parameter with `Get-Content` to save a text
