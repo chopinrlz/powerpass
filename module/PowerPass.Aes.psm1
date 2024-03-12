@@ -590,6 +590,9 @@ function Write-PowerPassAttachment {
         [Parameter(ParameterSetName="FromString",Position=1)]
         [string]
         $Text,
+        [Parameter(ParameterSetName="FromDisk")]
+        [Parameter(ParameterSetName="FromDiskLiteral")]
+        [Parameter(ParameterSetName="FromPipeline")]
         [switch]
         $GZip
     )

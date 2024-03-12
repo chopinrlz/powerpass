@@ -69,6 +69,30 @@ if( $fileBytes.Length -ne $readBytes.Length ) {
 }
 if( Test-Path $testFile ) { Remove-Item $testFile -Force }
 
+# Test attachment support - path with byte array assert with GZip enabled
+
+Write-Output "Testing attachment create from file path with GZip enabled"
+$testData = "Hello, compressed file!"
+$testFileName = "hello_file_gzip.txt"
+$testFile = Join-Path -Path $PSScriptRoot -ChildPath $testFileName
+if( Test-Path $testFile ) { Remove-Item $testFile -Force }
+$testData | Out-File -FilePath $testFile
+[byte[]]$fileBytes = [System.IO.File]::ReadAllBytes( $testFile )
+Write-PowerPassAttachment -FileName $testFileName -Path $testFile -GZip
+$readBytes = Read-PowerPassAttachment -FileName $testFileName
+if( $fileBytes.Length -ne $readBytes.Length ) {
+    Write-Warning "Test failed: byte array length mismatch"
+} else {
+    $match = $true
+    for( $i = 0; $i -lt $fileBytes.Length; $i++ ) {
+        $match = $match -and ( $fileBytes[$i] -eq $readBytes[$i] )
+    }
+    if( -not $match ) {
+        Write-Warning "Test failed: byte array contents not identical"
+    }
+}
+if( Test-Path $testFile ) { Remove-Item $testFile -Force }
+
 # Test attachment support - literal path
 
 Write-Output "Testing attachment create from file literal path"
