@@ -37,10 +37,15 @@ Enable GZip compression.
 ### EXAMPLE 1: Save All the Files in the Current Directory
 In this example we load all the files from the current directory into our locker.
 ```powershell
-# Add all the files in the current directory as attachments with just the filename as the stored filename
+# Attach all files in the current directory with just the filename as the stored filename
 Get-ChildItem | Add-PowerPassAttachment
 ```
 Note that directories will be ignored.
+This example also supports adding GZip compression to the files:
+```powershell
+# Compress and attach all files in the current directory with just the filename as the stored filename
+Get-ChildItem | Add-PowerPassAttachment -GZip
+```
 ### EXAMPLE 2: Save All the Files in the Current Directory with the Full Path
 In this example we load all the files from the current directory into our locker using the full path
 from the location on disk as the filename.

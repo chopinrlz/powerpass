@@ -34,22 +34,27 @@ Enable GZip compression.
 ### EXAMPLE 1: Save All the Files in the Current Directory
 In this example we load all the files from the current directory into our locker.
 ```powershell
-# Add all the files in the current directory as attachments with just the filename as the stored filename
+# Attach all files in the current directory using the short filename
 Get-ChildItem | Add-PowerPassAttachment
 ```
 Note that directories will be ignored.
+This example also supports adding GZip compression to the files:
+```powershell
+# Attach and compress all files in the current directory using the short filename
+Get-ChildItem | Add-PowerPassAttachment -GZip
+```
 ### EXAMPLE 2: Save All the Files in the Current Directory with the Full Path
 In this example we load all the files from the current directory into our locker using the full path
 from the location on disk as the filename.
 ```powershell
-# Add all the file in the current directory as attachments with the full path as the stored filename
+# Attach all files in the current directory using the full path and filename
 Get-ChildItem | Add-PowerPassAttachment -FullPath
 ```
 ### EXAMPLE 3: Save All the Files in the Current Directory with the Full Path and Compress each File
 In this example we load all the files from the current directory into our locker using the full path
 from the location on disk as the filename and we enable GZip compression for each file.
 ```powershell
-# Add all the file in the current directory as attachments with the full path as the stored filename
+# Compress and attach all files in the current directory using the full path and filename
 Get-ChildItem | Add-PowerPassAttachment -FullPath -GZip
 ```
 ##### ***[Back to Top](#powerpass-cmdlet-reference-for-aes-implementation)***
