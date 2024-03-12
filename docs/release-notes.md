@@ -1,18 +1,12 @@
 **NOTE: This is a BREAKING CHANGE from v1.x. If you are on v1.x please EXPORT your Locker before deploying v2.x.**
-If your forget to do this, simply go back to v1.6.2, export your Locker, then deploy v2.0.0.
+If your forget to do this, simply go back to v1.6.2, export your Locker, then deploy v2.1.0.
 PowerPass will not overwrite your Locker or your Locker keys if they already exist.
-# Release Notes
-The latest release of PowerPass version 2.0.0 breaks away from an old methodology for generating ephemeral keys within the AES edition of PowerPass.
-v2.x will not be able to open v1.x Lockers on the AES edition.
-The key format is not the same.
+# Attachment Compression
+This latest release of PowerPass v2.1.0 adds support for attachment compression. When loading large attachments into your Locker, add the `-GZip` parameter to compress the file before loading it to your Locker. This works best with large text files, such as CSV or JSON files which contain data, but is not recommended for files which are already compressed.
+# Breaking Changes
+The v2.x branch of PowerPass breaks away from an old methodology for generating ephemeral keys within the AES edition of PowerPass. v2.x will not be able to open v1.x Lockers on the AES edition. The key format is not the same.
 ## Key Generation
-In the v1.x branch of PowerPass, AES-encrypted Locker keys were protected with an ephemeral key based on the current environment.
-This key was generated using command-line utilities, and while it was functional, it was liable to fail and throw an error, halting execution of the module.
-In the v2.x branch of PowerPass, ephemeral keys are generated using the cross-platform .NET `System.Net.NetworkInformation` namespace and the `System.Environment` class.
-While this makes the implementation more durable and tolerant to more scenarios, it effectively causes a change in the key format and thus breaks from the v1.x branch of PowerPass.
-# Data Protection Edition
-The DP API edition of PowerPass in v2.0.0 is identical to v1.6.2.
-Nothing has changed other than the fact that the `Get-PowerPassEphemeralKey` cmdlet is now part of `PowerPass.Common.ps1` since it is now compatible with Linux, MacOS, and Windows using a single implementation available in both .NET and the .NET Framework.
+In the v1.x branch of PowerPass, AES-encrypted Locker keys were protected with an ephemeral key based on the current environment. This key was generated using command-line utilities, and while it was functional, it was liable to fail and throw an error, halting execution of the module. In the v2.x branch of PowerPass, ephemeral keys are generated using the cross-platform .NET `System.Net.NetworkInformation` namespace and the `System.Environment` class. While this makes the implementation more durable and tolerant to more scenarios, it effectively causes a change in the key format and thus breaks from the v1.x branch of PowerPass.
 # Deployment
 To install PowerPass:
 1. Clone the repo, download this release, or download the source code for this release
@@ -22,8 +16,8 @@ For detailed information about deployment see the [Deployment](https://chopinrlz
 # File Hashes
 | Release                 | SHA256 Hash                                                        |
 | ----------------------- | ------------------------------------------------------------------ |
-| PowerPass-2.0.0.tar.gz  | `6CE4F0EC8B360AABC2152BF6491A193D7015DD57A7EE0B3DEC40D2A527B66BD0` |
-| PowerPass-2.0.0.zip     | `D2F9BF9EF903F54BAE18F8E8F5DA61E9DA2C7D3A3B186BFA0A3374532BC2C3D7` |
+| PowerPass-2.1.0.tar.gz  | `47743DFC4475F88A5828F8143C59E4D588C48731BE351C40DABE3365B61A0443` |
+| PowerPass-2.1.0.zip     | `083A66ADF4D1B4ACF90F08E9FE6C2931F62CA383DB25F697AA8E5A11AFE0D249` |
 
 # All PowerPass Topics
 Select one of the links below to browse to another topic.

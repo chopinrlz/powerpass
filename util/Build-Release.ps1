@@ -53,6 +53,7 @@ $dirPowerPass = Join-Path -Path (Get-Location) -ChildPath "module"
 
 # Declare each module file for the release and verify presence
 $aesCryptoCs = Join-Path -Path $dirPowerPass -ChildPath "AesCrypto.cs"
+$compressionCs = Join-Path -Path $dirPowerPass -ChildPath "Compression.cs"
 $extensionsCs = Join-Path -Path $dirPowerPass -ChildPath "Extensions.cs"
 $powerPassCommon = Join-Path -Path $dirPowerPass -ChildPath "PowerPass.Common.ps1"
 $powerPassAesPsd1 = Join-Path -Path $dirPowerPass -ChildPath "PowerPass.Aes.psd1"
@@ -61,7 +62,7 @@ $powerPassDpApiPsd1 = Join-Path -Path $dirPowerPass -ChildPath "PowerPass.DpApi.
 $powerPassDpApiPsm1 = Join-Path -Path $dirPowerPass -ChildPath "PowerPass.DpApi.psm1"
 $powerPassPs1 = Join-Path -Path $dirPowerPass -ChildPath "PowerPass.ps1"
 $statusLoggerCs = Join-Path -Path $dirPowerPass -ChildPath "StatusLogger.cs"
-$powerPassFiles = @($aesCryptoCs,$extensionsCs,$powerPassAesPsd1,$powerPassAesPsm1,$powerPassDpApiPsd1,$powerPassDpApiPsm1,$powerPassPs1,$statusLoggerCs,$powerPassCommon)
+$powerPassFiles = @($aesCryptoCs,$compressionCs,$extensionsCs,$powerPassAesPsd1,$powerPassAesPsm1,$powerPassDpApiPsd1,$powerPassDpApiPsm1,$powerPassPs1,$statusLoggerCs,$powerPassCommon)
 foreach( $file in $powerPassFiles ) {
     if( -not (Test-Path $file) ) {
         throw "$file is missing"
