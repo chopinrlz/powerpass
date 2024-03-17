@@ -14,6 +14,7 @@
 // PowerPass and tpm2-tss includes
 #include "powerpasstpm.h"
 #include "tss2/tss2_fapi.h"
+#include "tss2/tss2_rc.h"
 
 /*
     -------------------------------------------------------------------
@@ -89,21 +90,34 @@ int pptpm_init(void) {
     FAPI_CONTEXT* context;
     res = Fapi_Initialize( &context, NULL );
     if( res == TSS2_RC_SUCCESS ) {
-        res = Fapi_CreateKey( context, __POWERPASS_KEY_PATH, __POWERPASS_KEY_TYPE, NULL, NULL );
-        switch( res ) {
-            case TSS2_RC_SUCCESS:
-                printf( "Successfully created key at %s\n", __POWERPASS_KEY_PATH );
-                break;
-            case TSS2_FAPI_RC_PATH_ALREADY_EXISTS:
-                printf( "Key already exists\n" );
-                break;
-            default:
-                printf( "Error creating TPM key for PowerPass Locker\n" );
-                break;
+        res = Fapi_Provision( context, NULL, NULL, __POWERPASS_AUTH_LOCKOUT );
+        if( res == TSS2_RC_SUCCESS ) {
+            res = Fapi_CreateKey( context, __POWERPASS_KEY_PATH, __POWERPASS_KEY_TYPE, NULL, NULL );
+            switch( res ) {
+                case TSS2_RC_SUCCESS:
+                    printf( "Successfully created key at %s\n", __POWERPASS_KEY_PATH );
+                    break;
+                case TSS2_FAPI_RC_PATH_ALREADY_EXISTS:
+                    printf( "Key already exists\n" );
+                    break;
+                default:
+                    printf( "Error creating TPM key for PowerPass Locker\n" );
+                    break;
+            }
+        } else {
+            printf( "Error provisioning Feature API instance: %d\n", res );
         }
         Fapi_Finalize( &context );
     } else {
         printf( "Error initializing FAPI context\n" );
+    }
+
+    // Check return code
+    if( res != TSS2_RC_SUCCESS ) {
+        const char* decoded = Tss2_RC_Decode( res );
+        printf( "Decoded error message: %s\n", decoded );
         return 1;
+    } else {
+        return 0;
     }
 }
