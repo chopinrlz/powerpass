@@ -1,3 +1,10 @@
+/*
+    Compression.cs source code for GZip compression and decompression of files on disk.
+    Copyright 2023-2024 by ShwaTech LLC
+    This software is provided AS IS WITHOUT WARRANTEE.
+    You may copy, modify or distribute this software under the terms of the GNU Public License 2.0.
+*/
+
 using System;
 using System.IO;
 using System.IO.Compression;

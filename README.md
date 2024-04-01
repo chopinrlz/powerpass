@@ -92,7 +92,7 @@ You can also rotate your locker salts automatically, but the locker key is built
 The Data Protection API does not allow you to explicitly rotate your user profile key.
 # Additional Resources
 ## License and Copyright
-PowerPass is copyright 2023-2024 by The Daltas Group LLC.
+PowerPass is copyright 2023-2024 by ShwaTech LLC.
 PowerPass is open-source, free software. You may use PowerPass for any purpose.
 PowerPass is licensed under the GNU Public License v2.0.
 The license can be found in the [LICENSE](https://github.com/chopinrlz/powerpass/blob/main/LICENSE) file.
