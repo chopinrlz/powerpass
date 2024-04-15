@@ -23,6 +23,6 @@ const char __POWERPASS_AUTH_SECRET[] = "2ca10696b4a94a8ba732fdd94ea0ef08";
 int main(int argc, char** argv);
 int pptpm_test(void);
 int pptpm_init(void);
-TSS2_RC pptpm_provision_authcallback( const char* objectPath, const char* description, const char** auth, void* userData )
+TSS2_RC pptpm_provision_authcallback( const char* objectPath, const char* description, const char** auth, void* userData );
 
 #endif
