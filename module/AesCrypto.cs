@@ -7,6 +7,7 @@
 
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
 
@@ -157,26 +158,33 @@ namespace PowerPass {
                     // Decrypt the remaining file contents
                     using( var cs = new CryptoStream( fs, aes.CreateDecryptor( _key, iv ), CryptoStreamMode.Read ) ) {
                         byte[] buffer = new byte[DecryptionBufferSize];
+                        var buffers = new List<byte[]>();
                         int read = cs.Read( buffer, 0, buffer.Length );
-                        int total = 0;
+                        int totalRead = 0;
+
+                        // Read until the end of the stream
                         while( read > 0 ) {
-                            total += read;
-                            if( result == null ) { 
-                                result = new byte[read];
-                                Array.Copy( buffer, result, read );
-                            } else {
-                                byte[] newResult = new byte[total];
-                                Array.Copy( result, newResult, result.Length );
-                                Array.Copy( buffer, 0, newResult, result.Length, read );
-                                for( int i = 0; i < result.Length; i++ ) {
-                                    result[i] = 0x00;
-                                }
-                                result = newResult;
-                            }
+                            totalRead += read;
+                            byte[] myBuf = new byte[read];
+                            Array.Copy( buffer, 0, myBuf, 0, read );
+                            buffers.Add( myBuf );
                             read = cs.Read( buffer, 0, buffer.Length );
                         }
 
-                        // Zero the buffer
+                        // Concatenate the buffers into a single array
+                        int indexer = 0;
+                        result = new byte[totalRead];
+                        foreach( var block in buffers ) {
+                            Array.Copy( block, 0, result, indexer, block.Length );
+                            indexer += block.Length;
+
+                            // Zero out the block buffer
+                            for( int i = 0; i < block.Length; i++ ) {
+                                block[i] = 0x00;
+                            }
+                        }
+
+                        // Zero out main buffer
                         for( int i = 0; i < buffer.Length; i++ ) {
                             buffer[i] = 0x00;
                         }
