@@ -11,7 +11,7 @@ $code = Get-Content "$PSScriptRoot\..\module\AesCrypto.cs" -Raw
 if( $PSVersionTable.PSVersion.Major -eq 5 ) {
     Add-Type -TypeDefinition $code -ReferencedAssemblies "System.Security"
 } else {
-    Add-Type -TypeDefinition $code -ReferencedAssemblies "System.Security.Cryptography"
+    Add-Type -TypeDefinition $code -ReferencedAssemblies "System.Security.Cryptography","System.Collections"
 }
 
 # Generate test data
