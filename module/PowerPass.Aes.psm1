@@ -40,7 +40,7 @@ $PowerPass = [PSCustomObject]@{
 if( $PSVersionTable.PSVersion.Major -eq 5 ) {
     Add-Type -Path $PowerPass.AesCryptoSourcePath -ReferencedAssemblies "System.Security"
 } else {
-    Add-Type -Path $PowerPass.AesCryptoSourcePath -ReferencedAssemblies "System.Security.Cryptography"
+    Add-Type -Path $PowerPass.AesCryptoSourcePath -ReferencedAssemblies "System.Security.Cryptography","System.Collections"
 }
 
 # Compile and load the GZip implementation
