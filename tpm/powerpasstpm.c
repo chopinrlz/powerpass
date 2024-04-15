@@ -86,27 +86,43 @@ int pptpm_test(void) {
 */
 
 int pptpm_init(void) {
+    // Declare context and return code variables
     TSS2_RC res;
     FAPI_CONTEXT* context;
+
+    // Initialize the context
     res = Fapi_Initialize( &context, NULL );
     if( res == TSS2_RC_SUCCESS ) {
-        res = Fapi_Provision( context, NULL, NULL, __POWERPASS_AUTH_LOCKOUT );
+
+        // Set the callback for authorization value retrieval
+        res = Fapi_SetAuthCB( context, pptpm_provision_authcallback, NULL );
         if( res == TSS2_RC_SUCCESS ) {
-            res = Fapi_CreateKey( context, __POWERPASS_KEY_PATH, __POWERPASS_KEY_TYPE, NULL, NULL );
-            switch( res ) {
-                case TSS2_RC_SUCCESS:
-                    printf( "Successfully created key at %s\n", __POWERPASS_KEY_PATH );
-                    break;
-                case TSS2_FAPI_RC_PATH_ALREADY_EXISTS:
-                    printf( "Key already exists\n" );
-                    break;
-                default:
-                    printf( "Error creating TPM key for PowerPass Locker\n" );
-                    break;
+
+            // Provision the FAPI context
+            res = Fapi_Provision( context, NULL, NULL, __POWERPASS_AUTH_LOCKOUT );
+            if( res == TSS2_RC_SUCCESS ) {
+
+                // Create a new key for encryption
+                res = Fapi_CreateKey( context, __POWERPASS_KEY_PATH, __POWERPASS_KEY_TYPE, NULL, NULL );
+                switch( res ) {
+                    case TSS2_RC_SUCCESS:
+                        printf( "Successfully created key at %s\n", __POWERPASS_KEY_PATH );
+                        break;
+                    case TSS2_FAPI_RC_PATH_ALREADY_EXISTS:
+                        printf( "Key already exists\n" );
+                        break;
+                    default:
+                        printf( "Error creating TPM key for PowerPass Locker\n" );
+                        break;
+                }
+            } else {
+                printf( "Error provisioning Feature API instance: %d\n", res );
             }
         } else {
-            printf( "Error provisioning Feature API instance: %d\n", res );
+            printf( "Error setting auth callback: %d\n", res );
         }
+        
+        // Release the context
         Fapi_Finalize( &context );
     } else {
         printf( "Error initializing FAPI context\n" );
@@ -119,5 +135,23 @@ int pptpm_init(void) {
         return 1;
     } else {
         return 0;
+    }
+}
+
+/*
+    -------------------------------------------------------------------
+    Function: TSS2_RC pptpm_provision_authcallback
+    Handles the callback to provide an authorization value (password)
+    for the storage hierarchy during FAPI provisioning.
+    -------------------------------------------------------------------
+*/
+
+TSS2_RC pptpm_provision_authcallback( const char* objectPath, const char* description, const char** auth, void* userData ) {
+    printf( "Auth callback invoked for %s\n", objectPath );
+    if( !objectPath ) {
+        return TSS2_FAPI_RC_BAD_VALUE;
+    } else {
+        *auth = __POWERPASS_AUTH_SECRET;
+        return TSS2_RC_SUCCESS;
     }
 }
