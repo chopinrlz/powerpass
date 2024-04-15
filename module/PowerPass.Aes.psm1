@@ -107,6 +107,11 @@ function Get-PowerPassLocker {
         .NOTES
         This cmdlet will stop execution with a throw if the locker salt could not be fetched.
     #>
+    param(
+        [Parameter(Mandatory)]
+        [ref]
+        $Locker
+    )
     Initialize-PowerPassLocker
     $pathToLockerKey = $script:PowerPass.LockerKeyFilePath
     $pathToLocker = $script:PowerPass.LockerFilePath
@@ -116,14 +121,16 @@ function Get-PowerPassLocker {
             $aes.ReadKeyFromDisk( $pathToLockerKey, [ref] (Get-PowerPassEphemeralKey) )
             $lockerBytes = $aes.Decrypt( $pathToLocker )
             $lockerJson = [System.Text.Encoding]::UTF8.GetString( $lockerBytes )
-            $locker = ConvertFrom-Json $lockerJson
+            $Locker.Value = ConvertFrom-Json $lockerJson
             $aes.Dispose()
-            Write-Output $locker
+            $aes = $null
+            $lockerBytes = $null
+            $lockerJson = $null
         } else {
-            Write-Output $null
+            $Locker.Value = $null
         }
     } else {
-        Write-Output $null
+        $Locker.Value = $null
     }
 }
 
@@ -175,7 +182,9 @@ function Write-PowerPassSecret {
         $MaskPassword
     )
     begin {
-        $locker = Get-PowerPassLocker
+        [PSCustomObject]$locker = $null
+        Get-PowerPassLocker -Locker ([ref] $locker)
+        [GC]::Collect()
         if( -not $locker ) {
             throw "Could not create or fetch your locker"
         }
@@ -335,7 +344,9 @@ function Export-PowerPassLocker {
     if( -not (Test-Path $Path) ) {
         throw "$Path does not exist"
     }
-    $locker = Get-PowerPassLocker
+    [PSCustomObject]$locker = $null
+    Get-PowerPassLocker -Locker ([ref] $locker)
+    [GC]::Collect()
     if( -not $locker ) {
         throw "Could not load you PowerPass locker"
     }
@@ -462,7 +473,9 @@ function Update-PowerPassKey {
         key. This ensures that even if a previous encryption was broken, a new attempt must be made if an
         attacker regains access to your encrypted Locker.
     #>
-    $locker = Get-PowerPassLocker
+    [PSCustomObject]$locker = $null
+    Get-PowerPassLocker -Locker ([ref] $locker)
+    [GC]::Collect()
     if( -not $locker ) {
         throw "Unable to fetch your PowerPass Locker"
     }
@@ -519,7 +532,9 @@ function Remove-PowerPassSecret {
         $Title
     )
     begin {
-        $locker = Get-PowerPassLocker
+        [PSCustomObject]$locker = $null
+        Get-PowerPassLocker -Locker ([ref] $locker)
+        [GC]::Collect()
         if( -not $locker ) {
             throw "Could not load your PowerPass locker"
         }
@@ -602,7 +617,9 @@ function Write-PowerPassAttachment {
         $GZip
     )
     begin {
-        $locker = Get-PowerPassLocker
+        [PSCustomObject]$locker = $null
+        Get-PowerPassLocker -Locker ([ref] $locker)
+        [GC]::Collect()
         if( -not $locker ) {
             throw "Could not create or fetch your locker"
         }
@@ -700,9 +717,6 @@ function Write-PowerPassAttachment {
         $aes.ReadKeyFromDisk( $pathToLockerKey, [ref] (Get-PowerPassEphemeralKey) )
         $aes.Encrypt( $data, $pathToLocker )
         $aes.Dispose()
-        for( $i = 0; $i -lt $data.Length; $i++ ) {
-            $data[$i] = 0x00
-        }
         $locker = $null
         $data = $null
         $aes = $null
@@ -740,7 +754,9 @@ function Add-PowerPassAttachment {
         $GZip
     )
     begin {
-        $locker = Get-PowerPassLocker
+        [PSCustomObject]$locker = $null
+        Get-PowerPassLocker -Locker ([ref] $locker)
+        [GC]::Collect()
         if( -not $locker ) {
             throw "Could not create or fetch your locker"
         }
@@ -822,7 +838,9 @@ function Remove-PowerPassAttachment {
         $FileName
     )
     begin {
-        $locker = Get-PowerPassLocker
+        [PSCustomObject]$locker = $null
+        Get-PowerPassLocker -Locker ([ref] $locker)
+        [GC]::Collect()
         if( -not $locker ) {
             throw "Could not load your PowerPass locker"
         }

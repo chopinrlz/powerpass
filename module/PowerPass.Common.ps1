@@ -261,7 +261,8 @@ function Get-PowerPassAttachments {
         .OUTPUTS
         Outputs each attachment from your locker including the FileName, Created date, and Modified date.
     #>
-    $locker = Get-PowerPassLocker
+    [PSCustomObject]$locker = $null
+    Get-PowerPassLocker -Locker ([ref] $locker)
     if( -not $locker ) {
         throw "Could not create or fetch your locker"
     }
@@ -311,7 +312,9 @@ function Read-PowerPassAttachment {
         [string]
         $Encoding
     )
-    $locker = Get-PowerPassLocker
+    [PSCustomObject]$locker = $null
+    Get-PowerPassLocker -Locker ([ref] $locker)
+    [GC]::Collect()
     if( -not $locker ) {
         throw "Could not create or fetch your locker"
     }
@@ -344,14 +347,22 @@ function Read-PowerPassAttachment {
                     }
                 } else {
                     if( $attachment.GZip ) {
-                        Write-Output ([PowerPass.Compressor]::DecompressFromBase64( $attachment.Data ))
+                        $file = [PowerPass.Compressor]::DecompressFromBase64( $attachment.Data )
+                        Write-Output -InputObject $file -NoEnumerate
                     } else {
-                        # Windows PowerShell 5.1 and PowerShell 7.4.2
+                        # PowerShell 7.4.2
                         # Memory leak: when calling FromBase64String on a large string, such as one that
                         # is over 100 million characters long, the .NET runtime starts to leak memory and
                         # the memory usage of pwsh.exe increases dramatically without end until the process
                         # is terminated manually by closing PowerShell.
-                        Write-Output ([System.Convert]::FromBase64String($attachment.Data))
+                        $file = [System.Convert]::FromBase64String( $attachment.Data )
+
+                        # Windows PowerShell 5.1
+                        # Memory leak: Windows PowerShell 5.1 will leak memory when a large byte[] is written
+                        # to the output stream. This command may never actually finish. In PowerShell 7, this
+                        # issue does not exist as the cmdlet immediately outputs the reference to the byte[]
+                        # to the caller and does not leak memory during Write-Output.
+                        Write-Output -InputObject $file -NoEnumerate
                     }
                 }
             } else {
@@ -413,7 +424,8 @@ function Read-PowerPassSecret {
         [switch]
         $AsCredential
     )
-    $locker = Get-PowerPassLocker
+    [PSCustomObject]$locker = $null
+    Get-PowerPassLocker -Locker ([ref] $locker)
     if( -not $locker ) {
         throw "Could not create or fetch your locker"
     }
@@ -503,7 +515,8 @@ function Export-PowerPassAttachment {
         $Force
     )
     begin {
-        $locker = Get-PowerPassLocker
+        [PSCustomObject]$locker = $null
+        Get-PowerPassLocker -Locker ([ref] $locker)
         if( -not $locker ) {
             throw "Could not create or fetch your locker"
         }

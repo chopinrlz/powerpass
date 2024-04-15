@@ -456,6 +456,11 @@ function Get-PowerPassLocker {
         .NOTES
         This cmdlet will stop execution with a throw if the locker salt could not be fetched.
     #>
+    param(
+        [Parameter(Mandatory)]
+        [ref]
+        $Locker
+    )
     Initialize-PowerPassLockerSalt
     Initialize-PowerPassLocker
     $salt = Get-PowerPassLockerSalt
@@ -468,10 +473,14 @@ function Get-PowerPassLocker {
         $encLockerBytes = [System.Convert]::FromBase64String($encLockerString)
         $lockerBytes = [System.Security.Cryptography.ProtectedData]::Unprotect($encLockerBytes,$salt,"CurrentUser")
         $lockerJson = [System.Text.Encoding]::UTF8.GetString($lockerBytes)
-        $locker = ConvertFrom-Json $lockerJson
-        Write-Output $locker
+        $Locker.Value = ConvertFrom-Json $lockerJson
+        $encLockerString = $null
+        $encLockerBytes = $null
+        $lockerBytes = $null
+        $lockerJson = $null
+        [GC]::Collect()
     } else {
-        Write-Output $null
+        $Locker.Value = $null
     }
 }
 
@@ -522,7 +531,8 @@ function Write-PowerPassSecret {
         $MaskPassword
     )
     begin {
-        $locker = Get-PowerPassLocker
+        [PSCustomObject]$locker = $null
+        Get-PowerPassLocker -Locker ([ref] $locker)
         if( -not $locker ) {
             throw "Could not create or fetch your locker"
         }
@@ -772,7 +782,8 @@ function Export-PowerPassLocker {
     if( -not (Test-Path $Path) ) {
         throw "$Path does not exist"
     }
-    $locker = Get-PowerPassLocker
+    [PSCustomObject]$locker = $null
+    Get-PowerPassLocker -Locker ([ref] $locker)
     if( -not $locker ) {
         throw "Could not load you PowerPass locker"
     }
@@ -882,7 +893,8 @@ function Update-PowerPassSalt {
     if( -not $moduleSalt ) {
         throw "Unable to fetch the module salt"
     }
-    $locker = Get-PowerPassLocker
+    [PSCustomObject]$locker = $null
+    Get-PowerPassLocker -Locker ([ref] $locker)
     if( -not $locker ) {
         throw "Unable to fetch your PowerPass Locker"
     }
@@ -941,7 +953,8 @@ function Remove-PowerPassSecret {
         $Title
     )
     begin {
-        $locker = Get-PowerPassLocker
+        [PSCustomObject]$locker = $null
+        Get-PowerPassLocker -Locker ([ref] $locker)
         if( -not $locker ) {
             throw "Could not load your PowerPass locker"
         }
@@ -1026,7 +1039,8 @@ function Write-PowerPassAttachment {
         $GZip
     )
     begin {
-        $locker = Get-PowerPassLocker
+        [PSCustomObject]$locker = $null
+        Get-PowerPassLocker -Locker ([ref] $locker)
         if( -not $locker ) {
             throw "Could not create or fetch your locker"
         }
@@ -1159,7 +1173,8 @@ function Add-PowerPassAttachment {
         $GZip
     )
     begin {
-        $locker = Get-PowerPassLocker
+        [PSCustomObject]$locker = $null
+        Get-PowerPassLocker -Locker ([ref] $locker)
         if( -not $locker ) {
             throw "Could not create or fetch your locker"
         }
@@ -1243,7 +1258,8 @@ function Remove-PowerPassAttachment {
         $FileName
     )
     begin {
-        $locker = Get-PowerPassLocker
+        [PSCustomObject]$locker = $null
+        Get-PowerPassLocker -Locker ([ref] $locker)
         if( -not $locker ) {
             throw "Could not load your PowerPass locker"
         }
