@@ -119,15 +119,21 @@ function Get-PowerPassLockerBytes {
     <#
         .SYNOPSIS
         Serializes a PowerPass locker into a JSON UTF-8 encoded byte array.
+        .PARAMETER Locker
+        The Locker object with secrets and attachments.
+        .PARAMETER Data
+        A reference to a byte[] where the Locker bytes will be stored.
     #>
     param(
-        [Parameter(Mandatory,ValueFromPipeline,Position=0)]
+        [Parameter(Mandatory)]
         [PSCustomObject]
-        $Locker
+        $Locker,
+        [Parameter(Mandatory)]
+        [ref]
+        $Data
     )
     $json = ConvertTo-Json -InputObject $Locker
-    $data = [System.Text.Encoding]::UTF8.GetBytes($json)
-    Write-Output $data
+    $Data.Value = [System.Text.Encoding]::UTF8.GetBytes($json)
 }
 
 # ------------------------------------------------------------------------------------------------------------- #

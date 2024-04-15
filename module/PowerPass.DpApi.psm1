@@ -579,7 +579,8 @@ function Write-PowerPassSecret {
                 throw "Error writing secret, no locker salt"
             }
             $pathToLocker = $script:PowerPass.LockerFilePath
-            $data = Get-PowerPassLockerBytes $locker
+            [byte[]]$data = $null
+            Get-PowerPassLockerBytes -Locker $locker -Data ([ref] $data)
             $encData = [System.Security.Cryptography.ProtectedData]::Protect($data,$salt,"CurrentUser")
             $encDataText = [System.Convert]::ToBase64String($encData)
             Out-File -FilePath $pathToLocker -InputObject $encDataText -Force
@@ -735,7 +736,8 @@ function Initialize-PowerPassLocker {
             throw "Failed to initialize the user's locker, unable to get the locker salt"
         }
         $locker = New-PowerPassLocker -Populated
-        $data = Get-PowerPassLockerBytes $locker
+        [byte[]]$data = $null
+        Get-PowerPassLockerBytes -Locker $locker -Data ([ref] $data)
         $encData = [System.Security.Cryptography.ProtectedData]::Protect($data,$salt,"CurrentUser")
         $encDataText = [System.Convert]::ToBase64String($encData)
         Out-File -FilePath $pathToLocker -InputObject $encDataText -Force
@@ -793,7 +795,8 @@ function Export-PowerPassLocker {
             throw "Export cancelled by user"
         }
     }
-    $data = Get-PowerPassLockerBytes $locker
+    [byte[]]$data = $null
+    Get-PowerPassLockerBytes -Locker $locker -Data ([ref] $data)
     $aes = New-Object -TypeName "PowerPass.AesCrypto"
     $aes.SetPaddedKey( $password )
     $aes.Encrypt( $data, $output )
@@ -899,7 +902,8 @@ function Update-PowerPassSalt {
         $encLockerSaltText = [System.Convert]::ToBase64String($encLockerSalt)
         Out-File -InputObject $encLockerSaltText -FilePath ($script:PowerPass.LockerSaltPath) -Force
     }
-    $data = Get-PowerPassLockerBytes $locker
+    [byte[]]$data = $null
+    Get-PowerPassLockerBytes -Locker $locker -Data ([ref] $data)
     $encData = [System.Security.Cryptography.ProtectedData]::Protect($data,$lockerSalt,"CurrentUser")
     $encDataText = [System.Convert]::ToBase64String($encData)
     Out-File -FilePath ($script:PowerPass.LockerFilePath) -InputObject $encDataText -Force
@@ -964,7 +968,8 @@ function Remove-PowerPassSecret {
             }
             $newLocker.Secrets = $locker.Secrets | Where-Object { -not ($_.Mfd) }
             $pathToLocker = $script:PowerPass.LockerFilePath
-            $data = Get-PowerPassLockerBytes $newLocker
+            [byte[]]$data = $null
+            Get-PowerPassLockerBytes -Locker $newLocker -Data ([ref] $data)
             $encData = [System.Security.Cryptography.ProtectedData]::Protect($data,$salt,"CurrentUser")
             $encDataText = [System.Convert]::ToBase64String($encData)
             Out-File -FilePath $pathToLocker -InputObject $encDataText -Force
@@ -1116,7 +1121,8 @@ function Write-PowerPassAttachment {
             throw "Error writing secret, no locker salt"
         }
         $pathToLocker = $script:PowerPass.LockerFilePath
-        $data = Get-PowerPassLockerBytes $locker
+        [byte[]]$data = $null
+        Get-PowerPassLockerBytes -Locker $locker -Data ([ref] $data)
         $encData = [System.Security.Cryptography.ProtectedData]::Protect($data,$salt,"CurrentUser")
         $encDataText = [System.Convert]::ToBase64String($encData)
         Out-File -FilePath $pathToLocker -InputObject $encDataText -Force
@@ -1208,7 +1214,8 @@ function Add-PowerPassAttachment {
                 throw "Error writing secret, no locker salt"
             }
             $pathToLocker = $script:PowerPass.LockerFilePath
-            $data = Get-PowerPassLockerBytes $locker
+            [byte[]]$data = $null
+            Get-PowerPassLockerBytes -Locker $locker -Data ([ref] $data)
             $encData = [System.Security.Cryptography.ProtectedData]::Protect($data,$salt,"CurrentUser")
             $encDataText = [System.Convert]::ToBase64String($encData)
             Out-File -FilePath $pathToLocker -InputObject $encDataText -Force
@@ -1263,7 +1270,8 @@ function Remove-PowerPassAttachment {
             }
             $newLocker.Attachments = $locker.Attachments | Where-Object { -not ($_.Mfd) }
             $pathToLocker = $script:PowerPass.LockerFilePath
-            $data = Get-PowerPassLockerBytes $newLocker
+            [byte[]]$data = $null
+            Get-PowerPassLockerBytes -Locker $newLocker -Data ([ref] $data)
             $encData = [System.Security.Cryptography.ProtectedData]::Protect($data,$salt,"CurrentUser")
             $encDataText = [System.Convert]::ToBase64String($encData)
             Out-File -FilePath $pathToLocker -InputObject $encDataText -Force
