@@ -340,6 +340,11 @@ function Read-PowerPassAttachment {
                     if( $attachment.GZip ) {
                         Write-Output ([PowerPass.Compressor]::DecompressFromBase64( $attachment.Data ))
                     } else {
+                        # Windows PowerShell 5.1 and PowerShell 7.4.2
+                        # Memory leak: when calling FromBase64String on a large string, such as one that
+                        # is over 100 million characters long, the .NET runtime starts to leak memory and
+                        # the memory usage of pwsh.exe increases dramatically without end until the process
+                        # is terminated manually by closing PowerShell.
                         Write-Output ([System.Convert]::FromBase64String($attachment.Data))
                     }
                 }
