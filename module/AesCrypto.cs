@@ -157,17 +157,16 @@ namespace PowerPass {
 
                     // Decrypt the remaining file contents
                     using( var cs = new CryptoStream( fs, aes.CreateDecryptor( _key, iv ), CryptoStreamMode.Read ) ) {
-                        byte[] buffer = new byte[DecryptionBufferSize];
-                        var buffers = new List<byte[]>();
+                        var buffers = new List<Tuple<byte[],int>>();
+                        var buffer = new byte[DecryptionBufferSize];
                         int read = cs.Read( buffer, 0, buffer.Length );
                         int totalRead = 0;
 
                         // Read until the end of the stream
                         while( read > 0 ) {
                             totalRead += read;
-                            byte[] myBuf = new byte[read];
-                            Array.Copy( buffer, 0, myBuf, 0, read );
-                            buffers.Add( myBuf );
+                            buffers.Add( new Tuple<byte[],int>( buffer, read) );
+                            buffer = new byte[DecryptionBufferSize];
                             read = cs.Read( buffer, 0, buffer.Length );
                         }
 
@@ -175,19 +174,21 @@ namespace PowerPass {
                         int indexer = 0;
                         result = new byte[totalRead];
                         foreach( var block in buffers ) {
-                            Array.Copy( block, 0, result, indexer, block.Length );
-                            indexer += block.Length;
+                            byte[] blockData = block.Item1;
+                            int blockDataRead = block.Item2;
+                            Array.Copy( blockData, 0, result, indexer, blockDataRead );
+                            indexer += blockDataRead;
 
                             // Zero out the block buffer
-                            for( int i = 0; i < block.Length; i++ ) {
-                                block[i] = 0x00;
+                            for( int i = 0; i < blockData.Length; i++ ) {
+                                blockData[i] = 0x00;
                             }
                         }
 
-                        // Zero out main buffer
-                        for( int i = 0; i < buffer.Length; i++ ) {
-                            buffer[i] = 0x00;
-                        }
+                        // Release resources
+                        buffer = null;
+                        buffers.Clear();
+                        buffers = null;
                     }
                 }
             }
