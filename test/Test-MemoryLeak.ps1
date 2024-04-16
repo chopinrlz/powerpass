@@ -17,6 +17,8 @@ $now = Get-Date
 $base64 = [System.Convert]::ToBase64String( $bytes )
 Write-Host " $(((Get-Date) - $now).TotalMilliseconds) ms"
 
+Read-Host "Attach debugger now then press Enter"
+
 Write-Host "Converting base64 string back to file bytes: " -NoNewline
 $now = Get-Date
 $bytes = [System.Convert]::FromBase64String( $base64 )
