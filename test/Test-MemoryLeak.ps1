@@ -1,29 +1,48 @@
-$name = "random.bin"
+# Create a random number generator and results collection
+$rand = [System.Random]::new()
+$testResults = @()
+$iterations = 12
+$step = 32 * 1024 * 1024
 
-$start = Get-Date
+# Run a test in $step KiB increments
+1..$iterations | ForEach-Object {
 
-Write-Host "Creating Path to $name test file: " -NoNewline
-$now = Get-Date
-$file = Join-Path -Path $PSScriptRoot -ChildPath $name
-Write-Host " $(((Get-Date) - $now).TotalMilliseconds) ms"
+    # Write a progress window
+    Write-Progress -Activity "Testing Base64 Conversion" -Status "Iteration $_ of $iterations" -PercentComplete (($_ / $iterations) * 99.9)
 
-Write-Host "Reading all file bytes into memory: " -NoNewline
-$now = Get-Date
-$bytes = [System.IO.File]::ReadAllBytes( $file )
-Write-Host " $(((Get-Date) - $now).TotalMilliseconds) ms"
+    # Create a test result
+    $dataLength = ($_ * $step)
+    $result = [PSCustomObject]@{
+        Length = $dataLength
+        FillMs = 0
+        ToBase64Ms = 0
+        FromBase64Ms = 0
+    }
 
-Write-Host "Converting file bytes to base64 string: " -NoNewline
-$now = Get-Date
-$base64 = [System.Convert]::ToBase64String( $bytes )
-Write-Host " $(((Get-Date) - $now).TotalMilliseconds) ms"
+    # Create an array of data
+    $start = Get-Date
+    [byte[]]$data = [System.Array]::CreateInstance( [byte[]], $dataLength )
+    $rand.NextBytes( $data )
+    $result.FillMs = ((Get-Date) - $start).TotalMilliseconds
 
-Read-Host "Attach debugger now then press Enter"
+    # Run conversion tests and track timing
+    $start = Get-Date
+    $base64 = [System.Convert]::ToBase64String( $data )
+    $result.ToBase64Ms = ((Get-Date) - $start).TotalMilliseconds
 
-Write-Host "Converting base64 string back to file bytes: " -NoNewline
-$now = Get-Date
-$bytes = [System.Convert]::FromBase64String( $base64 )
-Write-Host " $(((Get-Date) - $now).TotalMilliseconds) ms"
+    $start = Get-Date
+    $bytes = [System.Convert]::FromBase64String( $base64 )
+    $result.FromBase64Ms = ((Get-Date) - $start).TotalMilliseconds
 
-Write-Host "Test complete"
+    # Record results for output and graphing
+    $testResults += $result
 
-Write-Host "Total duration: $(((Get-Date) - $start).TotalMilliseconds) ms"
+    # Erase everything and start over
+    $data = $null
+    $base64 = $null
+    $bytes = $null
+    [GC]::Collect()
+}
+
+# Output the results to CSV
+$testResults | Export-Csv "base64-results.csv" -Force
