@@ -1,6 +1,7 @@
 Get-Date
-Write-Host "Creating Path to dotnet.exe test file"
-$file = Join-Path -Path $PSScriptRoot -ChildPath "dotnet.exe"
+$name = "random.bin"
+Write-Host "Creating Path to $name test file"
+$file = Join-Path -Path $PSScriptRoot -ChildPath $name
 Write-Host "Reading all file bytes into memory"
 $bytes = [System.IO.File]::ReadAllBytes( $file )
 Write-Host "Converting file bytes to base64 string"
