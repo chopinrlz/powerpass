@@ -1,8 +1,12 @@
 # Create a random number generator and results collection
 $rand = [System.Random]::new()
 $testResults = @()
-$iterations = 12
-$step = 32 * 1024 * 1024
+$iterations = 4 * 1024
+$step = 1 * 1024
+
+# Fill a byte[] with random data for testing
+[byte[]]$randomData = [System.Array]::CreateInstance( [byte[]], $iterations * $step )
+$rand.NextBytes( $randomData )
 
 # Run a test in $step KiB increments
 1..$iterations | ForEach-Object {
@@ -22,7 +26,7 @@ $step = 32 * 1024 * 1024
     # Create an array of data
     $start = Get-Date
     [byte[]]$data = [System.Array]::CreateInstance( [byte[]], $dataLength )
-    $rand.NextBytes( $data )
+    [System.Array]::Copy( $randomData, 0, $data, 0, $dataLength )
     $result.FillMs = ((Get-Date) - $start).TotalMilliseconds
 
     # Run conversion tests and track timing
@@ -31,17 +35,12 @@ $step = 32 * 1024 * 1024
     $result.ToBase64Ms = ((Get-Date) - $start).TotalMilliseconds
 
     $start = Get-Date
-    $bytes = [System.Convert]::FromBase64String( $base64 )
+    $chars = $base64.ToCharArray()
+    $bytes = [System.Convert]::FromBase64CharArray( $chars, 0, $chars.Length )
     $result.FromBase64Ms = ((Get-Date) - $start).TotalMilliseconds
 
     # Record results for output and graphing
     $testResults += $result
-
-    # Erase everything and start over
-    $data = $null
-    $base64 = $null
-    $bytes = $null
-    [GC]::Collect()
 }
 
 # Output the results to CSV
