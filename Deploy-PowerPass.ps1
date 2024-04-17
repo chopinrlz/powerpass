@@ -180,7 +180,7 @@ if( -not (Test-Path $targetLocation) ) {
 $missingFiles = $false
 switch( $installation ) {
     $powerPassAes {
-        $itemsToDeploy = @("LICENSE","module\PowerPass.ps1",".\module\AesCrypto.cs",".\module\PowerPass.Common.ps1",".\module\Compression.cs")
+        $itemsToDeploy = @("LICENSE","module\PowerPass.ps1",".\module\AesCrypto.cs",".\module\PowerPass.Common.ps1",".\module\Compression.cs",".\module\Conversion.cs")
         $itemsToDeploy | Copy-Item -Destination $targetLocation -Force
         $sourceFile = Join-Path -Path $PSScriptRoot -ChildPath "module\PowerPass.Aes.psd1"
         $targetFile = Join-Path -Path $targetLocation -ChildPath "PowerPass.psd1"
@@ -188,7 +188,7 @@ switch( $installation ) {
         $sourceFile = Join-Path -Path $PSScriptRoot -ChildPath "module\PowerPass.Aes.psm1"
         $targetFile = Join-Path -Path $targetLocation -ChildPath "PowerPass.psm1"
         Copy-Item -Path $sourceFile -Destination $targetFile -Force
-        $verified = @("LICENSE","PowerPass.ps1","PowerPass.psd1","PowerPass.psm1","AesCrypto.cs","PowerPass.Common.ps1","Compression.cs")
+        $verified = @("LICENSE","PowerPass.ps1","PowerPass.psd1","PowerPass.psm1","AesCrypto.cs","PowerPass.Common.ps1","Compression.cs","Conversion.cs")
         $verified | ForEach-Object {
             $verifiedPath = Join-Path -Path $targetLocation -ChildPath $_
             if( -not (Test-Path $verifiedPath) ) {

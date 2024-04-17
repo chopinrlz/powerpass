@@ -355,7 +355,7 @@ function Read-PowerPassAttachment {
                         # is over 100 million characters long, the .NET runtime starts to leak memory and
                         # the memory usage of pwsh.exe increases dramatically without end until the process
                         # is terminated manually by closing PowerShell.
-                        $file = [System.Convert]::FromBase64String( $attachment.Data )
+                        $file = ConvertFrom-Base64String -InputString ($attachment.Data)
 
                         # Windows PowerShell 5.1
                         # Memory leak: Windows PowerShell 5.1 will leak memory when a large byte[] is written

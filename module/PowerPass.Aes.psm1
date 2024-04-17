@@ -29,6 +29,7 @@ $PowerPass = [PSCustomObject]@{
     AesCryptoSourcePath = Join-Path -Path $PSScriptRoot -ChildPath "AesCrypto.cs"
     CommonSourcePath    = Join-Path -Path $PSScriptRoot -ChildPath "PowerPass.Common.ps1"
     CompressorPath      = Join-Path -Path $PSScriptRoot -ChildPath "Compression.cs"
+    ConversionPath      = Join-Path -Path $PSScriptRoot -ChildPath "Conversion.cs"
     LockerFolderPath    = $UserDataPath
     LockerFilePath      = Join-Path -Path $UserDataPath -ChildPath $LockerFileName
     LockerKeyFolderPath = Join-Path -Path $AppDataPath -ChildPath $PowerPassEdition
@@ -45,6 +46,9 @@ if( $PSVersionTable.PSVersion.Major -eq 5 ) {
 
 # Compile and load the GZip implementation
 Add-Type -Path $PowerPass.CompressorPath
+
+# Compile and load the base64 conversion replacement cmdlets to circumvent AMSI
+Add-Type -Path $PowerPass.ConversionPath -PassThru | ForEach-Object { Import-Module ($_.Assembly) }
 
 # Dot Source the common functions
 . ($PowerPass.CommonSourcePath)

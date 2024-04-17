@@ -16,6 +16,7 @@ $ExtensionsSourceCode = "Extensions.cs"
 $ModuleSaltFileName = "powerpass.salt"
 $AesCryptoSourceCode = "AesCrypto.cs"
 $CompressorSourceCode = "Compression.cs"
+$ConversionSourceCode = "Conversion.cs"
 
 # Determine where user data should be stored
 $UserDataPath = [System.Environment]::GetFolderPath("LocalApplicationData")
@@ -31,6 +32,7 @@ $PowerPass = [PSCustomObject]@{
     ModuleSaltFilePath = Join-Path -Path $PSScriptRoot -ChildPath $ModuleSaltFileName
     AesCryptoSource    = Join-Path -Path $PSScriptRoot -ChildPath $AesCryptoSourceCode
     CompressorSource   = Join-Path -Path $PSScriptRoot -ChildPath $CompressorSourceCode
+    ConversionSource   = Join-Path -Path $PSScriptRoot -ChildPath $ConversionSourceCode
     CommonSourcePath   = Join-Path -Path $PSScriptRoot -ChildPath "PowerPass.Common.ps1"
     # These paths must always be a combination of the UserDataPath and the UserDataFolderName
     # The cmdlets in this module assume that the user data folder for PowerPass is $UserDataPath/$UserDataFolderName
@@ -55,6 +57,9 @@ Add-Type -Path $PowerPass.AesCryptoSource -ReferencedAssemblies "System.Security
 
 # Compile and load the GZip implementation
 Add-Type -Path $PowerPass.CompressorSource
+
+# Compile and load the base64 conversion replacement cmdlets to circumvent AMSI
+Add-Type -Path $PowerPass.ConversionSource -PassThru | ForEach-Object { Import-Module ($_.Assembly) }
 
 # Dot Source the common functions
 . ($PowerPass.CommonSourcePath)
