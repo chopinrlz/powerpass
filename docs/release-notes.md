@@ -1,12 +1,6 @@
-**NOTE: This is a BREAKING CHANGE from v1.x. If you are on v1.x please EXPORT your Locker before deploying v2.x.**
-If your forget to do this, simply go back to v1.6.2, export your Locker, then deploy v2.1.0.
-PowerPass will not overwrite your Locker or your Locker keys if they already exist.
-# Attachment Compression
-This latest release of PowerPass v2.1.0 adds support for attachment compression. When loading large attachments into your Locker, add the `-GZip` parameter to compress the file before loading it to your Locker. This works best with large text files, such as CSV or JSON files which contain data, but is not recommended for files which are already compressed.
-# Breaking Changes
-The v2.x branch of PowerPass breaks away from an old methodology for generating ephemeral keys within the AES edition of PowerPass. v2.x will not be able to open v1.x Lockers on the AES edition. The key format is not the same.
-## Key Generation
-In the v1.x branch of PowerPass, AES-encrypted Locker keys were protected with an ephemeral key based on the current environment. This key was generated using command-line utilities, and while it was functional, it was liable to fail and throw an error, halting execution of the module. In the v2.x branch of PowerPass, ephemeral keys are generated using the cross-platform .NET `System.Net.NetworkInformation` namespace and the `System.Environment` class. While this makes the implementation more durable and tolerant to more scenarios, it effectively causes a change in the key format and thus breaks from the v1.x branch of PowerPass.
+**NOTE: This is a BREAKING CHANGE from v1.x. If you are on v1.x please EXPORT your Locker before deploying v2.x.** If your forget to do this, simply go back to v1.6.2, export your Locker, then deploy v2.1.0. PowerPass will not overwrite your Locker or your Locker keys if they already exist.
+# Performance Optimization
+This release of PowerPass includes a performance optimization for large attachments. In PowerShell 7 and above, there is an anti-malware subsystem which will engage on certain calls to .NET CLR functions causing a severe performance penalty with larger attachments. While it is not advised to store large attachments with PowerPass (files over 10 MiB in size), you can certainly do so if needed. The optimizations in PowerPass v2.1.1 eliminate the overhead of the calls to the anti-malware subsystem when attachments are read from and written into your Locker. Your anti-virus software will still monitor file system access (assuming you have it enabled on your computer), but it will no longer monitor in-memory operations on your PowerPass Locker performed by PowerPass itself.
 # Deployment
 To install PowerPass:
 1. Clone the repo, download this release, or download the source code for this release
@@ -16,8 +10,8 @@ For detailed information about deployment see the [Deployment](https://chopinrlz
 # File Hashes
 | Release                 | SHA256 Hash                                                        |
 | ----------------------- | ------------------------------------------------------------------ |
-| PowerPass-2.1.0.tar.gz  | `47743DFC4475F88A5828F8143C59E4D588C48731BE351C40DABE3365B61A0443` |
-| PowerPass-2.1.0.zip     | `083A66ADF4D1B4ACF90F08E9FE6C2931F62CA383DB25F697AA8E5A11AFE0D249` |
+| PowerPass-2.1.1.tar.gz  | `C068DC826876AC4C1C8B8341DC4702332EE46D4C2FE59C7CE271B883A9AC7BEF` |
+| PowerPass-2.1.1.zip     | `700AF897F1D682F274885869186E4D3C29B9DA89542EB27E165505447023A518` |
 
 # All PowerPass Topics
 Select one of the links below to browse to another topic.
