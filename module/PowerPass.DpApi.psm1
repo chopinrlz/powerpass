@@ -475,15 +475,10 @@ function Get-PowerPassLocker {
     $pathToLocker = $script:PowerPass.LockerFilePath
     if( Test-Path $pathToLocker ) {
         $encLockerString = Get-Content -Path $pathToLocker -Raw
-        $encLockerBytes = [System.Convert]::FromBase64String($encLockerString)
+        $encLockerBytes = ConvertFrom-Base64String -InputString $encLockerString
         $lockerBytes = [System.Security.Cryptography.ProtectedData]::Unprotect($encLockerBytes,$salt,"CurrentUser")
-        $lockerJson = [System.Text.Encoding]::UTF8.GetString($lockerBytes)
+        $lockerJson = ConvertTo-Utf8String -InputObject $lockerBytes
         $Locker.Value = ConvertFrom-Json $lockerJson
-        $encLockerString = $null
-        $encLockerBytes = $null
-        $lockerBytes = $null
-        $lockerJson = $null
-        [GC]::Collect()
     } else {
         $Locker.Value = $null
     }

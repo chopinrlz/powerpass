@@ -188,7 +188,6 @@ function Write-PowerPassSecret {
     begin {
         [PSCustomObject]$locker = $null
         Get-PowerPassLocker -Locker ([ref] $locker)
-        [GC]::Collect()
         if( -not $locker ) {
             throw "Could not create or fetch your locker"
         }
@@ -350,7 +349,6 @@ function Export-PowerPassLocker {
     }
     [PSCustomObject]$locker = $null
     Get-PowerPassLocker -Locker ([ref] $locker)
-    [GC]::Collect()
     if( -not $locker ) {
         throw "Could not load you PowerPass locker"
     }
@@ -479,7 +477,6 @@ function Update-PowerPassKey {
     #>
     [PSCustomObject]$locker = $null
     Get-PowerPassLocker -Locker ([ref] $locker)
-    [GC]::Collect()
     if( -not $locker ) {
         throw "Unable to fetch your PowerPass Locker"
     }
@@ -538,7 +535,6 @@ function Remove-PowerPassSecret {
     begin {
         [PSCustomObject]$locker = $null
         Get-PowerPassLocker -Locker ([ref] $locker)
-        [GC]::Collect()
         if( -not $locker ) {
             throw "Could not load your PowerPass locker"
         }
@@ -623,7 +619,6 @@ function Write-PowerPassAttachment {
     begin {
         [PSCustomObject]$locker = $null
         Get-PowerPassLocker -Locker ([ref] $locker)
-        [GC]::Collect()
         if( -not $locker ) {
             throw "Could not create or fetch your locker"
         }
@@ -696,7 +691,7 @@ function Write-PowerPassAttachment {
         } else {
             throw "Error, no input specified"
         }
-        $fileData = [System.Convert]::ToBase64String( $bytes )
+        $fileData = ConvertTo-Base64String -InputObject $bytes
         $ex = $locker.Attachments | Where-Object { $_.FileName -eq $FileName }
         if( $ex ) {
             $ex.Data = $fileData
@@ -721,10 +716,6 @@ function Write-PowerPassAttachment {
         $aes.ReadKeyFromDisk( $pathToLockerKey, [ref] (Get-PowerPassEphemeralKey) )
         $aes.Encrypt( $data, $pathToLocker )
         $aes.Dispose()
-        $locker = $null
-        $data = $null
-        $aes = $null
-        [GC]::Collect()
     }
 }
 
@@ -760,7 +751,6 @@ function Add-PowerPassAttachment {
     begin {
         [PSCustomObject]$locker = $null
         Get-PowerPassLocker -Locker ([ref] $locker)
-        [GC]::Collect()
         if( -not $locker ) {
             throw "Could not create or fetch your locker"
         }
@@ -844,7 +834,6 @@ function Remove-PowerPassAttachment {
     begin {
         [PSCustomObject]$locker = $null
         Get-PowerPassLocker -Locker ([ref] $locker)
-        [GC]::Collect()
         if( -not $locker ) {
             throw "Could not load your PowerPass locker"
         }

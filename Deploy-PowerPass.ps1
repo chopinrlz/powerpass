@@ -198,7 +198,7 @@ switch( $installation ) {
         }
     }
     $powerPassDpApi {
-        $itemsToDeploy = @("LICENSE","TestDatabase.kdbx","KeePassLib.dll","module\PowerPass.ps1",".\module\StatusLogger.cs",".\module\Extensions.cs",".\module\AesCrypto.cs",".\module\PowerPass.Common.ps1",".\module\Compression.cs")
+        $itemsToDeploy = @("LICENSE","TestDatabase.kdbx","KeePassLib.dll","module\PowerPass.ps1",".\module\StatusLogger.cs",".\module\Extensions.cs",".\module\AesCrypto.cs",".\module\PowerPass.Common.ps1",".\module\Compression.cs",".\module\Conversion.cs")
         if( $deploySalt ) {
             $itemsToDeploy += "powerpass.salt"
         }
@@ -209,7 +209,7 @@ switch( $installation ) {
         $sourceFile = Join-Path -Path $PSScriptRoot -ChildPath "module\PowerPass.DpApi.psm1"
         $targetFile = Join-Path -Path $targetLocation -ChildPath "PowerPass.psm1"
         Copy-Item -Path $sourceFile -Destination $targetFile -Force
-        $verified = @("LICENSE","TestDatabase.kdbx","KeePassLib.dll","PowerPass.ps1","PowerPass.psd1","PowerPass.psm1","StatusLogger.cs","Extensions.cs","powerpass.salt","PowerPass.Common.ps1","Compression.cs")
+        $verified = @("LICENSE","TestDatabase.kdbx","KeePassLib.dll","PowerPass.ps1","PowerPass.psd1","PowerPass.psm1","StatusLogger.cs","Extensions.cs","powerpass.salt","PowerPass.Common.ps1","Compression.cs","Conversion.cs")
         $verified | ForEach-Object {
             $verifiedPath = Join-Path -Path $targetLocation -ChildPath $_
             if( -not (Test-Path $verifiedPath) ) {

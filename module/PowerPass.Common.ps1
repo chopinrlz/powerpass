@@ -133,7 +133,7 @@ function Get-PowerPassLockerBytes {
         $Data
     )
     $json = ConvertTo-Json -InputObject $Locker
-    $Data.Value = [System.Text.Encoding]::UTF8.GetBytes($json)
+    $Data.Value = ConvertTo-Utf8ByteArray -InputString $json
 }
 
 # ------------------------------------------------------------------------------------------------------------- #
@@ -314,7 +314,6 @@ function Read-PowerPassAttachment {
     )
     [PSCustomObject]$locker = $null
     Get-PowerPassLocker -Locker ([ref] $locker)
-    [GC]::Collect()
     if( -not $locker ) {
         throw "Could not create or fetch your locker"
     }
@@ -327,9 +326,10 @@ function Read-PowerPassAttachment {
                 } elseif( $AsText ) {
                     [byte[]]$bytes = $null
                     if( $attachment.GZip ) {
-                        $bytes = [PowerPass.Compressor]::DecompressFromBase64( $attachment.Data )
+                        $comp = ConvertFrom-Base64String -InputString $attachment.Data
+                        $bytes = [PowerPass.Compressor]::DecompressBytes( $comp )
                     } else {
-                        $bytes = [System.Convert]::FromBase64String($attachment.Data)
+                        $bytes = ConvertFrom-Base64String -InputString $attachment.Data
                     }
                     switch( $Encoding ) {
                         "Ascii" {
@@ -346,23 +346,22 @@ function Read-PowerPassAttachment {
                         }
                     }
                 } else {
+                    # Windows PowerShell 5.1
+                    # Memory leak: Windows PowerShell 5.1 will leak memory when a large byte[] is written
+                    # to the output stream. This command may never actually finish. In PowerShell 7, this
+                    # issue does not exist as the cmdlet immediately outputs the reference to the byte[]
+                    # to the caller and does not leak memory during Write-Output.
+                    $comp = ConvertFrom-Base64String -InputString $attachment.Data
+                    if( $PSVersionTable.PSVersion.Major -eq 5 ) {
+                        if( $comp.Length -ge (10 * 1024 * 1024) ) {
+                            Write-Warning "Windows PowerShell 5.1 has a known issue with large byte arrays"
+                        }
+                    }
                     if( $attachment.GZip ) {
-                        $file = [PowerPass.Compressor]::DecompressFromBase64( $attachment.Data )
+                        $file = [PowerPass.Compressor]::DecompressBytes( $comp )
                         Write-Output -InputObject $file -NoEnumerate
                     } else {
-                        # PowerShell 7.4.2
-                        # Memory leak: when calling FromBase64String on a large string, such as one that
-                        # is over 100 million characters long, the .NET runtime starts to leak memory and
-                        # the memory usage of pwsh.exe increases dramatically without end until the process
-                        # is terminated manually by closing PowerShell.
-                        $file = ConvertFrom-Base64String -InputString ($attachment.Data)
-
-                        # Windows PowerShell 5.1
-                        # Memory leak: Windows PowerShell 5.1 will leak memory when a large byte[] is written
-                        # to the output stream. This command may never actually finish. In PowerShell 7, this
-                        # issue does not exist as the cmdlet immediately outputs the reference to the byte[]
-                        # to the caller and does not leak memory during Write-Output.
-                        Write-Output -InputObject $file -NoEnumerate
+                        Write-Output -InputObject $comp -NoEnumerate
                     }
                 }
             } else {
@@ -547,29 +546,27 @@ function Export-PowerPassAttachment {
     process {
         $atts = $locker.Attachments | Where-Object { $_.FileName -like $FileName }
         foreach( $a in $atts ) {
-            [byte[]]$bytes = $null
+            [byte[]]$bytes = ConvertFrom-Base64String -InputString $a.Data
             if( $a.GZip ) {
-                $bytes = [PowerPass.Compressor]::DecompressFromBase64($a.Data)
-            } else {
-                $bytes = [System.Convert]::FromBase64String($a.Data)
-            }            
+                $bytes = [PowerPass.Compressor]::DecompressBytes( $bytes )
+            }         
             $targetFile = if( $OriginalPath ) {
                 $a.FileName
             } else {
                 Join-Path -Path ($targetDir.FullName) -ChildPath ($a.FileName)
             }
             if( $Force ) {
-                [System.IO.File]::WriteAllBytes( $targetFile, $bytes )
+                Write-AllFileBytes -InputObject $bytes -LiteralPath $targetFile
                 Write-Output (Get-Item -LiteralPath $targetFile)
             } else {
                 if( Test-Path $targetFile ) {
                     $answer = Read-Host "$targetFile already exists, overwrite? [N/y]"
                     if( $answer -eq 'y' ) {
-                        [System.IO.File]::WriteAllBytes( $targetFile, $bytes )
+                        Write-AllFileBytes -InputObject $bytes -LiteralPath $targetFie
                         Write-Output (Get-Item -LiteralPath $targetFile)
                     }
                 } else {
-                    [System.IO.File]::WriteAllBytes( $targetFile, $bytes )
+                    Write-AllFileBytes -InputObject $bytes -LiteralPath $targetFile
                     Write-Output (Get-Item -LiteralPath $targetFile)
                 }
             }
@@ -640,7 +637,7 @@ function Get-PowerPassEphemeralKey {
     
     # Build the ephemeral key from the composite parts
     $compKey = "$hostName|$userName|$domainName|$macAddress"
-    $compKeyBytes = [System.Text.Encoding]::UTF8.GetBytes( $compKey )
+    $compKeyBytes = ConvertTo-Utf8ByteArray -InputString $compKey
     $sha = [System.Security.Cryptography.Sha256]::Create()
     Write-Output $sha.ComputeHash( $compKeyBytes )
 }

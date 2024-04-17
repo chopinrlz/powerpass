@@ -40,16 +40,16 @@ namespace PowerPass {
 		/// <summary>
 		/// Decompresses a GZip file from a base64 string.
 		/// </summary>
-		/// <param name="text">The base64 text of the compressed file data.</param>
+		/// <param name="data">The GZip compressed file bytes</param>
 		/// <returns>The decompressed file bytes.</returns>
-		public static byte[] DecompressFromBase64( string text ) {
+		public static byte[] DecompressBytes( byte[] data ) {
 			// Asserts
-			if( String.IsNullOrEmpty( text ) ) throw new ArgumentNullException( "text" );
+			if( data == null ) throw new ArgumentNullException( "data" );
+			if( data.Length <= 0 ) throw new ArgumentNullException( "data" );
 
 			// Decompress the data to a byte array
 			using( MemoryStream ms = new MemoryStream() ) {
 				using( MemoryStream cd = new MemoryStream() ) {
-					byte[] data = Convert.FromBase64String( text );
 					cd.Write( data, 0, data.Length );
 					cd.Position = 0;
 					using( GZipStream gz = new GZipStream( cd, CompressionMode.Decompress ) ) {
