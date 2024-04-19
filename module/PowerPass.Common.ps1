@@ -346,11 +346,6 @@ function Read-PowerPassAttachment {
                         }
                     }
                 } else {
-                    # Windows PowerShell 5.1
-                    # Memory leak: Windows PowerShell 5.1 will leak memory when a large byte[] is written
-                    # to the output stream. This command may never actually finish. In PowerShell 7, this
-                    # issue does not exist as the cmdlet immediately outputs the reference to the byte[]
-                    # to the caller and does not leak memory during Write-Output.
                     $comp = ConvertFrom-Base64String -InputString $attachment.Data
                     if( $PSVersionTable.PSVersion.Major -eq 5 ) {
                         if( $comp.Length -ge (10 * 1024 * 1024) ) {
@@ -359,9 +354,13 @@ function Read-PowerPassAttachment {
                     }
                     if( $attachment.GZip ) {
                         $file = [PowerPass.Compressor]::DecompressBytes( $comp )
-                        Write-Output -InputObject $file -NoEnumerate
+                        # Write-Output causes a memory leak and does not complete in Windows PowerShell 5.1 with large byte arrays
+                        # This has been replaced with a proxy cmdlet that simply hands the underlying object to the caller
+                        Write-OutputByProxy -InputObject $file
                     } else {
-                        Write-Output -InputObject $comp -NoEnumerate
+                        # Write-Output causes a memory leak and does not complete in Windows PowerShell 5.1 with large byte arrays
+                        # This has been replaced with a proxy cmdlet that simply hands the underlying object to the caller
+                        Write-OutputByProxy -InputObject $comp
                     }
                 }
             } else {

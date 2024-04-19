@@ -60,3 +60,13 @@ public class WriteAllFileBytes : PSCmdlet {
         System.IO.File.WriteAllBytes( LiteralPath, InputObject );
     }
 }
+
+[Cmdlet("Write", "OutputByProxy")]
+public class WriteOutputByProxy : PSCmdlet {
+    [Parameter(Mandatory=true,ValueFromPipeline=true)]
+    public object InputObject;
+
+    protected override void ProcessRecord() {
+        WriteObject( InputObject );
+    }
+}
