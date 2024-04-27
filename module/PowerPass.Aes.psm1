@@ -35,6 +35,7 @@ $PowerPass = [PSCustomObject]@{
     LockerKeyFolderPath = Join-Path -Path $AppDataPath -ChildPath $PowerPassEdition
     LockerKeyFilePath   = Join-Path -Path $AppDataPath -ChildPath "$PowerPassEdition/$LockerKeyFileName"
     Implementation      = "AES"
+    Version             = (Import-PowerShellDataFile -Path "$PSScriptRoot/PowerPass.psd1").ModuleVersion
 }
 
 # Compile and load the AesCrypto implementation
