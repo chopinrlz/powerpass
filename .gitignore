@@ -1,26 +1,54 @@
+# Ignore binaries
 /bin/*
+
+# Ignore KeePass binaries
 /KeePassLib.dll
 /KeePassLib/obj/*
+
+# Ignore salts
 /powerpass.salt
+
+# Ignore user-specific KeePass test databses
 /test/kpdb-keyuser.kdbx
 /test/kpdb-pwuser.kdbx
 /test/kpdb-pwkeyuser.kdbx
 /test/kpdb-user.kdbx
+
+# Ignore the Locker test backup
 /test/powerpass_locker.bin
+
+# Ignore test key files and Locker files
 /test/aes.key
 /test/data.aes
 /test/.locker_key
 /test/.powerpass_locker
+
+# Ignore TPM compiled binaries
 /tpm/powerpasstpm
 /tpm/powerpasstpm.o
+
+# Ignore TPM profile metadata
 /tpm/info.json
+
+# Ignore auto-gen solution file from VS Code plug-ins
 /powerpass.sln
+
+# Ignore the temporary release build folder
 /release/*
+
+# Ignore networking information reports
 cim.json
 nic.json
+
+# Ignore release builds
 PowerPass*.zip
 PowerPass*.tar.gz
+
+# Ignore release hash markdown
 hash.md
+
+# Ignore other stuff
 ghfgat
 dotnet.exe
 .DS_Store
+access-token
