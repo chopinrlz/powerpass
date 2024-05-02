@@ -1,5 +1,5 @@
 # PowerPass Cmdlet Reference for AES Implementation
-#### _Revised: March 12, 2024_
+#### _Revised: May 2, 2024_
 The AES implementation of PowerPass works on Windows PowerShell and PowerShell 7 on Linux, MacOS, and Windows. These are the cmdlets:
 1. [Add-PowerPassAttachment](#add-powerpassattachment)
 2. [Clear-PowerPassLocker](#clear-powerpasslocker)
@@ -124,12 +124,16 @@ Export-PowerPassLocker -Path "E:\" -Password "mySecretPassphrase"
 Gets all the information about this PowerPass deployment.
 ### OUTPUTS
 A PSCustomObject with these properties:
-* AesCryptoSourcePath : The path on disk to the AesCrypto.cs source code
+* AesCryptoSourcePath : The path on disk to the AesCrypto.cs source code for AES support
+* CommonSourcePath    : The path on disk to the PowerPass.Common.ps1 common script
+* CompressorPath      : The path on disk to the Compression.cs source code for GZip support
+* ConversionPath      : The path on disk to the Conversion.cs CLR wrappers source code
 * LockerFolderPath    : The folder where your locker is stored
 * LockerFilePath      : The absolute path to your PowerPass locker on disk
 * LockerKeyFolderPath : The folder where your locker key is stored
 * LockerKeyFilePath   : The absolute path to your PowerPass locker key file
 * Implementation      : The implementation you are using, either AES or DPAPI
+* Version             : The version number of the PowerPass module you have deployed
 
 You can access these properties after assigning the output of `Get-PowerPass` to a variable.
 ##### ***[Back to Top](#powerpass-cmdlet-reference-for-aes-implementation)***

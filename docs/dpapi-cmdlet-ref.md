@@ -1,5 +1,5 @@
 # PowerPass Cmdlet Reference for Windows PowerShell DP API / KeePass 2 Implementation
-#### _Revised: March 12, 2024_
+#### _Revised: May 2, 2024_
 The Windows PowerShell Data Protection API implementation supports Windows PowerShell 5.1 and includes support for KeePass 2 databases as well as PowerPass Lockers. Cmdlets for this implementation are as follows:
 1. [Add-PowerPassAttachment](#add-powerpassattachment)
 2. [Clear-PowerPassLocker](#clear-powerpasslocker)
@@ -216,10 +216,15 @@ This cmdlet outputs a PSCustomObject with the following properties:
 4.  StatusLoggerSource = The absolute path to the StatusLogger class source code
 5.  ExtensionsSource   = The absolute path to the Extensions class source code
 6.  ModuleSaltFilePath = The absolute path to the module's salt file
-7.  LockerFolderPath   = The absolute path to the folder where PowerPass stores your Locker
-8.  LockerFilePath     = The absolute path to your Locker file
-9.  LockerSaltPath     = The absolute path to your Locker's salt file
-10. Implementation     = The type of implementation either "DPAPI" or "AES", in this case "DPAPI"
+7.  AesCryptoSource    = The absolute path to the AES cryptography provider source code
+8.  CompressorSource   = The absolute path to the GZip compression provider source code
+9.  ConversionSource   = The absolute path to the CLR wrapper source code
+10. CommonSourcePath   = The absolute path to the common PowerPass script
+11. LockerFolderPath   = The absolute path to the folder where PowerPass stores your Locker
+12. LockerFilePath     = The absolute path to your Locker file
+13. LockerSaltPath     = The absolute path to your Locker's salt file
+14. Implementation     = The type of implementation either "DPAPI" or "AES", in this case "DPAPI"
+15. Version            = The version number of the PowerPass release you have installed
 ```
 ##### ***[Back to Top](#powerpass-cmdlet-reference-for-windows-powershell-dp-api--keepass-2-implementation)***
 # Import-PowerPassSecrets
