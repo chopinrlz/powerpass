@@ -1303,6 +1303,8 @@ function Import-PowerPassSecrets {
         Imports secrets from a KeePass 2 database into your PowerPass Locker.
         .PARAMETER Database
         The KeePass 2 database opened using `Open-PowerPassDatabase`.
+        .PARAMETER Simple
+        Ignores group names during import using only the Name of the secret as the Title for your Locker.
         .NOTES
         Secrets are imported using a full-path format for the title. Each KeePass 2
         secret will be prefixed with the parent groups where they are found. If a secret
@@ -1311,7 +1313,9 @@ function Import-PowerPassSecrets {
     param(
         [Parameter(Mandatory = $true, ValueFromPipeline = $true, Position = 0)]
         [PSCustomObject]
-        $Database
+        $Database,
+        [switch]
+        $Simple
     )
     if( -not $Database ) {
         throw "No database specified"
@@ -1329,7 +1333,11 @@ function Import-PowerPassSecrets {
     if( -not $locker ) {
         throw "Could not load you PowerPass locker"
     }
-    Import-PowerPassSecretsFromGroup -Parent "" -Group $rootGroup -Locker $locker
+    if( $Simple ) {
+        Import-PowerPassSecretsFromGroup -Parent "" -Group $rootGroup -Locker $locker -Simple
+    } else {
+        Import-PowerPassSecretsFromGroup -Parent "" -Group $rootGroup -Locker $locker
+    }
     $salt = Get-PowerPassLockerSalt
     if( -not $salt ) {
         throw "Error importing secrets, no locker salt"
@@ -1356,6 +1364,8 @@ function Import-PowerPassSecretsFromGroup {
         A reference to the [PwGroup] to copy from.
         .PARAMETER Locker
         A reference to the PowerPass Locker where the secrets will be copied.
+        .PARAMETER Simple
+        Ignore the Parent and use only the entry Name as the secret Title.
         .NOTES
         This cmdlet will prompt the user to update any secrets that already exist.
     #>
@@ -1366,13 +1376,19 @@ function Import-PowerPassSecretsFromGroup {
         [KeePassLib.PwGroup]
         $Group,
         [PSCustomObject]
-        $Locker
+        $Locker,
+        [switch]
+        $Simple
     )
     foreach( $entry in $Group.Entries ) {
-        $kpTitle = if( $Parent ) {
-            "$Parent - "
-        } else {
+        $kpTitle = if( $Simple ) {
             [String]::Empty
+        } else {
+            if( $Parent ) {
+                "$Parent - "
+            } else {
+                [String]::Empty
+            }
         }
         foreach ( $entryProp in $entry.Strings ) {
             if ( $entryProp.Key -eq "Title") {
@@ -1396,10 +1412,14 @@ function Import-PowerPassSecretsFromGroup {
         }
     }
     foreach( $child in $Group.Groups ) {
-        if( $Parent ) {
-            Import-PowerPassSecretsFromGroup -Parent "$Parent - $($child.Name)" -Group $child -Locker $Locker
+        if( $Simple ) {
+            Import-PowerPassSecretsFromGroup -Group $child -Locker $Locker -Simple
         } else {
-            Import-PowerPassSecretsFromGroup -Parent "$($child.Name)" -Group $child -Locker $locker
+            if( $Parent ) {
+                Import-PowerPassSecretsFromGroup -Parent "$Parent - $($child.Name)" -Group $child -Locker $Locker
+            } else {
+                Import-PowerPassSecretsFromGroup -Parent "$($child.Name)" -Group $child -Locker $locker
+            }
         }
     }
 }
