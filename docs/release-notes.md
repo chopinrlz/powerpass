@@ -1,12 +1,12 @@
-**NOTE: This is a BREAKING CHANGE from v1.x. If you are on v1.x please EXPORT your Locker before deploying v2.x.** If your forget to do this, simply go back to v1.6.2, export your Locker, then deploy v2.1.0. PowerPass will not overwrite your Locker or your Locker keys if they already exist.
+**NOTE: This is a BREAKING CHANGE from v1.x. If you are on v1.x please EXPORT your Locker before deploying v2.x.** If your forget to do this, simply go back to v1.6.2, export your Locker, then deploy v2.2.0. PowerPass will not overwrite your Locker or your Locker keys if they already exist.
+# New Features
+### Importing Secrets from KeePass 2 Databases
+Version 2.2.0 of PowerPass adds a new feature to the Data Protection API edition for Windows PowerShell. The newly added `Import-PowerPassSecrets` cmdlet allows you to copy all the secrets from a KeePass 2 database into your PowerPass Locker so that they can be exported to a separate location, like another computer, or used from your Locker instead.
+### Version Number
+Version 2.2.0 of PowerPass adds the module version to the output of `Get-PowerPass` using the `Version` property which will allow you to easily fetch the version of PowerPass you have deployed.
 # Bug Fixes
-## [Excessive memory usage and long processing delay when fetching large attachments](https://github.com/chopinrlz/powerpass/issues/5)
-Release v2.1.2 resolves issue #5. This issue was causing large processing delays and memory leaks with large attachments. See details below in Performance Optimization.
-# Performance Optimization
-## AMSI Workaround
-This release of PowerPass includes a performance optimization for large attachments. In PowerShell 7 and above, there is an anti-malware subsystem which will engage on certain calls to .NET CLR functions causing a severe performance penalty with larger attachments. While it is not advised to store large attachments with PowerPass (files over 10 MiB in size), you can certainly do so if needed. The optimizations in PowerPass v2.1.1 and v2.1.2 eliminates the overhead of the calls to the anti-malware subsystem when attachments are read from and written into your Locker. Your anti-virus software will still monitor file system access (assuming you have it enabled on your computer), but it will no longer monitor in-memory attachment read operations performed by PowerPass itself.
-## Write-Output Memory Leak
-This release of PowerPass also fixes an issue which occurs when you retrieve large attachments from your Locker. In Windows PowerShell 5.1 the `Write-Output` cmdlet leaks memory and never completes with large `[byte[]]` attachments, such as those that are in the 200 MiB or larger range.
+### [Open-PowerPassDatabase does not honor relative paths](https://github.com/chopinrlz/powerpass/issues/6)
+Release 2.2.0 fixes a bug in the Data Protection API edition of PowerPass when working with KeePass 2 databases. The `Open-PowerPassDatabase` cmdlet had an error with the `-Path` parameter where relative paths were ignored and caused the cmdlet to report an error that it cannot find the database file.
 # Deployment
 To install PowerPass:
 1. Clone the repo, download this release, or download the source code for this release
