@@ -183,18 +183,15 @@ function Open-PowerPassDatabase {
         [switch]
         $WindowsUserAccount
     )
-    if ( [String]::IsNullOrEmpty($Path) ) {
-        throw "No Path specified"
-    }
-    $fullPath = [System.IO.Path]::GetFullPath($Path)
-    if ( -not (Test-Path $fullPath) ) {
-        throw "Database file not found at specified Path"
+    if( -not (Test-Path -Path $Path) ) {
+        throw "Database file not found at specified path"
     }
     if ( -not $WindowsUserAccount ) {
         if ( -not($MasterPassword -or $KeyFile) ) {
             throw "At least one key must be specified"
         }
     }
+    $fullPath = (Get-Item -Path $Path).FullName
     $database = [PSCustomObject]@{
         Secrets      = New-Object "KeePassLib.PwDatabase"
         StatusLogger = New-Object "PowerPass.StatusLogger"
@@ -207,9 +204,9 @@ function Open-PowerPassDatabase {
         $database.Keys.AddUserKey( $passwordKey )
     }
     if ( $KeyFile ) {
-        $keyFilePath = [System.IO.Path]::GetFullPath($KeyFile)
-        if ( -not(Test-Path $keyFilePath) ) {
-            throw "Could not locate key file"
+        $keyFilePath = (Get-Item -Path $KeyFile).FullName
+        if( -not (Test-Path $keyFilePath) ) {
+            throw "Key file not found at specified path"
         }
         $keyFileData = New-Object -TypeName "KeePassLib.Keys.KcpKeyFile" -ArgumentList @($keyFilePath)
         $database.Keys.AddUserKey( $keyFileData )
@@ -1301,6 +1298,16 @@ function Remove-PowerPassAttachment {
 # ------------------------------------------------------------------------------------------------------------- #
 
 function Import-PowerPassSecrets {
+    <#
+        .SYNOPSIS
+        Imports secrets from a KeePass 2 database into your PowerPass Locker.
+        .PARAMETER Database
+        The KeePass 2 database opened using `Open-PowerPassDatabase`.
+        .NOTES
+        Secrets are imported using a full-path format for the title. Each KeePass 2
+        secret will be prefixed with the parent groups where they are found. If a secret
+        already exists in your Locker, you will be prompted to update it.
+    #>
     param(
         [Parameter(Mandatory = $true, ValueFromPipeline = $true, Position = 0)]
         [PSCustomObject]
@@ -1340,6 +1347,19 @@ function Import-PowerPassSecrets {
 # ------------------------------------------------------------------------------------------------------------- #
 
 function Import-PowerPassSecretsFromGroup {
+    <#
+        .SYNOPSIS
+        Copies secrets from a KeePass 2 [PwGroup] and it's children into your PowerPass Locker.
+        .PARAMETER Parent
+        The name of the Parent group. Pass "" for the root KeePass 2 database group.
+        .PARAMETER Group
+        A reference to the [PwGroup] to copy from.
+        .PARAMETER Locker
+        A reference to the PowerPass Locker where the secrets will be copied.
+        .NOTES
+        This cmdlet will prompt the user to update any secrets that already exist.
+    #>
+    [CmdletBinding()]
     param(
         [string]
         $Parent,
@@ -1349,22 +1369,21 @@ function Import-PowerPassSecretsFromGroup {
         $Locker
     )
     foreach( $entry in $Group.Entries ) {
-        $queryTitle = if( $Parent ) {
+        $kpTitle = if( $Parent ) {
             "$Parent - "
         } else {
             [String]::Empty
         }
         foreach ( $entryProp in $entry.Strings ) {
             if ( $entryProp.Key -eq "Title") {
-                $queryTitle += $entryProp.Value.ReadString()
+                $kpTitle += $entryProp.Value.ReadString()
             }
         }
-
-        if( $Locker.Secrets.Title -contains $queryTitle ) {
-            $a = Read-Host "Secret $queryTitle already exists, overwrite? (N/y)"
+        $e = $Locker.Secrets | Where-Object { $_.Title -eq $kpTitle }
+        if( $e ) {
+            $a = Read-Host "Secret $kpTitle already exists, overwrite? (N/y)"
             if( $a -eq 'y' ) {
-                $s = New-PowerPassSecretFromKeePass -Title $queryTitle -Entry $entry
-                $e = $Locker.Secrets | Where-Object { $_.Title -eq $queryTitle }
+                $s = New-PowerPassSecretFromKeePass -Title $kpTitle -Entry $entry
                 $e.Title = $s.Title
                 $e.UserName = $s.UserName
                 $e.Password = $s.Password
@@ -1373,17 +1392,14 @@ function Import-PowerPassSecretsFromGroup {
                 $e.Expires = $s.Expires
             }
         } else {
-            $s = New-PowerPassSecretFromKeePass -Title $queryTitle -Entry $entry
-            $Locker.Secrets += $s
+            $Locker.Secrets += (New-PowerPassSecretFromKeePass -Title $kpTitle -Entry $entry)
         }
     }
-
-    foreach ( $childGroup in $Group.Groups ) {
-        $childGroup.Name
+    foreach( $child in $Group.Groups ) {
         if( $Parent ) {
-            Import-PowerPassSecretsFromGroup -Parent "$Parent - $($childGroup.Name)" -Group $childGroup -Locker $Locker
+            Import-PowerPassSecretsFromGroup -Parent "$Parent - $($child.Name)" -Group $child -Locker $Locker
         } else {
-            Import-PowerPassSecretsFromGroup -Parent "$($childGroup.Name)" -Group $childGroup -Locker $locker
+            Import-PowerPassSecretsFromGroup -Parent "$($child.Name)" -Group $child -Locker $locker
         }
     }
 }
@@ -1393,6 +1409,14 @@ function Import-PowerPassSecretsFromGroup {
 # ------------------------------------------------------------------------------------------------------------- #
 
 function New-PowerPassSecretFromKeePass {
+    <#
+        .SYNOPSIS
+        Creates a PowerPass Locker secret from a KeePass 2 entry.
+        .PARAMETER Title
+        The title of the new Locker secret.
+        .PARAMETER Entry
+        The KeePass 2 secret entry.
+    #>
     [CmdletBinding()]
     param(
         [string]
@@ -1414,9 +1438,6 @@ function New-PowerPassSecretFromKeePass {
     # Write all the properties into the object
     foreach ( $entryProp in $Entry.Strings ) {
         switch ( $entryProp.Key ) {
-            "Title" {
-                $Secret.Title = $entryProp.Value.ReadString()
-            }
             "UserName" {
                 $Secret.UserName = $entryProp.Value.ReadString()
             }
