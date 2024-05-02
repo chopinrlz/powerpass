@@ -217,6 +217,28 @@ if( $answer ) {
     throw "Testing cancelled by user"
 }
 
+# Test a database for import in normal mode
+Write-Output "Testing a KeePass 2 database for import in normal mode"
+Open-PowerPassDatabase -Path "$PSScriptRoot\kpdb-import.kdbx" -MasterPassword $secureString | Import-PowerPassSecrets
+Get-Content -Path "$PSScriptRoot\imported-secrets-normal.txt" | ForEach-Object {
+    $result = Read-PowerPassSecret -Title $_
+    if( -not $result ) {
+        Write-Warning "Test failed: $_ not found after import"
+    }
+}
+Clear-PowerPassLocker -Force
+
+# Test a database for import in simple mode
+Write-Output "Testing a KeePass 2 database for import in simple mode"
+Open-PowerPassDatabase -Path "$PSScriptRoot\kpdb-import.kdbx" -MasterPassword $secureString | Import-PowerPassSecrets -Simple
+Get-Content -Path "$PSScriptRoot\imported-secrets-simple.txt" | ForEach-Object {
+    $result = Read-PowerPassSecret -Title $_
+    if( -not $result ) {
+        Write-Warning "Test failed: $_ not found after import"
+    }
+}
+Clear-PowerPassLocker -Force
+
 # Setup constants for testing
 
 $lockerExport = Join-Path -Path $PSScriptRoot -ChildPath "powerpass_locker.bin"
