@@ -1308,7 +1308,8 @@ function Import-PowerPassSecrets {
         .NOTES
         Secrets are imported using a full-path format for the title. Each KeePass 2
         secret will be prefixed with the parent groups where they are found. If a secret
-        already exists in your Locker, you will be prompted to update it.
+        already exists in your Locker, you will be prompted to update it. Use the `-Simple`
+        parameter to import secrets using just the Name of the entry from KeePass.
     #>
     param(
         [Parameter(Mandatory = $true, ValueFromPipeline = $true, Position = 0)]

@@ -5,20 +5,21 @@ The Windows PowerShell Data Protection API implementation supports Windows Power
 2. [Clear-PowerPassLocker](#clear-powerpasslocker)
 3. [Export-PowerPassAttachment](#export-powerpassattachment)
 4. [Export-PowerPassLocker](#export-powerpasslocker)
-5. [Import-PowerPassLocker](#import-powerpasslocker)
+5. [Get-PowerPass](#get-powerpass)
 6. [Get-PowerPassAttachments](#get-powerpassattachments)
 7. [Get-PowerPassSecret](#get-powerpasssecret)
-8. [Get-PowerPass](#get-powerpass)
-9. [New-PowerPassRandomPassword](#new-powerpassrandompassword)
-10. [Open-PowerPassDatabase](#open-powerpassdatabase)
-11. [Open-PowerPassTestDatabase](#open-powerpasstestdatabase)
-12. [Read-PowerPassAttachment](#read-powerpassattachment)
-13. [Read-PowerPassSecret](#read-powerpasssecret)
-14. [Remove-PowerPassAttachment](#remove-powerpassattachment)
-15. [Remove-PowerPassSecret](#remove-powerpasssecret)
-16. [Update-PowerPassSalt](#update-powerpasssalt)
-17. [Write-PowerPassAttachment](#write-powerpassattachment)
-18. [Write-PowerPassSecret](#write-powerpasssecret)
+8. [Import-PowerPassLocker](#import-powerpasslocker)
+9. [Import-PowerPassSecrets](#import-powerpasssecrets)
+10. [New-PowerPassRandomPassword](#new-powerpassrandompassword)
+11. [Open-PowerPassDatabase](#open-powerpassdatabase)
+12. [Open-PowerPassTestDatabase](#open-powerpasstestdatabase)
+13. [Read-PowerPassAttachment](#read-powerpassattachment)
+14. [Read-PowerPassSecret](#read-powerpasssecret)
+15. [Remove-PowerPassAttachment](#remove-powerpassattachment)
+16. [Remove-PowerPassSecret](#remove-powerpasssecret)
+17. [Update-PowerPassSalt](#update-powerpasssalt)
+18. [Write-PowerPassAttachment](#write-powerpassattachment)
+19. [Write-PowerPassSecret](#write-powerpasssecret)
 
 Continue reading for the cmdlet details.
 # Add-PowerPassAttachment
@@ -219,6 +220,31 @@ This cmdlet outputs a PSCustomObject with the following properties:
 8.  LockerFilePath     = The absolute path to your Locker file
 9.  LockerSaltPath     = The absolute path to your Locker's salt file
 10. Implementation     = The type of implementation either "DPAPI" or "AES", in this case "DPAPI"
+```
+##### ***[Back to Top](#powerpass-cmdlet-reference-for-windows-powershell-dp-api--keepass-2-implementation)***
+# Import-PowerPassSecrets
+### SYNOPSIS
+Imports secrets from a KeePass 2 database into your PowerPass Locker.
+### PARAMETER Database
+The KeePass 2 database opened using `Open-PowerPassDatabase`.
+### PARAMETER Simple
+Ignores group names during import using only the Name of the secret as the Title for your Locker.
+### NOTES
+Secrets are imported using a full-path format for the title. Each KeePass 2
+secret will be prefixed with the parent groups where they are found. If a secret
+already exists in your Locker, you will be prompted to update it. Use the `-Simple`
+parameter to import secrets using just the Name of the entry from KeePass.
+### EXAMPLE
+Importing secrets into your Locker from KeePass 2 can be helpful when you want to copy or migrate your
+KeePass 2 secrets from your Windows PC to another computer, like a MacBook Pro or a Linux box. You can do
+this on a schedule, automatically if you like and want to keep things synchronized, by using the Windows
+Task scheduler. After importing your KeePass 2 database, you can export your Locker to a file and copy it
+to another computer then import it into PowerPass. Use this sample code as a baseline for importing your
+KeePass 2 database into your PowerPass Locker.
+```powershell
+# Open my KeePass 2 database
+$db = Open-PowerPassDatabase -Path ".\MyDatabase.kdbx" -KeyFile "C:\Secrets\MyKeyFile.kdbx"
+Import-PowerPassSecrets -Database $db
 ```
 ##### ***[Back to Top](#powerpass-cmdlet-reference-for-windows-powershell-dp-api--keepass-2-implementation)***
 # New-PowerPassRandomPassword
