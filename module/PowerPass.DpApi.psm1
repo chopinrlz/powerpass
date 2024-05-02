@@ -1295,3 +1295,150 @@ function Remove-PowerPassAttachment {
         }
     }
 }
+
+# ------------------------------------------------------------------------------------------------------------- #
+# FUNCTION: Import-PowerPassSecrets
+# ------------------------------------------------------------------------------------------------------------- #
+
+function Import-PowerPassSecrets {
+    param(
+        [Parameter(Mandatory = $true, ValueFromPipeline = $true, Position = 0)]
+        [PSCustomObject]
+        $Database
+    )
+    if( -not $Database ) {
+        throw "No database specified"
+    }
+    $secrets = $Database.Secrets
+    if( -not $secrets ) {
+        throw "Database does not contain a Secrets property"
+    }
+    $rootGroup = $secrets.RootGroup
+    if( -not $rootGroup ) {
+        throw "Secrets does not contain a RootGroup property"
+    }
+    [PSCustomObject]$locker = $null
+    Get-PowerPassLocker -Locker ([ref] $locker)
+    if( -not $locker ) {
+        throw "Could not load you PowerPass locker"
+    }
+    Import-PowerPassSecretsFromGroup -Parent "" -Group $rootGroup -Locker $locker
+    $salt = Get-PowerPassLockerSalt
+    if( -not $salt ) {
+        throw "Error importing secrets, no locker salt"
+    }
+    $pathToLocker = $script:PowerPass.LockerFilePath
+    [byte[]]$data = $null
+    Get-PowerPassLockerBytes -Locker $locker -Data ([ref] $data)
+    $encData = [System.Security.Cryptography.ProtectedData]::Protect($data,$salt,"CurrentUser")
+    $encDataText = [System.Convert]::ToBase64String($encData)
+    Out-File -FilePath $pathToLocker -InputObject $encDataText -Force
+}
+
+# ------------------------------------------------------------------------------------------------------------- #
+# FUNCTION: Import-PowerPassSecretsFromGroup
+# ------------------------------------------------------------------------------------------------------------- #
+
+function Import-PowerPassSecretsFromGroup {
+    param(
+        [string]
+        $Parent,
+        [KeePassLib.PwGroup]
+        $Group,
+        [PSCustomObject]
+        $Locker
+    )
+    foreach( $entry in $Group.Entries ) {
+        $queryTitle = if( $Parent ) {
+            "$Parent - "
+        } else {
+            [String]::Empty
+        }
+        foreach ( $entryProp in $entry.Strings ) {
+            if ( $entryProp.Key -eq "Title") {
+                $queryTitle += $entryProp.Value.ReadString()
+            }
+        }
+
+        if( $Locker.Secrets.Title -contains $queryTitle ) {
+            $a = Read-Host "Secret $queryTitle already exists, overwrite? (N/y)"
+            if( $a -eq 'y' ) {
+                $s = New-PowerPassSecretFromKeePass -Title $queryTitle -Entry $entry
+                $e = $Locker.Secrets | Where-Object { $_.Title -eq $queryTitle }
+                $e.Title = $s.Title
+                $e.UserName = $s.UserName
+                $e.Password = $s.Password
+                $e.URL = $s.URL
+                $e.Notes = $s.Notes
+                $e.Expires = $s.Expires
+            }
+        } else {
+            $s = New-PowerPassSecretFromKeePass -Title $queryTitle -Entry $entry
+            $Locker.Secrets += $s
+        }
+    }
+
+    foreach ( $childGroup in $Group.Groups ) {
+        $childGroup.Name
+        if( $Parent ) {
+            Import-PowerPassSecretsFromGroup -Parent "$Parent - $($childGroup.Name)" -Group $childGroup -Locker $Locker
+        } else {
+            Import-PowerPassSecretsFromGroup -Parent "$($childGroup.Name)" -Group $childGroup -Locker $locker
+        }
+    }
+}
+
+# ------------------------------------------------------------------------------------------------------------- #
+# FUNCTION: New-PowerPassSecretFromKeePass
+# ------------------------------------------------------------------------------------------------------------- #
+
+function New-PowerPassSecretFromKeePass {
+    [CmdletBinding()]
+    param(
+        [string]
+        $Title,
+        [KeePassLib.PwEntry]
+        $Entry
+    )
+
+    # Create the Secret data object
+    $Secret = [PSCustomObject]@{
+        Title    = $Title
+        UserName = [String]::Empty
+        Password = $null
+        URL      = [String]::Empty
+        Notes    = [String]::Empty
+        Expires  = [System.DateTime]::Now
+    }
+
+    # Write all the properties into the object
+    foreach ( $entryProp in $Entry.Strings ) {
+        switch ( $entryProp.Key ) {
+            "Title" {
+                $Secret.Title = $entryProp.Value.ReadString()
+            }
+            "UserName" {
+                $Secret.UserName = $entryProp.Value.ReadString()
+            }
+            "Password" {
+                $Secret.Password = $entryProp.Value.ReadString()
+            }
+            "URL" {
+                $Secret.URL = $entryProp.Value.ReadString()
+            }
+            "Notes" {
+                $Secret.Notes = $entryProp.Value.ReadString()
+            }
+        }
+    }
+
+    # Check the expiration flag
+    if( $Entry.Expires ) {
+        $Secret.Expires = $Entry.ExpiryTime
+    } else {
+        $Secret.Expires = [DateTime]::MaxValue
+    }
+
+    # Send back to caller
+    Write-Output $Secret
+}

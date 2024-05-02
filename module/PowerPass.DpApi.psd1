@@ -16,7 +16,7 @@
 RootModule = 'PowerPass.psm1'
 
 # Version number of this module.
-ModuleVersion = '2.1.2'
+ModuleVersion = '2.2.0'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -73,7 +73,7 @@ ScriptsToProcess = @('PowerPass.ps1')
 # NestedModules = @()
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
-FunctionsToExport = @('Open-PowerPassTestDatabase','Open-PowerPassDatabase','Get-PowerPassSecret','Clear-PowerPassLocker','Write-PowerPassSecret','Read-PowerPassSecret','Export-PowerPassLocker','Import-PowerPassLocker','New-PowerPassRandomPassword','Update-PowerPassSalt','Get-PowerPass','Remove-PowerPassSecret','Read-PowerPassAttachment','Write-PowerPassAttachment','Add-PowerPassAttachment','Get-PowerPassAttachments','Remove-PowerPassAttachment','Export-PowerPassAttachment')
+FunctionsToExport = @('Open-PowerPassTestDatabase','Open-PowerPassDatabase','Get-PowerPassSecret','Clear-PowerPassLocker','Write-PowerPassSecret','Read-PowerPassSecret','Export-PowerPassLocker','Import-PowerPassLocker','New-PowerPassRandomPassword','Update-PowerPassSalt','Get-PowerPass','Remove-PowerPassSecret','Read-PowerPassAttachment','Write-PowerPassAttachment','Add-PowerPassAttachment','Get-PowerPassAttachments','Remove-PowerPassAttachment','Export-PowerPassAttachment','Import-PowerPassSecrets')
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
 CmdletsToExport = @()
