@@ -59,10 +59,11 @@ PowerPass comes in three flavors and supports Linux, macOS, and Windows.
 PowerPass works and is tested on every PowerShell edition including WinPS and PS7.
 
 # More Information
-1. For a list of cmdlets and other resources please reivew the [Online Documentation](https://chopinrlz.github.io/powerpass).
-2. For more details on deployment and usage please see the [Deployment and Usage](https://chopinrlz.github.io/powerpass/deployment) article in the online documentation.
-3. For technical details on how it works please see [How It Works](https://chopinrlz.github.io/powerpass/readme-cont) in the online documentation.
-4. For more information on how to use PowerPass please review [Incorporating PowerPass into your Scripts](https://chopinrlz.github.io/powerpass/usage).
+1. For a list of cmdlets and other resources please reivew the [Online Documentation](https://chopinrlz.github.io/powerpass)
+2. For more details on deployment please see [Deployment](https://chopinrlz.github.io/powerpass/deployment)
+3. For technical details on how it works please see [How It Works](https://chopinrlz.github.io/powerpass/readme-cont)
+4. For how to use PowerPass see [Usage](https://chopinrlz.github.io/powerpass/usage)
+5. To view the roadmap of upcoming features see [Roadmap](https://chopinrlz.github.io/powerpass/roadmap)
 
 # License and Copyright
 PowerPass is copyright 2023-2024 by ShwaTech LLC.

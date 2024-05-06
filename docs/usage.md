@@ -1,18 +1,54 @@
-# Incorporating PowerPass into your Scripts
-#### _Revised: May 5, 2024_
+# Usage
+#### _Revised: May 6, 2024_
 Service accounts and other non-interactive logins can access credentials you store for them.
 And of course you can always user PowerPass with your own login, too.
-Login to the system with your service account, deploy PowerPass, and use `Write-PowerPassSecret` to store a credential for that service account.
+Login to the system with your account, or the service account you use for automation, deploy PowerPass, and use `Write-PowerPassSecret` to store a credential for that account.
 
-**The credentials you store while logged in as that service account will only be accessible to that same service account.**
+### **_The credentials you store while logged in will only be accessible to that same account._**
 
 The PowerPass module, Lockers, keys, and salts are all contained within the user's profile directory and everything is encrypted.
-The [README](https://github.com/chopinrlz/powerpass?tab=readme-ov-file#powerpass) file explains all of this is detail.
+The [How It Works](https://chopinrlz.github.io/powerpass/readme-cont) article explains the technical workings in detail.
 To incorporate PowerPass into your scritps and modules, follow these examples.
-## Automating Access to Active Directory
+
+## Reading and Writing Secrets
+* To read a secret from PowerPass use the `Read-PowerPassSecret` cmdlet.
+* To write a secret into PowerPass use the `Write-PowerPassSecret` cmdlet.
+* To remove a secret from PowerPass use the `Remove-PowerPassSecret` cmdlet.
+
+## Reading and Writing Files
+* To get the list of files in PowerPass use the `Get-PowerPassAttachments` cmdlet.
+* To read a file from PowerPass use the `Read-PowerPassAttachment` cmdlet.
+* To write a file into PowerPass use the `Write-PowerPassAttachment` cmdlet.
+* To remove a file from PowerPass use the `Remove-PowerPassAttachment` cmdlet.
+* To add multiple files to PowerPass at once from disk use the `Add-PowerPassAttachment` cmdlet.
+* To export multiple files from PowerPass back to disk use the `Export-PowerPassAttachment` cmdlet.
+
+## Back Up, Restore, and Maintenance
+* To export a copy of all your secrets and files use the `Export-PowerPassLocker` cmdlet.
+* To import secrets and files previously exported use the `Import-PowerPassLocker` cmdlet.
+* To erase all secrets and files from PowerPass use the `Clear-PowerPassLocker` cmdlet.
+* To rotate your PowerPass Locker keys use the `Update-PowerPassKey` cmdlet.
+
+## Utilities
+* To generate a random password use the `New-PowerPassRandomPassword` cmdlet.
+* To get PowerPass information use the `Get-PowerPass` cmdlet.
+
+## Full Cmdlet Reference
+1. For the AES edition: [PowerPass AES Cmdlet Reference](https://chopinrlz.github.io/powerpass/aes-cmdlet-ref)
+2. For the DP API edition: [PowerPass DP API Cmdlet Reference](https://chopinrlz.github.io/powerpass/dpapi-cmdlet-ref)
+
+# Getting Secrets from KeePass
+* To open a KeePass database use the `Open-PowerPassDatabase` cmdlet.
+* Pipe or pass the output to `Get-PowerPassSecret` to fetch secrets from the KeePass database.
+
+## Storing KeePass Database Passwords
+If you are opening KeePass databases which use master passwords or key files, you can store these passwords and even the key files as well in PowerPass to keep them secure.
+
+# Use Case: Automating Access to Active Directory
 One of the most common scenarios is automating access to Active Directory.
 Configuring a script to run with Domain Admin permissions is risky as the script must have access to highly privileged credentials.
 To ensure these credentials are not compromised, you can store them with PowerPass in an encrypted locker.
+
 ### Setup the PowerPass Locker
 1. First, determine which `logon account` you plan to use to run the script.
 2. Login to the computer with this account and deploy `PowerPass` using the `Deploy-PowerPass.ps1` script provided with the release.
@@ -21,6 +57,7 @@ To ensure these credentials are not compromised, you can store them with PowerPa
 
 For detailed instructions on how to store and retrieve Active Directory Domain credentials with PowerPass, please see the [Domain Credentials](https://chopinrlz.github.io/powerpass/domain-credentials) article.
 Now that you have credentials in your locker, you can use them in your script.
+
 ### Update your Script
 1. Open your script in your favorite PowerShell editor.
 2. Using the `Read-PowerPassSecret` cmdlet, fetch the credentials you stored earlier by selecting with the distinct `Title`.
@@ -28,6 +65,7 @@ Now that you have credentials in your locker, you can use them in your script.
 4. When your script runs it will read the credentials from the encrypted PowerPass Locker.
 
 See below for an example.
+
 ### Example
 This code uses PowerPass to load Domain credentials from the logon account's PowerPass Locker:
 ```powershell
@@ -39,19 +77,6 @@ Get-ADUser -Credential $creds
 ```
 To create the `PSCredential`, the secret must have a `UserName` and a `Password` property set.
 If either property is blank, the operation may fail with an error.
-# Usage
-For general usage of PowerPass, please see below.
-## KeePass Databases
-To open a KeePass database use the `Open-PowerPassDatabase` cmdlet.
-Pipe or pass the output to `Get-PowerPassSecret` to fetch secrets from the KeePass database.
-## PowerPass Locker
-To read a secret from your PowerPass Locker use the `Read-PowerPassSecret` cmdlet.
-To write a secret into your PowerPass Locker use the `Write-PowerPassSecret` cmdlet.
-## Storing KeePass Database Passwords
-If you are opening KeePass databases which use master passwords, you can store these passwords in your PowerPass Locker to keep them secure.
-## Cmdlet Reference
-1. For the AES edition: [PowerPass AES Cmdlet Reference](https://chopinrlz.github.io/powerpass/aes-cmdlet-ref)
-2. For the DP API edition: [PowerPass DP API Cmdlet Reference](https://chopinrlz.github.io/powerpass/dpapi-cmdlet-ref)
 
 All PowerPass topics can be found at the bottom of this page.
 # All PowerPass Topics

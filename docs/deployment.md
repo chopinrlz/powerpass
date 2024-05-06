@@ -1,5 +1,5 @@
 # Deployment
-#### _Revised: May 5, 2024_
+#### _Revised: May 6, 2024_
 PowerPass is not your typical PowerShell module.
 It works like a module, it's deployed like a module, but due to its nature it must be deployed using a deployment script packaged with PowerPass.
 Depending on the edition of PowerPass that you want to use, the AES edition or the Data Protection API edition (and in the future the TPM edition), PowerPass has different dependencies and requirements that are validated and/or configured at deployment time.
@@ -10,6 +10,7 @@ This guide will walk you through the deployment of PowerPass on Linux, MacOS, an
 <br/>
 
 First, you must install [PowerShell](https://github.com/PowerShell/PowerShell) if you haven't done so already, unless you are on Windows and plan to use Windows PowerShell which is built-in. If you already have PowerShell installed, follow the [Quick Start](#quick-start) next or skip ahead to [Deploying PowerPass](#deploying-powerpass).
+
 # Quick Start
 ### Deploying from Git on macOS and Linux
 On Linux or macOS, you can open a terminal and use these commands to clone the repo and deploy PowerPass from your home directory.
@@ -114,6 +115,7 @@ LockerFolderPath   : C:\Users\janedoe\AppData\Local\PowerPassV1
 LockerFilePath     : C:\Users\janedoe\AppData\Local\PowerPassV1\powerpass.locker
 LockerSaltPath     : C:\Users\janedoe\AppData\Local\PowerPassV1\locker.salt
 Implementation     : DPAPI
+Version            : 2.2.0
 ```
 #### For the AES Edition
 ```powershell
@@ -124,6 +126,7 @@ LockerFilePath      : C:\Users\janedoe\Documents\.powerpass_locker
 LockerKeyFolderPath : C:\Users\janedoe\AppData\Local\powerpassv2
 LockerKeyFilePath   : C:\Users\janedoe\AppData\Local\powerpassv2\.locker_key
 Implementation      : AES
+Version             : 2.2.0
 ```
 PowerPass is now ready for use.
 ## Step 4: (Optional) Test the Deployment
