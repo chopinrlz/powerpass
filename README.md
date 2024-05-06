@@ -27,7 +27,7 @@ PowerPass has the following features:
 All secrets and files stored by PowerPass are **encrypted** in a file called a Locker.
 Only your user account can decrypt your Locker.
 
-# Why Use PowerPass?
+## Why Use PowerPass?
 There are various secret storage and management tools available to you.
 So why use PowerPass?
 
