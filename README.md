@@ -3,8 +3,7 @@ A cross-platform PowerShell module for secret storage and retrieval on Linux, Ma
 PowerPass supports Windows PowerShell 5 and PowerShell 7.
 
 ## Purpose
-PowerPass provides an easy to use set of cmdlets for securely storing and retrieving credentials automatically without user input and without external dependencies.  
-In automated scenarios, there is no user present to type in a set of credentials.
+PowerPass provides an easy to use set of cmdlets for securely storing and retrieving credentials automatically without user input and without external dependencies. In automated scenarios, there is no user present to type in a set of credentials.
 
 1. PowerPass facilitates the use of credentials in automated scenarios.
 2. PowerPass credentials are locked down so that only the user who stored them can access them.
@@ -29,7 +28,9 @@ All secrets and files stored by PowerPass are **encrypted** in a file called a L
 Only your user account can decrypt your Locker.
 
 # Deployment and Usage
-1. Download a (release)[https://github.com/chopinrlz/powerpass/releases] from the releases page or clone this repo.
+To install PowerPass:
+
+1. Download a [release](https://github.com/chopinrlz/powerpass/releases) from the releases page or clone this repo.
 2. Unzip/expand the release archive to a **writable** folder
 3. Open any PowerShell terminal
 4. Run `.\Deploy-PowerPass.ps1`
@@ -62,3 +63,13 @@ PowerPass works and is tested on every PowerShell edition including WinPS and PS
 2. For more details on deployment and usage please see the [Deployment and Usage](https://chopinrlz.github.io/powerpass/deployment) article in the online documentation.
 3. For technical details on how it works please see [How It Works](https://chopinrlz.github.io/powerpass/readme-cont) in the online documentation.
 4. For more information on how to use PowerPass please review [Incorporating PowerPass into your Scripts](https://chopinrlz.github.io/powerpass/usage).
+
+# License and Copyright
+PowerPass is copyright 2023-2024 by ShwaTech LLC.
+PowerPass is open-source, free software. You may use PowerPass for any purpose.
+PowerPass is licensed under the GNU Public License v2.0.
+The license can be found in the [LICENSE](https://github.com/chopinrlz/powerpass/blob/main/LICENSE) file.
+You may copy, modify, and distribute PowerPass for personal or commercial use under the terms of the GNU Public License v2.0.
+
+# Repository Directory
+The directory of assets in this repo can be found in the [REPO](https://github.com/chopinrlz/powerpass/blob/main/REPO.md) markdown file.
