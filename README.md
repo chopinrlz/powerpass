@@ -47,7 +47,7 @@ You can also do this to downgrade to an older release.
 PowerPass comes in three flavors and supports Linux, macOS, and Windows.
 1. 256-bit AES Encryption
 2. Windows Data Protection API
-3. TPM Encryption (in development, scroll to bottom)
+3. TPM Encryption (in development, see [Roadmap](https://chopinrlz.github.io/powerpass/roadmap))
 
 ## Operating System Compatibility
 | OS | AES | DPAPI | TPM |
