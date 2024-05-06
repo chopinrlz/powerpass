@@ -1,5 +1,5 @@
 # PowerPass
-#### _Revised: January 11, 2024_
+#### _Revised: May 5, 2024_
 Welcome to the online documentation for PowerPass.
 Documentation is organized into articles by topic.
 Select the link from one of the topics below to read the article.
@@ -13,6 +13,8 @@ The installation guide for PowerPass.
 A reference guide for storing and retrieving Active Directory domain credentials with PowerPass.
 ## [DP API Cmdlet Reference](https://chopinrlz.github.io/powerpass/dpapi-cmdlet-ref)
 Developer reference for the Data Protection API edition of PowerPass which includes KeePass 2 support.
+## [How It Works](https://chopinrlz.github.io/powerpass/readme-cont)
+A technical walk-through of how PowerPass keeps your credentials secure.
 ## [OneDrive Backup](https://chopinrlz.github.io/powerpass/onedrivebackup)
 An article on the effects of enabling OneDrive Backup and how it impacts where PowerPass is deployed.
 ## [Prerequisites](https://chopinrlz.github.io/powerpass/prerequisites)
