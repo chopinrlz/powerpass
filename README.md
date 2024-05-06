@@ -27,6 +27,19 @@ PowerPass has the following features:
 All secrets and files stored by PowerPass are **encrypted** in a file called a Locker.
 Only your user account can decrypt your Locker.
 
+# Why Use PowerPass?
+There are various secret storage and management tools available to you.
+So why use PowerPass?
+
+* It's free
+* It's fully open-source
+* It's automated
+* It does not require Internet access
+* It does not depend on any modules
+* It requires zero configuration
+* It works on multiple operating systems
+* It uses standard encryption algorithms
+
 # Deployment and Usage
 To install PowerPass:
 
