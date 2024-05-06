@@ -2,14 +2,15 @@
 Here is the roadmap of upcoming features.
 ## TPM Support on Linux
 Currently under development is TPM support for Linux.
-| As of January 26, 2024 | Status |
-| --- | --- |
-| Initalize Context | Complete |
-| Get Info | Complete |
-| Create Key | Pending |
-| Encrypt Locker | Pending |
-| Decrypt Locker | Pending |
-| Unit Testing | Available |
+<table>
+<tr><th>As of January 26, 2024</th><th>Status</th></tr>
+<tr><td>Initalize Context</td><td>Complete</td></tr>
+<tr><td>Get Info</td><td>Complete</td></tr>
+<tr><td>Create Key</td><td>Pending</td></tr>
+<tr><td>Encrypt Locker</td><td>Pending</td></tr>
+<tr><td>Decrypt Locker</td><td>Pending</td></tr>
+<tr><td>Unit Testing</td><td>Available</td></tr>
+</table>
 
 The library chosen to provide support is the open-source **[tpm2-tss](https://github.com/tpm2-software/tpm2-tss)** project.
 A TPM is a Trusted Platform Module which is a device that stores private keys which cannot be exported from the system by any user.
@@ -35,9 +36,10 @@ The `makefile` in the `/tpm` directory assumes your **tpm2-tss** libraries are i
 If they are elsewhere, you will have to edit the `makefile` for now at least until I make it dynamic.
 ### Testing
 You can test `powerpasstpm` with the included `Test-TpmProvider.ps1` PowerShell script or you can just run `powerpasstpm` from the shell.
-| Test commands |||
-| -- | -- | -- |
-| ./powerpasstpm test | Runs in test mode | Outputs TPM info in JSON format to the console |
-| ./powerpasstpm test > info.json | Runs in test mode | Saves TPM info to JSON file for review |
+<table>
+<tr><th>Test commands</th><th></th><th></th></tr>
+<tr><td>./powerpasstpm test</td><td>Runs in test mode</td><td>Outputs TPM info in JSON format to the console</td></tr>
+<tr><td>./powerpasstpm test > info.json</td><td>Runs in test mode</td><td>Saves TPM info to JSON file for review</td></tr>
+</table>
 
 The `test` action for `powerpasstpm` invokes the `Fapi_GetInfo` function of the [TCG TPM2 Feature API](https://trustedcomputinggroup.org/resource/tss-fapi/) which echoes all the TPM capabilities of your system in JSON format.
