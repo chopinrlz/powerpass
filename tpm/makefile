@@ -6,7 +6,7 @@ SHELL=/bin/bash
 
 USR_LIB != echo /usr/lib
 NPROC != nproc
-TPM2_TSS_DIR != if [ -d ~/tpm2-tss ]; then echo 1; fi
+TPM2_TSS_DIR != if [ -d "./tpm2-tss" ]; then echo 1; fi
 
 # Instructions:
 #  make
@@ -22,19 +22,13 @@ powerpasstpm:
 	gcc powerpasstpm.o -L/usr/local/lib -ltss2-fapi -ltss2-rc -o powerpasstpm
 tpm2-tss:
 ifdef TPM2_TSS_DIR
-	rm -rf ~/tpm2-tss
-	cd ~
+	rm -rf ./tpm2-tss
 	git clone https://github.com/tpm2-software/tpm2-tss.git
 endif
 ifndef TPM2_TSS_DIR
-	cd ~
 	git clone https://github.com/tpm2-software/tpm2-tss.git
 endif
-	cd ~/tpm2-tss
-	./bootstrap
-	./configure --with-udevrulesdir=/etc/udev/rules.d --with-udevrulesprefix=80
-	make -j$(nproc)
-	cd ~/tpm2-tss
+	cd ./tpm2-tss; ./bootstrap; ./configure --with-udevrulesdir=/etc/udev/rules.d --with-udevrulesprefix=80; make -j$(nproc)
 	echo Run sudo make install to install TPM2-TSS
 post:
 	sudo udevadm control --reload-rules && sudo udevadm trigger
