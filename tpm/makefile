@@ -28,8 +28,8 @@ endif
 ifndef TPM2_TSS_DIR
 	git clone https://github.com/tpm2-software/tpm2-tss.git
 endif
-	cd ./tpm2-tss; ./bootstrap; ./configure --with-udevrulesdir=/etc/udev/rules.d --with-udevrulesprefix=80; make -j$(nproc)
-	echo Run sudo make install to install TPM2-TSS
+	cd ./tpm2-tss; ./bootstrap; ./configure --with-udevrulesdir=/etc/udev/rules.d --with-udevrulesprefix=80; make -j$(NPROC)
+	@echo Run sudo make install to install TPM2-TSS
 post:
 	sudo udevadm control --reload-rules && sudo udevadm trigger
 	sudo ldconfig
@@ -59,5 +59,4 @@ depends:
 clean:
 	@rm -f powerpasstpm.o
 	@rm -f powerpasstpm
-	@rm -rf tpm2-tss-4.0.1
-	@rm -f tpm2-tss-4.0.1.tar.gz
+	@rm -rf ./tpm2-tss
