@@ -102,7 +102,7 @@ int pptpm_init(void) {
 
             // Provision the FAPI context
             printf( "powerpasstpm: calling Fapi_Provision\n" );
-            res = Fapi_Provision( context, NULL, __POWERPASS_AUTH_SH, __POWERPASS_AUTH_LOCKOUT );
+            res = Fapi_Provision( context, NULL, NULL, __POWERPASS_AUTH_LOCKOUT );
             if( res == TSS2_RC_SUCCESS ) {
 
                 // Create a new key for encryption
