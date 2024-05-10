@@ -44,6 +44,25 @@ int main( int argc, char** argv ) {
 
 /*
     -------------------------------------------------------------------
+    Function: int pptpm_echo( TPM2_RC )
+    Checks the TPM2 return code and prints and decodes and error message
+    if the value is not TSS2_RC_SUCCESS then returns either 1 or 0.
+    -------------------------------------------------------------------
+*/
+
+int pptpm_echo( TPM2_RC res ) {
+    if( res != TSS2_RC_SUCCESS ) {
+        const char* decoded = Tss2_RC_Decode( res );
+        printf( "powerpasstpm: TPM2_RC code: %d\n", res );
+        printf( "powerpasstpm: Decoded error message: %s\n", decoded );
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+/*
+    -------------------------------------------------------------------
     Function: int pptpm_test(void)
     Tests connection to TPM and prints info from TCG Feature API
     -------------------------------------------------------------------
@@ -70,12 +89,13 @@ int pptpm_test(void) {
 
         // Release the context
         Fapi_Finalize( &context );
-        return 0;
     } else {
         // Notify user of error
         printf( "{\n\terror: failed to initialize context\n\tcode: %d\n}", res );
-        return 1;
     }
+
+    // Check return code
+    return (pptpm_echo(res));
 }
 
 /*
@@ -103,27 +123,20 @@ int pptpm_init(void) {
             // Provision the FAPI context
             printf( "powerpasstpm: calling Fapi_Provision\n" );
             res = Fapi_Provision( context, NULL, NULL, __POWERPASS_AUTH_LOCKOUT );
-            if( res == TSS2_RC_SUCCESS ) {
 
-                // Create a new key for encryption
-                printf( "powerpasstpm: calling Fapi_CreateKey\n" );
+            // Create the root storage hierarchy key
+            if( res == TSS2_RC_SUCCESS || res == TSS2_FAPI_RC_ALREADY_PROVISIONED ) {
+                printf( "powerpasstpm: calling Fapi_CreateKey for srk\n" );
+                res = Fapi_CreateKey( context, __POWERPASS_KEY_ROOT, __POWERPASS_KEY_RKTP, NULL, NULL );
+            }
+
+            // Create the PowerPass encryption key
+            if( res == TSS2_RC_SUCCESS || res == TSS2_FAPI_RC_PATH_ALREADY_EXISTS ) {
+                printf( "powerpasstpm: calling Fapi_CreateKey for powerpass\n" );
                 res = Fapi_CreateKey( context, __POWERPASS_KEY_PATH, __POWERPASS_KEY_TYPE, NULL, NULL );
-                switch( res ) {
-                    case TSS2_RC_SUCCESS:
-                        printf( "powerpasstpm: Successfully created key at %s\n", __POWERPASS_KEY_PATH );
-                        break;
-                    case TSS2_FAPI_RC_PATH_ALREADY_EXISTS:
-                        printf( "powerpasstpm: Key already exists\n" );
-                        break;
-                    default:
-                        printf( "powerpasstpm: Error creating TPM key for PowerPass Locker\n" );
-                        break;
-                }
-            } else {
-                printf( "powerpasstpm: Error provisioning Feature API instance: %d\n", res );
             }
         } else {
-            printf( "powerpasstpm: Error setting auth callback: %d\n", res );
+            printf( "powerpasstpm: Error setting auth callback\n" );
         }
         
         // Release the context
@@ -133,13 +146,7 @@ int pptpm_init(void) {
     }
 
     // Check return code
-    if( res != TSS2_RC_SUCCESS ) {
-        const char* decoded = Tss2_RC_Decode( res );
-        printf( "powerpasstpm: Decoded error message: %s\n", decoded );
-        return 1;
-    } else {
-        return 0;
-    }
+    return (pptpm_echo(res));
 }
 
 /*

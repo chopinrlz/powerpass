@@ -14,9 +14,11 @@
 const char __POWERPASS_TEST[]     = "test";
 const char __POWERPASS_INIT[]     = "init";
 
-// const char __POWERPASS_KEY_PATH[] = "/P_ECCP256SHA256/HS/srk/daltas-powerpass-locker";
-const char __POWERPASS_KEY_PATH[] = "/srk/shwatech-test-key";
-const char __POWERPASS_KEY_TYPE[] = "sign,decrypt";
+const char __POWERPASS_KEY_ROOT[] = "/HS/srk";
+const char __POWERPASS_KEY_RKTP[] = "sign,decrypt";
+
+const char __POWERPASS_KEY_PATH[] = "/HS/srk/shwatech-powerpass";
+const char __POWERPASS_KEY_TYPE[] = "decrypt";
 
 // Two secrets for testing purposes on temporary powerpass Ubuntu virtual machine
 // These are generated using [Guid]::NewGuid().ToLower().Replace("-","") to create
@@ -31,5 +33,6 @@ int main(int argc, char** argv);
 int pptpm_test(void);
 int pptpm_init(void);
 TSS2_RC pptpm_provision_authcallback( const char* objectPath, const char* description, const char** auth, void* userData );
+int pptpm_echo(TSS2_RC res);
 
 #endif // #define POWERPASS_TPM
