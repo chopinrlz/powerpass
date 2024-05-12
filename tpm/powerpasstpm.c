@@ -36,6 +36,9 @@ int main( int argc, char** argv ) {
         if( strcmp(argv[1],__POWERPASS_INIT) == 0 ) {
             result = pptpm_init();
         }
+        if( strcmp(argv[1],__POWERPASS_ENC) == 0 ) {
+            result = pptpm_enc();
+        }
     } else {
         printf("No arguments specified\n");
     }
@@ -169,4 +172,53 @@ TSS2_RC pptpm_provision_authcallback( const char* objectPath, const char* descri
         *auth = __POWERPASS_AUTH_SECRET;
         return TSS2_RC_SUCCESS;
     }
+}
+
+/*
+    -------------------------------------------------------------------
+    Function: int pptpm_enc(void)
+    Encrypts data using a TPM key.
+    -------------------------------------------------------------------
+*/
+
+int pptpm_enc(void) {
+    // Declare context and return code variables
+    TSS2_RC res;
+    FAPI_CONTEXT* context;
+
+    // Initialize the context
+    printf( "powerpasstpm: calling Fapi_Initialize\n" );
+    res = Fapi_Initialize( &context, NULL );
+    if( res == TSS2_RC_SUCCESS ) {
+
+        // Make some data
+        size_t buflen = 128;
+        uint8_t ptext[128];
+        for( int i = 0; i < 128; i++ ) {
+            ptext[i] = (uint8_t)i;
+        }
+        printf( "powerpasstpm: plain-text string: %s\n", ptext );
+
+        // Encrypt the data
+        uint8_t* encdata;
+        size_t enclen;
+        res = Fapi_Encrypt( context, __POWERPASS_KEY_ROOT, ptext, buflen, &encdata, &enclen );
+        if( res == TSS2_RC_SUCCESS ) {
+            printf( "powerpasstpm: encryption successful\n" );
+            printf( "powerpasstpm: encrypted string: %s\n", encdata );
+        } else {
+            printf( "powerpasstpm: encryption failed\n" );
+        }
+        
+        // Release the encryption buffer
+        Fapi_Free( encdata );
+
+        // Release the context
+        Fapi_Finalize( &context );
+    } else {
+        printf( "powerpasstpm: failed to initialize FAPI context\n" );
+    }
+
+    // Check return code
+    return (pptpm_echo(res));
 }
