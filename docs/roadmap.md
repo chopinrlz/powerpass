@@ -4,7 +4,7 @@ Here is the roadmap of upcoming features.
 Currently under development is TPM support for Linux.
 <table>
 <tr><th>As of May 12, 2024</th><th>Status</th></tr>
-<tr><td>Initalize Context</td><td>Complete</td></tr>
+<tr><td>Initialize Context</td><td>Complete</td></tr>
 <tr><td>Get Info</td><td>Complete</td></tr>
 <tr><td>Create Key</td><td>Complete</td></tr>
 <tr><td>Encrypt Locker</td><td>Proofed</td></tr>
@@ -74,7 +74,7 @@ This PowerShell script will compile the `powerpasstpm` binary using `gcc` via th
 It will run `./powerpasstpm` in test mode and fetch the TPM info from the **tpm2-tss** Feature API.
 Lastly, it will echo the object properties received from the TPM using `Get-Member`.
 The `tpm2-tss` library returns JSON for the TPM info.
-You can take the output of `./powerpasstpm test` and pipe it to `ConvertFrom-Json` to get an object and inpect it with PowerShell.
+You can take the output of `./powerpasstpm test` and pipe it to `ConvertFrom-Json` to get an object and inspect it with PowerShell.
 
 ### Testing
 You can test `powerpasstpm` with the included `Test-TpmProvider.ps1` PowerShell script or you can just run `powerpasstpm` from the shell.
@@ -100,4 +100,4 @@ You can test encryption using the PowerPass Locker key by running:
 $ ./powerpasstpm enc
 ```
 When you run the `enc` command, the PowerPass TPM module will attempt to encrypt a block of random data using the Locker key created during the `init` routine.
-If successful, you will see the plain-text data and the encrypted data echoed to the termainl.
+If successful, you will see the plain-text data and the encrypted data echoed to the terminal.
