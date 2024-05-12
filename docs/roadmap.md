@@ -69,8 +69,12 @@ NOTE: The `makefile` in the `/tpm` directory assumes your **tpm2-tss** libraries
 If they are elsewhere, you will have to edit the `makefile` for now at least until I make it dynamic.
 
 ### Testing Your TPM
-Once you have **tpm2-tss** deployed you can test for TPM support by running `Test-TpmProvider.ps1` from the `/tpm` directory in this repo.
-This PowerShell script will compile the `powerpasstpm` binary using `gcc` via the included `makefile` then run it in test mode and fetch the TPM info from the **tpm2-tss** Feature API.
+Now that everything is setup, you can test for TPM support by running `Test-TpmProvider.ps1` from the `/tpm` directory in this repo.
+This PowerShell script will compile the `powerpasstpm` binary using `gcc` via the included `makefile` if you have not already done so.
+It will run `./powerpasstpm` in test mode and fetch the TPM info from the **tpm2-tss** Feature API.
+Lastly, it will echo the object properties received from the TPM using `Get-Member`.
+The `tpm2-tss` library returns JSON for the TPM info.
+You can take the output of `./powerpasstpm test` and pipe it to `ConvertFrom-Json` to get an object and inpect it with PowerShell.
 
 ### Testing
 You can test `powerpasstpm` with the included `Test-TpmProvider.ps1` PowerShell script or you can just run `powerpasstpm` from the shell.
