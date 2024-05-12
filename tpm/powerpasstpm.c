@@ -127,16 +127,18 @@ int pptpm_init(void) {
             printf( "powerpasstpm: calling Fapi_Provision\n" );
             res = Fapi_Provision( context, NULL, NULL, __POWERPASS_AUTH_LOCKOUT );
 
-            // Create the root storage hierarchy key
-            if( res == TSS2_RC_SUCCESS || res == TSS2_FAPI_RC_ALREADY_PROVISIONED ) {
-                printf( "powerpasstpm: calling Fapi_CreateKey for srk\n" );
-                res = Fapi_CreateKey( context, __POWERPASS_KEY_ROOT, __POWERPASS_KEY_RKTP, NULL, NULL );
-            }
-
             // Create the PowerPass encryption key
-            if( res == TSS2_RC_SUCCESS || res == TSS2_FAPI_RC_PATH_ALREADY_EXISTS ) {
+            if( res == TSS2_RC_SUCCESS || res == TSS2_FAPI_RC_ALREADY_PROVISIONED ) {
                 printf( "powerpasstpm: calling Fapi_CreateKey for powerpass\n" );
                 res = Fapi_CreateKey( context, __POWERPASS_KEY_PATH, __POWERPASS_KEY_TYPE, NULL, NULL );
+                switch( res ) {
+                    case TSS2_RC_SUCCESS:
+                        printf( "powerpasstpm: Locker key created successfully\n" );
+                        break;
+                    case TSS2_FAPI_RC_PATH_ALREADY_EXISTS:
+                        printf( "powerpasstpm: Locker key already exists\n" );
+                        break;
+                }
             }
         } else {
             printf( "powerpasstpm: Error setting auth callback\n" );
@@ -197,15 +199,17 @@ int pptpm_enc(void) {
         for( int i = 0; i < 128; i++ ) {
             ptext[i] = (uint8_t)i;
         }
-        printf( "powerpasstpm: plain-text string: %s\n", ptext );
+        printf( "powerpasstpm: plain-text string: " );
+        pptpm_print( ptext, buflen );
 
         // Encrypt the data
         uint8_t* encdata;
         size_t enclen;
-        res = Fapi_Encrypt( context, __POWERPASS_KEY_ROOT, ptext, buflen, &encdata, &enclen );
+        res = Fapi_Encrypt( context, __POWERPASS_KEY_PATH, ptext, buflen, &encdata, &enclen );
         if( res == TSS2_RC_SUCCESS ) {
             printf( "powerpasstpm: encryption successful\n" );
-            printf( "powerpasstpm: encrypted string: %s\n", encdata );
+            printf( "powerpasstpm: encrypted string: " );
+            pptpm_print( encdata, enclen );
         } else {
             printf( "powerpasstpm: encryption failed\n" );
         }
@@ -221,4 +225,24 @@ int pptpm_enc(void) {
 
     // Check return code
     return (pptpm_echo(res));
+}
+
+/*
+    -------------------------------------------------------------------
+    Function: void pptpm_print(uint8_t* bytes, size_t len)
+    Prints a byte array to stdout in a friendly format.
+    -------------------------------------------------------------------
+*/
+
+void pptpm_print(uint8_t* bytes, size_t len) {
+    if( bytes == NULL ) {
+        return;
+    }
+    if( len <= 0 ) {
+        return;
+    }
+    for( size_t i = 0; i < len; i ++ ) {
+        printf( "%i ", bytes[i] );
+    }
+    printf("\n");
 }

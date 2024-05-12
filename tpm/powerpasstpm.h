@@ -15,10 +15,7 @@ const char __POWERPASS_TEST[]     = "test";
 const char __POWERPASS_INIT[]     = "init";
 const char __POWERPASS_ENC[]      = "enc";
 
-const char __POWERPASS_KEY_ROOT[] = "P_RSA2048SHA256/HS/srk";
-const char __POWERPASS_KEY_RKTP[] = "sign,decrypt";
-
-const char __POWERPASS_KEY_PATH[] = "P_RSA2048SHA256/HS/srk/shwatech-powerpass";
+const char __POWERPASS_KEY_PATH[] = "/P_RSA2048SHA256/HS/shwatech-powerpass";
 const char __POWERPASS_KEY_TYPE[] = "sign,decrypt";
 
 // Two secrets for testing purposes on temporary powerpass Ubuntu virtual machine
@@ -35,6 +32,7 @@ int pptpm_test(void);
 int pptpm_init(void);
 TSS2_RC pptpm_provision_authcallback( const char* objectPath, const char* description, const char** auth, void* userData );
 int pptpm_echo(TSS2_RC res);
+void pptpm_print(uint8_t* bytes, size_t len);
 int pptpm_enc(void);
 
 #endif // #define POWERPASS_TPM
