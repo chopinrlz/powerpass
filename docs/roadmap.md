@@ -38,18 +38,18 @@ From the `tpm` directory of the PowerPass repo, run `sudo make depends`. Running
 user@server:~/powerpass/tpm$ make tpm2-tss
 ```
 Also from the `tpm` directory of the PowerPass repo, run `make tpm2-tss`. Running `make tpm2-tss` will use Git to clone the latest `tpm2-tss` version into the current directory, bootstrap, configure, and compile the libraries.
-3. sudo make install
+#### 3. sudo make install
 ```bash
 user@server:~/powerpass/tpm/tpm2-tss$ sudo make install
 ```
 Next, you need to run `sudo make install` from the `tpm2-tss` subdirectory to install `tpm2-tss` to your environment.
-4. sudo make post
+#### 4. sudo make post
 ```bash
 user@server:~/powerpass/tpm$ sudo make post
 ```
 Now, back in the `tpm` subdirectory of the PowerPass repo, run `sudo make post` which will reload your udev rules and run ldconfig per the instructions from the `tpm2-tss` INSTALL file.
 The Feature API will not work if you do not perform this step.
-5. sudo usermod -a -G tss user
+#### 5. sudo usermod -a -G tss user
 ```bash
 user@server:~/powerpass/tpm$ sudo usermod -a -G tss [user]
 ```
