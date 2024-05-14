@@ -10,18 +10,16 @@ if( -not $IsLinux ) {
     throw "TPM support is for the Linux OS"
 }
 Set-Location $PSScriptRoot
-if( -not (Test-Path "powerpasstpm") ) {
-    Write-Output "Compiling powerpasstpm using make"
-    & make @('clean')
-    & make
+& make clean
+& make
+$payload = Get-Content .\Payload.cs -Raw
+Add-Type -TypeDefinition $payload -Language CSharp
+[string[]]$tpmInfo = & ./powerpasstpm test
+$result = [PowerPass.TpmResult]::new( $tpmInfo )
+if( $result.ResultCode -ne 0 ) {
+    Write-Output "Error: $($result.ResultCode)"
+    Write-Output "Message: $($result.Message)"
+} else {
+    $tpm = ConvertFrom-Json ($result.Payload)
+    $tpm | Get-Member
 }
-
-# Removed, for now, as no C# provider is required
-# $source = Get-Content "$PSScriptRoot/TpmProvider.cs" -Raw
-# Add-Type -TypeDefinition $source -ReferencedAssemblies "System.Runtime.InteropServices"
-# $provider = New-Object "PowerPass.TpmProvider"
-
-$tpmInfo = & ./powerpasstpm @("test")
-$tpmInfo = $tpmInfo -join ""
-$tpm = ConvertFrom-Json $tpmInfo
-$tpm | Get-Member

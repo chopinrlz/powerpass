@@ -56,10 +56,12 @@ int main( int argc, char** argv ) {
 int pptpm_echo( TPM2_RC res ) {
     if( res != TSS2_RC_SUCCESS ) {
         const char* decoded = Tss2_RC_Decode( res );
-        printf( "powerpasstpm: TPM2_RC code: %d\n", res );
-        printf( "powerpasstpm: Decoded error message: %s\n", decoded );
+        printf( "powerpasstpm:%d\n", res );
+        printf( "powerpasstpm:decoded:%s", decoded );
         return 1;
     } else {
+        printf( "powerpasstpm:0\n" );
+        printf( "powerpasstpm:decoded:success" );
         return 0;
     }
 }
@@ -86,15 +88,10 @@ int pptpm_test(void) {
         if( res != TSS2_FAPI_RC_BAD_REFERENCE ) {
             printf( "%s\n", info );
             Fapi_Free( info );
-        } else {
-            printf( "{\n\terror: get info returned bad reference\n\tcode: %d\n}", res );
         }
 
         // Release the context
         Fapi_Finalize( &context );
-    } else {
-        // Notify user of error
-        printf( "{\n\terror: failed to initialize context\n\tcode: %d\n}", res );
     }
 
     // Check return code
