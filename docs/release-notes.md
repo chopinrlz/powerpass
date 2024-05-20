@@ -1,12 +1,7 @@
-**NOTE: This is a BREAKING CHANGE from v1.x. If you are on v1.x please EXPORT your Locker before deploying v2.x.** If your forget to do this, simply go back to v1.6.2, export your Locker, then deploy v2.2.0. PowerPass will not overwrite your Locker or your Locker keys if they already exist.
-# New Features
-### Importing Secrets from KeePass 2 Databases
-Version 2.2.0 of PowerPass adds a new feature to the Data Protection API edition for Windows PowerShell. The newly added `Import-PowerPassSecrets` cmdlet allows you to copy all the secrets from a KeePass 2 database into your PowerPass Locker so that they can be exported to a separate location, like another computer, or used from your Locker instead.
-### Version Number
-Version 2.2.0 of PowerPass adds the module version to the output of `Get-PowerPass` using the `Version` property which will allow you to easily fetch the version of PowerPass you have deployed.
+**NOTE: This is a BREAKING CHANGE from v1.x. If you are on v1.x please EXPORT your Locker before deploying v2.x.** If your forget to do this, simply go back to v1.6.2, export your Locker, then deploy v2.2.1. PowerPass will not overwrite your Locker or your Locker keys if they already exist.
 # Bug Fixes
-### [Open-PowerPassDatabase does not honor relative paths](https://github.com/chopinrlz/powerpass/issues/6)
-Release 2.2.0 fixes a bug in the Data Protection API edition of PowerPass when working with KeePass 2 databases. The `Open-PowerPassDatabase` cmdlet had an error with the `-Path` parameter where relative paths were ignored and caused the cmdlet to report an error that it cannot find the database file.
+### [[macOS] Lockers cannot be opened after reboot](https://github.com/chopinrlz/powerpass/issues/7)
+Release 2.2.1 fixes a bug in macOS where ephemeral key generation uses the MAC address of an adapter with a dynamic address assigned at start up. After rebooting your Mac, you could no longer read secrets from your Locker. The fix excludes two adapaters from consideration as candidates for ephemeral key generation to avoid this problem.
 # Deployment
 To install PowerPass:
 1. Clone the repo, download this release, or download the source code for this release
@@ -16,8 +11,8 @@ For detailed information about deployment see the [Deployment](https://chopinrlz
 # File Hashes
 | Release                 | SHA256 Hash                                                        |
 | ----------------------- | ------------------------------------------------------------------ |
-| PowerPass-2.2.0.tar.gz  | `DCFC865146CA1AC568AF4065AE7E8E19FF8FFA286628721B6C92E238CA71391C` |
-| PowerPass-2.2.0.zip     | `D6AC8F716ED0718F11829CCC64EAB53499644D58DD05B95C49D7EE1D7524A6C4` |
+| PowerPass-2.2.1.tar.gz  | `C5CD4628C3B520F4B8A2F36BE3FDDF5BF031386A03B029A98B63A0CF8AE6D4CD` |
+| PowerPass-2.2.1.zip     | `D180B0CD907B549F861D6324CB0D78F00AAF6691CB21137F0A0A028456309D15` |
 
 # All PowerPass Topics
 Select one of the links below to browse to another topic.

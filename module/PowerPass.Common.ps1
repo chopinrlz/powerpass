@@ -619,10 +619,11 @@ function Get-PowerPassEphemeralKey {
     $adapters = [System.Net.NetworkInformation.NetworkInterface]::GetAllNetworkInterfaces()
     $candidates = @()
     foreach( $nic in $adapters ) {
-        if( $nic.OperationalStatus -eq "Up" ) {
-            if( $nic.NetworkInterfaceType -in $macTypes ) {
-                $candidates += $nic
-            }
+        $notExcluded = ($nic.Description -notlike "awdl*") -and ($nic.Description -notlike "llw*")
+        $online = $nic.OperationalStatus -eq "Up"
+        $matching = $nic.NetworkInterfaceType -in $macTypes
+        if( $notExcluded -and $online -and $matching ) {
+            $candidates += $nic
         }
     }
 
