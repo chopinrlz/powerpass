@@ -3,10 +3,6 @@
 # This software is provided AS IS WITHOUT WARRANTEE.
 # You may copy, modify or distribute this software under the terms of the GNU Public License 2.0.
 
-# ------------------------------------------------------------------------------------------------------------- #
-# FUNCTION: New-PowerPassSecret
-# ------------------------------------------------------------------------------------------------------------- #
-
 function New-PowerPassSecret {
     <#
         .SYNOPSIS
@@ -27,10 +23,6 @@ function New-PowerPassSecret {
     Write-Output $nps
 }
 
-# ------------------------------------------------------------------------------------------------------------- #
-# FUNCTION: New-PowerPassAttachment
-# ------------------------------------------------------------------------------------------------------------- #
-
 function New-PowerPassAttachment {
     <#
         .SYNOPSIS
@@ -48,10 +40,6 @@ function New-PowerPassAttachment {
     }
     Write-Output $npa
 }
-
-# ------------------------------------------------------------------------------------------------------------- #
-# FUNCTION: New-PowerPassAttachment
-# ------------------------------------------------------------------------------------------------------------- #
 
 function New-PowerPassLocker {
     <#
@@ -77,10 +65,6 @@ function New-PowerPassLocker {
     }
     Write-Output $locker
 }
-
-# ------------------------------------------------------------------------------------------------------------- #
-# FUNCTION: Set-PowerPassSecureString
-# ------------------------------------------------------------------------------------------------------------- #
 
 function Set-PowerPassSecureString {
     <#
@@ -111,10 +95,6 @@ function Set-PowerPassSecureString {
     }
 }
 
-# ------------------------------------------------------------------------------------------------------------- #
-# FUNCTION: Get-PowerPassLockerBytes
-# ------------------------------------------------------------------------------------------------------------- #
-
 function Get-PowerPassLockerBytes {
     <#
         .SYNOPSIS
@@ -135,10 +115,6 @@ function Get-PowerPassLockerBytes {
     $json = ConvertTo-Json -InputObject $Locker
     $Data.Value = ConvertTo-Utf8ByteArray -InputString $json
 }
-
-# ------------------------------------------------------------------------------------------------------------- #
-# FUNCTION: Test-PowerPassAnswer
-# ------------------------------------------------------------------------------------------------------------- #
 
 function Test-PowerPassAnswer {
     <#
@@ -168,10 +144,6 @@ function Test-PowerPassAnswer {
     }
 }
 
-# ------------------------------------------------------------------------------------------------------------- #
-# FUNCTION: New-PowerPassRandomPassword
-# ------------------------------------------------------------------------------------------------------------- #
-
 function New-PowerPassRandomPassword {
     <#
         .SYNOPSIS
@@ -192,10 +164,6 @@ function New-PowerPassRandomPassword {
     $bytes = $bytes | % { ( $_ % ( 126 - 33 ) ) + 33 }
     [System.Text.Encoding]::ASCII.GetString( $bytes )
 }
-
-# ------------------------------------------------------------------------------------------------------------- #
-# FUNCTION: Get-PowerPassCredential
-# ------------------------------------------------------------------------------------------------------------- #
 
 function Get-PowerPassCredential {
     <#
@@ -222,10 +190,6 @@ function Get-PowerPassCredential {
     }
 }
 
-# ------------------------------------------------------------------------------------------------------------- #
-# FUNCTION: Get-PowerPassMaskedPassword
-# ------------------------------------------------------------------------------------------------------------- #
-
 function Get-PowerPassMaskedPassword {
     <#
         .SYNOPSIS
@@ -249,10 +213,6 @@ function Get-PowerPassMaskedPassword {
     Write-Output $x
 }
 
-# ------------------------------------------------------------------------------------------------------------- #
-# FUNCTION: Get-PowerPassAttachments
-# ------------------------------------------------------------------------------------------------------------- #
-
 function Get-PowerPassAttachments {
     <#
         .SYNOPSIS
@@ -268,10 +228,6 @@ function Get-PowerPassAttachments {
     }
     $locker.Attachments | Select-Object -Property FileName,Created,Modified
 }
-
-# ------------------------------------------------------------------------------------------------------------- #
-# FUNCTION: Read-PowerPassAttachment
-# ------------------------------------------------------------------------------------------------------------- #
 
 function Read-PowerPassAttachment {
     <#
@@ -374,10 +330,6 @@ function Read-PowerPassAttachment {
     }
 }
 
-# ------------------------------------------------------------------------------------------------------------- #
-# FUNCTION: Read-PowerPassSecret
-# ------------------------------------------------------------------------------------------------------------- #
-
 function Read-PowerPassSecret {
     <#
         .SYNOPSIS
@@ -468,10 +420,6 @@ function Read-PowerPassSecret {
         Write-Output $null
     }
 }
-
-# ------------------------------------------------------------------------------------------------------------- #
-# FUNCTION: Export-PowerPassAttachment
-# ------------------------------------------------------------------------------------------------------------- #
 
 function Export-PowerPassAttachment {
     <#
@@ -572,10 +520,6 @@ function Export-PowerPassAttachment {
         }
     }
 }
-
-# ------------------------------------------------------------------------------------------------------------- #
-# FUNCTION: Get-PowerPassEphemeralKey
-# ------------------------------------------------------------------------------------------------------------- #
 
 function Get-PowerPassEphemeralKey {
     <#
