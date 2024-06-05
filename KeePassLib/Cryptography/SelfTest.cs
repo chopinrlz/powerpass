@@ -109,16 +109,16 @@ namespace KeePassLib.Cryptography
 		{
 #if !KeePassUAP
 			try { using(RijndaelManaged r = new RijndaelManaged()) { } }
-			catch(Exception exAes)
+			catch(Exception ex)
 			{
-				throw new SecurityException("AES/Rijndael: " + exAes.Message);
+				throw new ExtendedException("AES/Rijndael", ex);
 			}
 #endif
 
 			try { using(SHA256Managed h = new SHA256Managed()) { } }
-			catch(Exception exSha256)
+			catch(Exception ex)
 			{
-				throw new SecurityException("SHA-256: " + exSha256.Message);
+				throw new ExtendedException("SHA-256", ex);
 			}
 		}
 

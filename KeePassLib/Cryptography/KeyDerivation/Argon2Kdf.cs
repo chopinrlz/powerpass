@@ -55,7 +55,7 @@ namespace KeePassLib.Cryptography.KeyDerivation
 		private const uint MaxVersion = 0x13;
 
 		private const int MinSalt = 8;
-		private const int MaxSalt = int.MaxValue; // 2^32 - 1 in spec.
+		private const int MaxSalt = 0x3FFFFFFF; // 2^32 - 1 in spec.
 
 		internal const ulong MinIterations = 1;
 		internal const ulong MaxIterations = uint.MaxValue;

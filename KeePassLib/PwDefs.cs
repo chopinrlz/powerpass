@@ -56,18 +56,18 @@ namespace KeePassLib
 		/// e.g. 2.19 = 0x02130000.
 		/// It is highly recommended to use <c>FileVersion64</c> instead.
 		/// </summary>
-		public static readonly uint Version32 = 0x02380000;
+		public static readonly uint Version32 = 0x02390000;
 
 		/// <summary>
 		/// Version, encoded as 64-bit unsigned integer
 		/// (component-wise, 16 bits per component).
 		/// </summary>
-		public static readonly ulong FileVersion64 = 0x0002003800000000UL;
+		public static readonly ulong FileVersion64 = 0x0002003900000000UL;
 
 		/// <summary>
 		/// Version, encoded as string.
 		/// </summary>
-		public static readonly string VersionString = "2.56";
+		public static readonly string VersionString = "2.57";
 
 		public static readonly string Copyright = @"Copyright © 2003-2024 Dominik Reichl";
 
@@ -191,6 +191,8 @@ namespace KeePassLib
 		internal const uint QualityBitsWeak = 79;
 
 		internal const string FavoriteTag = "Favorite";
+
+		internal static bool DebugMode { get; set; } // Command line option '-debug'
 
 		/// <summary>
 		/// Check whether a name is a standard field name.

@@ -512,19 +512,31 @@ namespace KeePassLib.Serialization
 					SecurityProtocolType.Tls);
 
 				// The flags Tls11 and Tls12 in SecurityProtocolType have been
-				// introduced in .NET 4.5 and must not be set when running under
+				// introduced in .NET 4.5 and must not be set when running on
 				// older .NET versions (otherwise an exception is thrown)
 				Type tSpt = typeof(SecurityProtocolType);
 				string[] vSpt = Enum.GetNames(tSpt);
+				bool bSystem = false;
 				foreach(string strSpt in vSpt)
 				{
-					if(strSpt.Equals("Tls11", StrUtil.CaseIgnoreCmp) ||
-						strSpt.Equals("Tls12", StrUtil.CaseIgnoreCmp) ||
-						strSpt.Equals("Tls13", StrUtil.CaseIgnoreCmp))
+					// When running on .NET 4.7 or higher, let the system
+					// choose the supported/enabled protocols;
+					// https://learn.microsoft.com/en-us/dotnet/framework/network-programming/tls
+					// https://learn.microsoft.com/en-us/windows/win32/secauthn/protocols-in-tls-ssl--schannel-ssp-
+					if(strSpt.Equals("SystemDefault", StrUtil.CaseIgnoreCmp))
+					{
+						bSystem = true;
+						break;
+					}
+
+					if(strSpt.Equals("Tls11", StrUtil.CaseIgnoreCmp) || // .NET 4.5
+						strSpt.Equals("Tls12", StrUtil.CaseIgnoreCmp) || // .NET 4.5
+						strSpt.Equals("Tls13", StrUtil.CaseIgnoreCmp)) // .NET 4.8
 						spt |= (SecurityProtocolType)Enum.Parse(tSpt, strSpt, true);
 				}
 
-				ServicePointManager.SecurityProtocol = spt;
+				if(!bSystem) ServicePointManager.SecurityProtocol = spt;
+				else { Debug.Assert((long)ServicePointManager.SecurityProtocol == 0); }
 			}
 			catch(Exception) { Debug.Assert(false); }
 

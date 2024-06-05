@@ -26,7 +26,6 @@ using System.Threading;
 using KeePassLib.Cryptography;
 using KeePassLib.Cryptography.KeyDerivation;
 using KeePassLib.Interfaces;
-using KeePassLib.Native;
 using KeePassLib.Resources;
 using KeePassLib.Security;
 using KeePassLib.Utility;
@@ -274,7 +273,7 @@ namespace KeePassLib.Keys
 		private sealed class CkGkTaskInfo
 		{
 			public volatile ProtectedBinary Key = null;
-			public volatile string Error = null;
+			public volatile Exception Exception = null;
 		}
 
 		internal ProtectedBinary GenerateKey32Ex(KdfParameters p, IStatusLogger sl)
@@ -290,13 +289,13 @@ namespace KeePassLib.Keys
 				try { ti.Key = GenerateKey32(p); }
 				catch(ThreadAbortException exAbort)
 				{
-					ti.Error = exAbort.Message;
+					ti.Exception = exAbort;
 					Thread.ResetAbort();
 				}
 				catch(Exception ex)
 				{
 					Debug.Assert(false);
-					ti.Error = ex.Message;
+					ti.Exception = ex;
 				}
 			};
 
@@ -315,7 +314,7 @@ namespace KeePassLib.Keys
 				}
 			}
 
-			if(!string.IsNullOrEmpty(ti.Error)) throw new Exception(ti.Error);
+			if(ti.Exception != null) throw new ExtendedException(null, ti.Exception);
 
 			Debug.Assert(ti.Key != null);
 			return ti.Key;

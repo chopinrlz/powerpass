@@ -32,7 +32,6 @@ namespace KeePassLib.Collections
 	{
 		private const ushort VdVersion = 0x0100;
 		private const ushort VdmCritical = 0xFF00;
-		private const ushort VdmInfo = 0x00FF;
 
 		private readonly Dictionary<string, object> m_d = new Dictionary<string, object>();
 
@@ -70,8 +69,6 @@ namespace KeePassLib.Collections
 
 		public VariantDictionary()
 		{
-			Debug.Assert((VdmCritical & VdmInfo) == ushort.MinValue);
-			Debug.Assert((VdmCritical | VdmInfo) == ushort.MaxValue);
 		}
 
 		private bool Get<T>(string strName, out T t)
@@ -360,36 +357,37 @@ namespace KeePassLib.Collections
 					if(pbValue.Length != cbValue)
 						throw new EndOfStreamException(KLRes.FileCorrupted);
 
+					bool bError = false, bTypeUnknown = false;
 					switch(btType)
 					{
 						case (byte)VdType.UInt32:
 							if(cbValue == 4)
 								d.SetUInt32(strName, MemUtil.BytesToUInt32(pbValue));
-							else { Debug.Assert(false); }
+							else { Debug.Assert(false); bError = true; }
 							break;
 
 						case (byte)VdType.UInt64:
 							if(cbValue == 8)
 								d.SetUInt64(strName, MemUtil.BytesToUInt64(pbValue));
-							else { Debug.Assert(false); }
+							else { Debug.Assert(false); bError = true; }
 							break;
 
 						case (byte)VdType.Bool:
 							if(cbValue == 1)
 								d.SetBool(strName, (pbValue[0] != 0));
-							else { Debug.Assert(false); }
+							else { Debug.Assert(false); bError = true; }
 							break;
 
 						case (byte)VdType.Int32:
 							if(cbValue == 4)
 								d.SetInt32(strName, MemUtil.BytesToInt32(pbValue));
-							else { Debug.Assert(false); }
+							else { Debug.Assert(false); bError = true; }
 							break;
 
 						case (byte)VdType.Int64:
 							if(cbValue == 8)
 								d.SetInt64(strName, MemUtil.BytesToInt64(pbValue));
-							else { Debug.Assert(false); }
+							else { Debug.Assert(false); bError = true; }
 							break;
 
 						case (byte)VdType.String:
@@ -401,9 +399,13 @@ namespace KeePassLib.Collections
 							break;
 
 						default:
-							Debug.Assert(false); // Unknown type
+							Debug.Assert(false);
+							bTypeUnknown = true;
 							break;
 					}
+
+					if(bError) throw new FormatException(KLRes.FileCorrupted);
+					if(bTypeUnknown) throw new FormatException(KLRes.FileNewVerReq);
 				}
 
 				Debug.Assert(ms.ReadByte() < 0);

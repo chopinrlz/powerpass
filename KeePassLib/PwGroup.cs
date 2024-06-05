@@ -69,8 +69,8 @@ namespace KeePassLib
 
 		private string m_strDefaultAutoTypeSequence = string.Empty;
 
-		private bool? m_bEnableAutoType = null;
-		private bool? m_bEnableSearching = null;
+		private bool? m_obEnableAutoType = null;
+		private bool? m_obEnableSearching = null;
 
 		private PwUuid m_pwLastTopVisibleEntry = PwUuid.Zero;
 
@@ -283,14 +283,14 @@ namespace KeePassLib
 
 		public bool? EnableAutoType
 		{
-			get { return m_bEnableAutoType; }
-			set { m_bEnableAutoType = value; }
+			get { return m_obEnableAutoType; }
+			set { m_obEnableAutoType = value; }
 		}
 
 		public bool? EnableSearching
 		{
-			get { return m_bEnableSearching; }
-			set { m_bEnableSearching = value; }
+			get { return m_obEnableSearching; }
+			set { m_obEnableSearching = value; }
 		}
 
 		public PwUuid LastTopVisibleEntry
@@ -429,8 +429,8 @@ namespace KeePassLib
 
 			pg.m_strDefaultAutoTypeSequence = m_strDefaultAutoTypeSequence;
 
-			pg.m_bEnableAutoType = m_bEnableAutoType;
-			pg.m_bEnableSearching = m_bEnableSearching;
+			pg.m_obEnableAutoType = m_obEnableAutoType;
+			pg.m_obEnableSearching = m_obEnableSearching;
 
 			pg.m_pwLastTopVisibleEntry = m_pwLastTopVisibleEntry;
 
@@ -496,15 +496,15 @@ namespace KeePassLib
 
 			if(m_strDefaultAutoTypeSequence != pg.m_strDefaultAutoTypeSequence) return false;
 
-			if(m_bEnableAutoType.HasValue != pg.m_bEnableAutoType.HasValue) return false;
-			if(m_bEnableAutoType.HasValue)
+			if(m_obEnableAutoType.HasValue != pg.m_obEnableAutoType.HasValue) return false;
+			if(m_obEnableAutoType.HasValue)
 			{
-				if(m_bEnableAutoType.Value != pg.m_bEnableAutoType.Value) return false;
+				if(m_obEnableAutoType.Value != pg.m_obEnableAutoType.Value) return false;
 			}
-			if(m_bEnableSearching.HasValue != pg.m_bEnableSearching.HasValue) return false;
-			if(m_bEnableSearching.HasValue)
+			if(m_obEnableSearching.HasValue != pg.m_obEnableSearching.HasValue) return false;
+			if(m_obEnableSearching.HasValue)
 			{
-				if(m_bEnableSearching.Value != pg.m_bEnableSearching.Value) return false;
+				if(m_obEnableSearching.Value != pg.m_obEnableSearching.Value) return false;
 			}
 
 			if(!m_pwLastTopVisibleEntry.Equals(pg.m_pwLastTopVisibleEntry)) return false;
@@ -578,8 +578,8 @@ namespace KeePassLib
 
 			m_strDefaultAutoTypeSequence = pgTemplate.m_strDefaultAutoTypeSequence;
 
-			m_bEnableAutoType = pgTemplate.m_bEnableAutoType;
-			m_bEnableSearching = pgTemplate.m_bEnableSearching;
+			m_obEnableAutoType = pgTemplate.m_obEnableAutoType;
+			m_obEnableSearching = pgTemplate.m_obEnableSearching;
 
 			m_pwLastTopVisibleEntry = pgTemplate.m_pwLastTopVisibleEntry;
 
@@ -1236,7 +1236,7 @@ namespace KeePassLib
 
 		public bool GetAutoTypeEnabledInherited()
 		{
-			if(m_bEnableAutoType.HasValue) return m_bEnableAutoType.Value;
+			if(m_obEnableAutoType.HasValue) return m_obEnableAutoType.Value;
 
 			if(m_pParentGroup != null)
 				return m_pParentGroup.GetAutoTypeEnabledInherited();
@@ -1246,7 +1246,7 @@ namespace KeePassLib
 
 		public bool GetSearchingEnabledInherited()
 		{
-			if(m_bEnableSearching.HasValue) return m_bEnableSearching.Value;
+			if(m_obEnableSearching.HasValue) return m_obEnableSearching.Value;
 
 			if(m_pParentGroup != null)
 				return m_pParentGroup.GetSearchingEnabledInherited();
@@ -1463,7 +1463,7 @@ namespace KeePassLib
 
 		private void GetTopSearchSkippedGroupsRec(List<PwGroup> l)
 		{
-			if(m_bEnableSearching.HasValue && !m_bEnableSearching.Value)
+			if(m_obEnableSearching.HasValue && !m_obEnableSearching.Value)
 			{
 				l.Add(this);
 				return;

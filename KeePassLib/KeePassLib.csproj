@@ -148,6 +148,7 @@
     <Compile Include="Translation\KPTranslation.cs" />
     <Compile Include="Translation\KPTranslationProperties.cs" />
     <Compile Include="Utility\AppLogEx.cs" />
+    <Compile Include="Utility\ExtendedException.cs" />
     <Compile Include="Utility\GfxUtil.cs" />
     <Compile Include="Utility\MemUtil.cs" />
     <Compile Include="Utility\MessageService.cs" />

@@ -33,7 +33,6 @@ using System.Security.Cryptography;
 using KeePassLib.Collections;
 using KeePassLib.Cryptography;
 using KeePassLib.Cryptography.Cipher;
-using KeePassLib.Cryptography.KeyDerivation;
 using KeePassLib.Delegates;
 using KeePassLib.Interfaces;
 using KeePassLib.Resources;
@@ -75,11 +74,16 @@ namespace KeePassLib.Serialization
 		internal const uint FileSignature2 = 0xB54BFB67;
 
 		/// <summary>
-		/// Maximum supported version of database files.
-		/// KeePass 2.07 has version 1.01, 2.08 has 1.02, 2.09 has 2.00,
-		/// 2.10 has 2.02, 2.11 has 2.04, 2.15 has 3.00, 2.20 has 3.01.
-		/// The first 2 bytes are critical (i.e. loading will fail, if the
-		/// file version is too high), the last 2 bytes are informational.
+		/// Maximum supported version of database files. The high word is the
+		/// major version, and the low word is the minor version.
+		/// An application can load the file if it supports the major version.
+		/// If the minor version of the file is greater than the one that the
+		/// application supports, the application may try to load the file,
+		/// ignoring any unknown elements. Certain data may be lost in this
+		/// case, thus showing a confirmation/warning is recommended.
+		/// KeePass version - format version:
+		/// 2.00 - 1.0, 2.07 - 1.1, 2.08 - 1.2, 2.09 - 2.0, 2.11 - 2.4,
+		/// 2.15 - 3.0, 2.20 - 3.1, 2.35 - 4.0, 2.48 - 4.1.
 		/// </summary>
 		internal const uint FileVersion32 = 0x00040001;
 
@@ -196,6 +200,7 @@ namespace KeePassLib.Serialization
 		private const string ElemDeletedObject = "DeletedObject";
 		private const string ElemDeletionTime = "DeletionTime";
 
+		private const string ValNull = "Null";
 		private const string ValFalse = "False";
 		private const string ValTrue = "True";
 
@@ -357,8 +362,6 @@ namespace KeePassLib.Serialization
 
 				if(pg.Tags.Count != 0)
 					uMin = Math.Max(uMin, FileVersion32_4_1);
-				if(pg.CustomData.Count != 0)
-					uMin = Math.Max(uMin, FileVersion32_4);
 
 				return true;
 			};
@@ -369,8 +372,6 @@ namespace KeePassLib.Serialization
 
 				if(!pe.QualityCheck)
 					uMin = Math.Max(uMin, FileVersion32_4_1);
-				if(pe.CustomData.Count != 0)
-					uMin = Math.Max(uMin, FileVersion32_4);
 
 				return true;
 			};
@@ -392,19 +393,7 @@ namespace KeePassLib.Serialization
 				if(odt.HasValue) return FileVersion32_4_1;
 			}
 
-			if(uMin >= FileVersion32_4) return uMin; // All below is <= 4
-
-			if(m_pwDatabase.DataCipherUuid.Equals(ChaCha20Engine.ChaCha20Uuid))
-				return FileVersion32_4;
-
-			AesKdf kdfAes = new AesKdf();
-			if(!m_pwDatabase.KdfParameters.KdfUuid.Equals(kdfAes.Uuid))
-				return FileVersion32_4;
-
-			if(m_pwDatabase.PublicCustomData.Count != 0)
-				return FileVersion32_4;
-
-			return FileVersion32_3_1; // KDBX 3.1 is sufficient
+			return FileVersion32_4; // KDBX 4 is sufficient
 		}
 
 		private void ComputeKeys(out byte[] pbCipherKey, int cbCipherKey,

@@ -23,6 +23,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Reflection;
 using System.Text;
 
 #if !KeePassUAP
@@ -33,7 +34,9 @@ using System.Security.Cryptography;
 using KeePassLib.Collections;
 using KeePassLib.Cryptography;
 using KeePassLib.Cryptography.PasswordGenerator;
+using KeePassLib.Delegates;
 using KeePassLib.Native;
+using KeePassLib.Resources;
 using KeePassLib.Security;
 
 namespace KeePassLib.Utility
@@ -521,66 +524,114 @@ namespace KeePassLib.Utility
 			return new string(v);
 		}
 
-		/// <summary>
-		/// Format an exception and convert it to a string.
-		/// </summary>
-		/// <param name="excp"><c>Exception</c> to convert/format.</param>
-		/// <returns>String representing the exception.</returns>
-		public static string FormatException(Exception excp)
+		internal static void AppendTrim(StringBuilder sb, string strSeparator,
+			string strAppend)
 		{
-			string strText = string.Empty;
-			
-			if(!string.IsNullOrEmpty(excp.Message))
-				strText += excp.Message + MessageService.NewLine;
-#if !KeePassLibSD
-			if(!string.IsNullOrEmpty(excp.Source))
-				strText += excp.Source + MessageService.NewLine;
-#endif
-			if(!string.IsNullOrEmpty(excp.StackTrace))
-				strText += excp.StackTrace + MessageService.NewLine;
-#if !KeePassLibSD
-#if !KeePassUAP
-			if(excp.TargetSite != null)
-				strText += excp.TargetSite.ToString() + MessageService.NewLine;
-#endif
+			AppendTrim(sb, strSeparator, strAppend, true, true);
+		}
 
-			if(excp.Data != null)
+		internal static void AppendTrim(StringBuilder sb, string strSeparator,
+			string strAppend, bool bTrimStart, bool bTrimEnd)
+		{
+			if(sb == null) { Debug.Assert(false); return; }
+			if(strAppend == null) return; // No assert, like StringBuilder
+
+			if(bTrimStart && bTrimEnd) strAppend = strAppend.Trim();
+			else if(bTrimStart) strAppend = strAppend.TrimStart();
+			else if(bTrimEnd) strAppend = strAppend.TrimEnd();
+			if(strAppend.Length == 0) return;
+
+			if((sb.Length != 0) && !string.IsNullOrEmpty(strSeparator))
+				sb.Append(strSeparator);
+
+			sb.Append(strAppend);
+		}
+
+		/// <summary>
+		/// Convert an exception to a detailed string.
+		/// </summary>
+		/// <param name="ex"><c>Exception</c> to convert/format.</param>
+		/// <returns>String representing the exception.</returns>
+		public static string FormatException(Exception ex)
+		{
+			return StrUtil.FormatException(ex, true);
+		}
+
+		internal static string FormatException(Exception ex, bool? obFull)
+		{
+			if(ex == null) { Debug.Assert(false); return string.Empty; }
+
+			StringBuilder sb = new StringBuilder();
+			string strNL = MessageService.NewLine;
+			GFunc<StringBuilder, string> fReturn = (sbReturn =>
+				((sbReturn.Length != 0) ? sbReturn.ToString() : KLRes.UnknownError));
+
+			try
 			{
-				strText += MessageService.NewLine;
-				foreach(DictionaryEntry de in excp.Data)
-					strText += @"'" + de.Key + @"' -> '" + de.Value + @"'" +
-						MessageService.NewLine;
-			}
-#endif
-
-			if(excp.InnerException != null)
-			{
-				strText += MessageService.NewLine + "Inner:" + MessageService.NewLine;
-				if(!string.IsNullOrEmpty(excp.InnerException.Message))
-					strText += excp.InnerException.Message + MessageService.NewLine;
-#if !KeePassLibSD
-				if(!string.IsNullOrEmpty(excp.InnerException.Source))
-					strText += excp.InnerException.Source + MessageService.NewLine;
-#endif
-				if(!string.IsNullOrEmpty(excp.InnerException.StackTrace))
-					strText += excp.InnerException.StackTrace + MessageService.NewLine;
-#if !KeePassLibSD
-#if !KeePassUAP
-				if(excp.InnerException.TargetSite != null)
-					strText += excp.InnerException.TargetSite.ToString();
-#endif
-
-				if(excp.InnerException.Data != null)
+				ExtendedException exExt = (ex as ExtendedException);
+				if(exExt != null)
 				{
-					strText += MessageService.NewLine;
-					foreach(DictionaryEntry de in excp.InnerException.Data)
-						strText += @"'" + de.Key + @"' -> '" + de.Value + @"'" +
-							MessageService.NewLine;
+					AppendTrim(sb, null, exExt.MessageStart);
+					AppendTrim(sb, strNL + strNL, StrUtil.FormatException(
+						exExt.InnerException, obFull));
+					AppendTrim(sb, strNL + strNL, exExt.MessageEnd);
+					return fReturn(sb);
+				}
+
+				AppendTrim(sb, null, ex.Message);
+				Debug.Assert(sb.Length > 0);
+
+				Exception exInner = ex.InnerException;
+				if(exInner == ex) { Debug.Assert(false); exInner = null; }
+
+				if(!(obFull ?? PwDefs.DebugMode))
+				{
+					if(exInner != null)
+						AppendTrim(sb, strNL + strNL, StrUtil.FormatException(exInner, false));
+					return fReturn(sb);
+				}
+
+				AppendTrim(sb, strNL, ex.GetType().Name);
+
+				// In .NET <= 4.0, HResult is protected
+				PropertyInfo pi = typeof(Exception).GetProperty("HResult",
+					BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+				if((pi != null) && pi.CanRead && (pi.PropertyType == typeof(int)))
+					AppendTrim(sb, " ", string.Format("(0x{0:X8})",
+						(uint)(int)pi.GetValue(ex, null)));
+				else { Debug.Assert(false); }
+
+#if (!KeePassLibSD && !KeePassUAP)
+				if(ex.TargetSite != null)
+					AppendTrim(sb, " @ ", ex.TargetSite.ToString());
+#endif
+
+				AppendTrim(sb, strNL, ex.StackTrace, false, true);
+
+#if !KeePassLibSD
+				AppendTrim(sb, strNL, ex.Source);
+				if(ex.Data != null)
+				{
+					foreach(DictionaryEntry de in ex.Data)
+					{
+						AppendTrim(sb, strNL, "Data: '");
+						sb.Append(de.Key);
+						sb.Append("' -> '");
+						sb.Append(de.Value);
+						sb.Append("'.");
+					}
 				}
 #endif
-			}
 
-			return strText;
+				if(exInner != null)
+				{
+					AppendTrim(sb, strNL + strNL, "Inner:");
+					AppendTrim(sb, strNL, StrUtil.FormatException(exInner, true));
+				}
+			}
+			catch(Exception) { Debug.Assert(false); }
+
+			return fReturn(sb);
 		}
 
 		public static bool TryParseUShort(string str, out ushort u)
@@ -1114,25 +1165,31 @@ namespace KeePassLib.Utility
 
 		public static bool StringToBool(string str)
 		{
-			if(string.IsNullOrEmpty(str)) return false; // No assert
-
-			string s = str.Trim().ToLower();
-			if(s == "true") return true;
-			if(s == "yes") return true;
-			if(s == "1") return true;
-			if(s == "enabled") return true;
-			if(s == "checked") return true;
-
-			return false;
+			return (StringToBoolEx(str) ?? false);
 		}
 
 		public static bool? StringToBoolEx(string str)
 		{
 			if(string.IsNullOrEmpty(str)) return null;
 
-			string s = str.Trim().ToLower();
-			if(s == "true") return true;
-			if(s == "false") return false;
+			str = str.Trim();
+
+			StringComparison sc = StrUtil.CaseIgnoreCmp;
+
+			if(str.Equals("true", sc)) return true;
+			if(str.Equals("false", sc)) return false;
+
+			if(str.Equals("yes", sc)) return true;
+			if(str.Equals("no", sc)) return false;
+
+			if(str.Equals("enabled", sc)) return true;
+			if(str.Equals("disabled", sc)) return false;
+
+			if(str.Equals("checked", sc)) return true;
+			if(str.Equals("unchecked", sc)) return false;
+
+			if(str == "1") return true;
+			if(str == "0") return false;
 
 			return null;
 		}
@@ -1142,9 +1199,9 @@ namespace KeePassLib.Utility
 			return (bValue ? "true" : "false");
 		}
 
-		public static string BoolToStringEx(bool? bValue)
+		public static string BoolToStringEx(bool? obValue)
 		{
-			if(bValue.HasValue) return BoolToString(bValue.Value);
+			if(obValue.HasValue) return BoolToString(obValue.Value);
 			return "null";
 		}
 

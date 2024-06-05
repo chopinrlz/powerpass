@@ -83,10 +83,7 @@ namespace KeePassLib.Serialization
 
 		public bool? GetBool(string strKey)
 		{
-			string str = Get(strKey);
-			if(string.IsNullOrEmpty(str)) return null;
-
-			return StrUtil.StringToBool(str);
+			return StrUtil.StringToBoolEx(Get(strKey));
 		}
 
 		public void SetBool(string strKey, bool? ob)
