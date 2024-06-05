@@ -599,12 +599,6 @@ function Get-PowerPassEphemeralKey {
         where it came from, and thus only a brute-force attack would be possible.
     #>
 
-    # Set the $IsWindows variable on Windows PowerShell
-    if( $PSVersionTable.PSVersion.Major -eq 5 ) {
-        # Legal in PowerShell 5, ignore warning
-        $IsWindows = $true
-    }
-
     # Setup the composite key variables
     [string]$hostName = [System.Environment]::MachineName
     [string]$userName = [System.Environment]::UserName
