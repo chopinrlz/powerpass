@@ -8,6 +8,7 @@
 | /module | Source code for the PowerPass module itself |
 | /test | Unit tests and test files for the modules and supporting code |
 | /tpm | libtss2-fapi TPM 2.0 support for Linux (under development) |
+| /ts | PowerPass for the web browser, written in TypeScript (under development) |
 | /util | Internal utility scripts, such as for building a release of PowerPass |
 | ~ | ~ |
 | **Files** | |
