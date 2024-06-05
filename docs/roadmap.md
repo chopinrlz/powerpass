@@ -1,5 +1,23 @@
 # Roadmap
 Here is the roadmap of upcoming features.
+
+## Web Browser PowerPass
+Currently under development is a port of PowerPass into TypeScript for use with a web browser as a fully client-side password manager that can be hosted anywhere and uses local storage for your Locker.
+<table>
+<tr><th>As of June 5, 2024</th><th>Status</th></tr>
+<tr><td>Core Functions</td><td>In Progress</td></tr>
+<tr><td>Serialization</td><td>Not Started</td></tr>
+<tr><td>Key Generation</td><td>Not Started</td></tr>
+<tr><td>Encryption</td><td>Not Started</td></tr>
+<tr><td>Descryption</td><td>Not Started</td></tr>
+<tr><td>User Interface</td><td>Not Started</td></tr>
+<tr><td>Unit Testing</td><td>Not Started</td></tr>
+</table>
+
+### Encryption for the Web Browser Edition
+The browser edition of PowerPass will use the same 256-bit AES encryption as the PowerShell editions.
+A cryptography API has yet to be chosen, but it will likely be the [Web Crypto API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API) or [CryptoJS](https://github.com/brix/crypto-js) which has since been discontinued, so it is likely the native Web Crypto API will be used.
+
 ## TPM Support on Linux
 Currently under development is TPM support for Linux.
 <table>

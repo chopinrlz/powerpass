@@ -57,17 +57,18 @@ The script will **NOT** overwrite your Locker or Locker keys if they already exi
 You can also do this to downgrade to an older release.
 
 # Editions
-PowerPass comes in three flavors and supports Linux, macOS, and Windows.
+PowerPass comes in four flavors and supports Linux, macOS, and Windows.
 1. 256-bit AES Encryption
 2. Windows Data Protection API
 3. TPM Encryption (in development, see [Roadmap](https://chopinrlz.github.io/powerpass/roadmap))
+4. Web Browser (in development, see [Roadmap](https://chopinrlz.github.io/powerpass/roadmap))
 
 ## Operating System Compatibility
-| OS | AES | DPAPI | TPM |
-| - | - | - | - |
-| Linux | X | - | X |
-| macOS | X | - | - |
-| Windows | X | X | - |
+| OS | AES | DPAPI | TPM | Web |
+| - | - | - | - | - |
+| Linux | X | - | X | X |
+| macOS | X | - | - | X |
+| Windows | X | X | - | X |
 
 PowerPass works and is tested on every PowerShell edition including WinPS and PS7.
 
