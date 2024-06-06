@@ -20,15 +20,15 @@
 		<h1>
 			PowerPass Browser Edition
 		</h1>
-		<button class="btn btn-primary mt-4" onclick="objIndex.btnClick();">Click Me</button>
-		<div id="mydiv" class="mt-4"></div>
-		{ data.message }
+		<button class="btn btn-primary mt-4" onclick="objIndex.btnClick();">Open Locker</button>
+		<div id="mydiv" class="mt-4" rv-if="data.loaded">{ data.locker.secrets }</div>
+		<div id="message" class="mt-4">{ data.message }</div>
 	</div>
 
 	<!-- startup.js -->
 	<script type="text/javascript">
 		addScriptAtHeader('startup.js');
-    </script>
+	</script>
 </body>
 
 </html>

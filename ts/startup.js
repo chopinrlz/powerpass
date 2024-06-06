@@ -6,15 +6,16 @@ addScriptAtHeader('powerpass.js');
 // Load data binding
 class IndexClass {
     constructor() {
-        this.message = 'startup';
+        this.message = 'Welcome to the browser edition of PowerPass';
+        this.loaded = false;
+        this.locker = undefined;
         rivets.bind($('body'), { data: this });
     }
     async btnClick() {
-        this.message = 'Please Wait...'
-        var url = 'https://www.neilb.net/wordjumblebackend/api/word/generategame';
-        var data = await $.get(url);
-        console.log(data);
-        this.message = 'Number of rounds: ' + data.rounds.length;
+        this.message = 'Fetching your Locker';
+        this.loaded = true;
+        this.locker = myLocker;
+        this.message = 'Ready';
     }
 }
 let objIndex = new IndexClass();
