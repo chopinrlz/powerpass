@@ -28,12 +28,13 @@ interface Locker {
 interface Securable {
     encrypt: (key: string) => string;
     decrypt: (source: string, key: string) => void;
+    newSecret: () => Secret;
 }
 
 class PowerPassLocker implements Locker, Securable {
     created = 0;
     modified = 0;
-    secrets = [newSecret()];
+    secrets = new Array<Secret>();
     constructor() { }
     encrypt(key: string): string {
         return '';
@@ -41,31 +42,25 @@ class PowerPassLocker implements Locker, Securable {
     decrypt(source: string, key: string) {
         console.log('not implemented');
     }
-}
-
-function newSecret(): Secret {
-    return {
-        title: 'Default',
-        username: 'PowerPass',
-        password: 'PowerPass',
-        url: 'https://github.com/chopinrlz/powerpass',
-        notes: 'This is the default secret for the PowerPass locker.',
-        expires: -1,
-        created: 0,
-        modified: 0,
-        mfd: false
+    newSecret(): Secret {
+        return {
+            title: 'Default',
+            username: 'PowerPass',
+            password: 'PowerPass',
+            url: 'https://github.com/chopinrlz/powerpass',
+            notes: 'This is the default secret for the PowerPass locker.',
+            expires: -1,
+            created: 0,
+            modified: 0,
+            mfd: false
+        }
+    }
+    add(secret: Secret) {
+        this.secrets.push(secret);
     }
 }
 
-function newLocker(populated: boolean): PowerPassLocker {
-    var locker: PowerPassLocker = new PowerPassLocker();
-    if( populated ) {
-        locker.secrets.push(newSecret());
-    }
-    return locker;
-}
-
-let myLocker: PowerPassLocker = newLocker(true);
+let powerpass: PowerPassLocker = new PowerPassLocker();
 
 /*
 

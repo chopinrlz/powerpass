@@ -6,7 +6,8 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 	<meta charset="UTF-8">
 	<script src="jquery-3.7.1.js"></script>
-	<script src="rivets.bundled.min.js"></script>
+	<script src="sightglass.js"></script>
+	<script src="rivets.js"></script>
 	<link rel="stylesheet" href="bootstrap.min.css">
 	<script src="popper.min.js"></script>
 	<script src="bootstrap.min.js"></script>
@@ -23,6 +24,7 @@
 		<button class="btn btn-primary mt-4" onclick="objIndex.btnClick();">Open Locker</button>
 		<div id="mydiv" class="mt-4" rv-if="data.loaded">{ data.locker.secrets }</div>
 		<div id="message" class="mt-4">{ data.message }</div>
+		<button class="btn btn-primary mt-4" onclick="objIndex.addSecret();">Add New Secret</button>
 	</div>
 
 	<!-- startup.js -->

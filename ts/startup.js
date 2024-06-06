@@ -13,9 +13,16 @@ class IndexClass {
     }
     async btnClick() {
         this.message = 'Fetching your Locker';
+        powerpass.add(powerpass.newSecret());
+        this.locker = powerpass;
         this.loaded = true;
-        this.locker = myLocker;
         this.message = 'Ready';
+    }
+    async addSecret() {
+        this.message = 'Adding Secret';
+        powerpass.add(powerpass.newSecret());
+        this.locker = powerpass;
+        this.message = 'Locker Secrets: ' + powerpass.secrets.length;
     }
 }
 let objIndex = new IndexClass();
