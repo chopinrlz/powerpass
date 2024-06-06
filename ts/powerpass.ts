@@ -65,15 +65,7 @@ function newLocker(populated: boolean): PowerPassLocker {
     return locker;
 }
 
-console.log(' *** Making a new secret *** ');
-console.log(newSecret());
-console.log(' *** Making a new Locker *** ');
 let myLocker: PowerPassLocker = newLocker(true);
-console.log(myLocker);
-console.log(' *** Encrypting the Locker *** ');
-const key: string = 'myTestKey';
-const secret: string = myLocker.encrypt(key);
-console.log(secret);
 
 /*
 
