@@ -23,10 +23,22 @@ interface Locker {
     secrets: Secret[];
 }
 
-class PowerPassLocker implements Locker {
+interface Securable {
+    encrypt: (key: string) => string;
+    decrypt: (source: string, key: string) => void;
+}
+
+class PowerPassLocker implements Locker, Securable {
     created = 0;
     modified = 0;
     secrets = [newSecret()];
+    constructor() { }
+    encrypt(key: string): string {
+        return '';
+    }
+    decrypt(source: string, key: string) {
+        console.log('not implemented');
+    }
 }
 
 function newSecret(): Secret {
@@ -43,12 +55,8 @@ function newSecret(): Secret {
     }
 }
 
-function newLocker(populated: boolean): Locker {
-    let locker: Locker = {
-        created: 0,
-        modified: 0,
-        secrets: []
-    }
+function newLocker(populated: boolean): PowerPassLocker {
+    var locker: PowerPassLocker = new PowerPassLocker();
     if( populated ) {
         locker.secrets.push(newSecret());
     }
@@ -60,6 +68,10 @@ console.log(newSecret());
 console.log(' *** Making a new Locker *** ');
 let myLocker: PowerPassLocker = newLocker(true);
 console.log(myLocker);
+console.log(' *** Encrypting the Locker *** ');
+const key: string = 'myTestKey';
+const secret: string = myLocker.encrypt(key);
+console.log(secret);
 
 /*
 
