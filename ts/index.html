@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>PowerPass Browser Edition</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<meta charset="UTF-8">
+	<script src="jquery-3.7.1.js"></script>
+	<script src="rivets.bundled.min.js"></script>
+	<link rel="stylesheet" href="bootstrap.min.css">
+	<script src="popper.min.js"></script>
+	<script src="bootstrap.min.js"></script>
+	<script src="static.js"></script>
+	<!-- Remaining scripts are loaded dynamically at end of page by startup.js -->
+</head>
+
+<body>
+	<!-- main div area -->
+	<div id="maindiv" class="container text-center">
+		<h1>
+			PowerPass Browser Edition
+		</h1>
+		<button class="btn btn-primary mt-4" onclick="objIndex.btnClick();">Click Me</button>
+		<div id="mydiv" class="mt-4"></div>
+		{ data.message }
+	</div>
+
+	<!-- startup.js -->
+	<script type="text/javascript">
+		addScriptAtHeader('startup.js');
+    </script>
+</body>
+
+</html>

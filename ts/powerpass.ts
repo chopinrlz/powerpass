@@ -5,6 +5,8 @@
     You may copy, modify or distribute this software under the terms of the GNU Public License 2.0.
 */
 
+console.log('debug: loading powerpass.js');
+
 type Secret = {
     title: string;
     username: string;
