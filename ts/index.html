@@ -9,27 +9,48 @@
 	<script src="sightglass.js"></script>
 	<script src="rivets.js"></script>
 	<link rel="stylesheet" href="bootstrap.min.css">
-	<script src="popper.min.js"></script>
 	<script src="bootstrap.min.js"></script>
+	<!-- static.js implements the script loader -->
 	<script src="static.js"></script>
 	<!-- Remaining scripts are loaded dynamically at end of page by startup.js -->
 </head>
 
 <body>
-	<!-- main div area -->
 	<div id="maindiv" class="container text-center">
 		<h1>
 			PowerPass Browser Edition
 		</h1>
-		<button class="btn btn-primary mt-4" onclick="objIndex.btnClick();">Open Locker</button>
+		<!-- Open and Close buttons -->
+		<span>
+			<button class="btn btn-primary mt-4" onclick="objIndex.openLocker();">Open Locker</button>
+			<button class="btn btn-primary mt-4" onclick="objIndex.closeLocker()">Close Locker</button>
+		</span>
 		<div id="mydiv" class="mt-4" rv-if="data.loaded">
-			<table class="container text-center">
+			<table class="container text-left">
 				<tr>
 					<th>Title</th>
 					<th>Username</th>
 					<th>Password</th>
-					<th>Reveal</th>
+					<th>&nbsp;</th>
 				</tr>
+				<!-- Add and Edit controls -->
+				<tr>
+					<td>
+						<input id="textTitle" type="text" class="input mt-4" placeholder="Enter Title of secret">
+					</td>
+					<td>
+						<input id="textUsername" type="text" class="input mt-4" placeholder="Username">
+					</td>
+					<td>
+						<input id="textPassword" type="text" class="input mt-4" placeholder="Password">
+					</td>
+					<td>
+						<button id="btnAdd" class="btn btn-primary mt-4" onclick="objIndex.addSecret();">
+							Add New Secret
+						</button>
+					</td>
+				</tr>
+				<!-- Locker secrets -->
 				<tr rv-each-sec="data.locker.secrets">
 					<td>{ sec.title }</td>
 					<td>{ sec.username }</td>
@@ -38,14 +59,15 @@
 						<span rv-if="sec.revealed"><code>{ sec.password }</code></span>
 					</td>
 					<td>
-						<button rv-id="sec.title" class="btn btn-primary mt-4" onclick="objIndex.revealPw(this)">Reveal</button>
+						<button rv-id="sec.title" class="btn btn-primary mt-4"
+							onclick="objIndex.revealPw(this)">Reveal</button>
 					</td>
 					</td>
 				</tr>
 			</table>
 		</div>
+		<!-- Messages to the user -->
 		<div id="message" class="mt-4">{ data.message }</div>
-		<button class="btn btn-primary mt-4" onclick="objIndex.addSecret();">Add New Secret</button>
 	</div>
 
 	<!-- startup.js -->

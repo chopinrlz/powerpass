@@ -1,3 +1,8 @@
+/**
+ * Defines a set of functions for loading scripts dynamically while
+ * inhibiting the browser from using a cached script file.
+ */
+
 console.log('debug: loading static.js');
 
 function getRandomVersionNumber() {
