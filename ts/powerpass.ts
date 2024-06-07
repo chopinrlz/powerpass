@@ -17,6 +17,7 @@ type Secret = {
     created: number;
     modified: number;
     mfd: boolean;
+    revealed: boolean;
 }
 
 interface Locker {
@@ -52,7 +53,8 @@ class PowerPassLocker implements Locker, Securable {
             expires: -1,
             created: 0,
             modified: 0,
-            mfd: false
+            mfd: false,
+            revealed: false
         }
     }
     add(secret: Secret) {

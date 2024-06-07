@@ -24,5 +24,12 @@ class IndexClass {
         this.locker = powerpass;
         this.message = 'Locker Secrets: ' + powerpass.secrets.length;
     }
+    async revealPw(me) {
+        var found = this.locker.secrets.find(s => s.title === me.id);
+        if(found) this.reveal(found);
+    }
+    reveal(item) {
+        item.revealed = !(item.revealed);
+    }
 }
 let objIndex = new IndexClass();

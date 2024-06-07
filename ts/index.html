@@ -22,7 +22,28 @@
 			PowerPass Browser Edition
 		</h1>
 		<button class="btn btn-primary mt-4" onclick="objIndex.btnClick();">Open Locker</button>
-		<div id="mydiv" class="mt-4" rv-if="data.loaded">{ data.locker.secrets }</div>
+		<div id="mydiv" class="mt-4" rv-if="data.loaded">
+			<table class="container text-center">
+				<tr>
+					<th>Title</th>
+					<th>Username</th>
+					<th>Password</th>
+					<th>Reveal</th>
+				</tr>
+				<tr rv-each-sec="data.locker.secrets">
+					<td>{ sec.title }</td>
+					<td>{ sec.username }</td>
+					<td>
+						<span rv-unless="sec.revealed">********</span>
+						<span rv-if="sec.revealed"><code>{ sec.password }</code></span>
+					</td>
+					<td>
+						<button rv-id="sec.title" class="btn btn-primary mt-4" onclick="objIndex.revealPw(this)">Reveal</button>
+					</td>
+					</td>
+				</tr>
+			</table>
+		</div>
 		<div id="message" class="mt-4">{ data.message }</div>
 		<button class="btn btn-primary mt-4" onclick="objIndex.addSecret();">Add New Secret</button>
 	</div>
