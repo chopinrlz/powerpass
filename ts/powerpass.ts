@@ -38,10 +38,10 @@ class PowerPassLocker implements Locker, Securable {
     secrets = new Array<Secret>();
     constructor() { }
     encrypt(key: string): string {
-        return '';
+        return JSON.stringify(this.secrets);
     }
-    decrypt(source: string, key: string) {
-        console.log('not implemented');
+    decrypt(source: string, key: string): void {
+        this.secrets = JSON.parse(source);
     }
     newSecret(): Secret {
         return {
@@ -60,9 +60,17 @@ class PowerPassLocker implements Locker, Securable {
     add(secret: Secret) {
         this.secrets.push(secret);
     }
+    init() {
+        const key: string = "testing";
+        let exists: string | null = localStorage.getItem('powerpass');
+        if( exists ) {
+            this.decrypt(exists, key);
+        }
+    }
 }
 
-let powerpass: PowerPassLocker = new PowerPassLocker();
+const powerpass: PowerPassLocker = new PowerPassLocker();
+powerpass.init();
 
 /*
 

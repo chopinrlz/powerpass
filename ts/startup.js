@@ -13,6 +13,7 @@ class IndexClass {
     }
     async openLocker() {
         this.message = 'Fetching your Locker';
+        powerpass.init();
         if( powerpass.secrets.length <= 0 ) {
             powerpass.add(powerpass.newSecret());
         }
@@ -21,6 +22,8 @@ class IndexClass {
         this.message = 'Ready';
     }
     async closeLocker() {
+        var locker = powerpass.encrypt('testing');
+        localStorage.setItem('powerpass',locker);
         this.message = 'Welcome to the browser edition of PowerPass';
         this.loaded = false;
         this.locker = undefined;
