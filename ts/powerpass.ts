@@ -7,7 +7,7 @@
 
 console.log('debug: loading powerpass.js');
 
-type Secret = {
+export type Secret = {
     title: string;
     username: string;
     password: string;
@@ -20,23 +20,25 @@ type Secret = {
     revealed: boolean;
 }
 
-interface Locker {
+export interface Locker {
     created: number;
     modified: number;
     secrets: Secret[];
 }
 
-interface Securable {
+export interface Securable {
     encrypt: (key: string) => string;
     decrypt: (source: string, key: string) => void;
     newSecret: () => Secret;
 }
 
-class PowerPassLocker implements Locker, Securable {
+export class PowerPassLocker implements Locker, Securable {
     created = 0;
     modified = 0;
     secrets = new Array<Secret>();
-    constructor() { }
+    constructor() { 
+        this.init();
+    }
     encrypt(key: string): string {
         return JSON.stringify(this.secrets);
     }
@@ -69,8 +71,6 @@ class PowerPassLocker implements Locker, Securable {
     }
 }
 
-const powerpass: PowerPassLocker = new PowerPassLocker();
-powerpass.init();
 
 /*
 

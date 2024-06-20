@@ -1,2 +1,5 @@
 # Ignore compiled code
 powerpass.js
+config.js
+ux.js
+*.map

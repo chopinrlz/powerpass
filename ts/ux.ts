@@ -1,33 +1,44 @@
+import { PowerPassLocker } from './powerpass';
+
 console.log('debug: loading startup.js');
 
-// Load PowerPass
-addScriptAtHeader('powerpass.js');
+declare var rivets:any, $:any;
 
 // Load data binding
 class IndexClass {
+    powerpass: PowerPassLocker;
+    locker!: PowerPassLocker;
+    message: string;
+    loaded: boolean;
+
     constructor() {
+        
+        this.powerpass = new PowerPassLocker();
+
         this.message = 'Welcome to the browser edition of PowerPass';
         this.loaded = false;
-        this.locker = undefined;
         rivets.bind($('body'), { data: this });
     }
+
     async openLocker() {
         this.message = 'Fetching your Locker';
-        powerpass.init();
-        if( powerpass.secrets.length <= 0 ) {
-            powerpass.add(powerpass.newSecret());
+        this.powerpass.init();
+        if( this.powerpass.secrets.length <= 0 ) {
+            this.powerpass.add(this.powerpass.newSecret());
         }
-        this.locker = powerpass;
+        this.locker = this.powerpass;
         this.loaded = true;
         this.message = 'Ready';
     }
+
     async closeLocker() {
-        var locker = powerpass.encrypt('testing');
+        var locker = this.powerpass.encrypt('testing');
         localStorage.setItem('powerpass',locker);
         this.message = 'Welcome to the browser edition of PowerPass';
         this.loaded = false;
-        this.locker = undefined;
+        (this.locker as any) = undefined;
     }
+
     async addSecret() {
         this.message = 'Adding Secret';
         var title = $('#textTitle').val();
@@ -36,22 +47,22 @@ class IndexClass {
             if( found ) {
                 this.message = 'Secret ' + title + ' already exists'; 
             } else {
-                var secret = powerpass.newSecret();
+                var secret = this.powerpass.newSecret();
                 secret.title = title;
-                powerpass.add(secret);
-                this.locker = powerpass;
-                this.message = 'Locker Secrets: ' + powerpass.secrets.length;
+                this.powerpass.add(secret);
+                this.locker = this.powerpass;
+                this.message = 'Locker Secrets: ' + this.powerpass.secrets.length;
                 this.clearInputs();
             }
         } else {
             this.message = 'Secrets must have a unique Title';
         }
     }
-    async revealPw(me) {
+    async revealPw(me:any) {
         var found = this.locker.secrets.find(s => s.title === me.id);
         if(found) this.reveal(found);
     }
-    reveal(item) {
+    reveal(item:any) {
         item.revealed = !(item.revealed);
     }
     clearInputs() {
@@ -60,4 +71,5 @@ class IndexClass {
         $('#textPassword').val('');
     }
 }
-let objIndex = new IndexClass();
+
+(window as any)["objIndex"] = new IndexClass();

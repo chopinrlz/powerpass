@@ -12,7 +12,7 @@
 	<script src="bootstrap.min.js"></script>
 	<!-- static.js implements the script loader -->
 	<script src="static.js"></script>
-	<!-- Remaining scripts are loaded dynamically at end of page by startup.js -->
+	<!-- Remaining scripts are loaded dynamically at end of page by RequireJS -->
 </head>
 
 <body>
@@ -25,8 +25,8 @@
 			<button class="btn btn-primary mt-4" onclick="objIndex.openLocker();">Open Locker</button>
 			<button class="btn btn-primary mt-4" onclick="objIndex.closeLocker()">Close Locker</button>
 		</span>
-		<div id="mydiv" class="mt-4" rv-if="data.loaded">
-			<table class="container text-left">
+		<div id="mydiv" class="table-responsive mt-4" rv-if="data.loaded">
+			<table class="table text-left">
 				<tr>
 					<th>Title</th>
 					<th>Username</th>
@@ -36,13 +36,13 @@
 				<!-- Add and Edit controls -->
 				<tr>
 					<td>
-						<input id="textTitle" type="text" class="input mt-4" placeholder="Enter Title of secret">
+						<input id="textTitle" type="text" class="form-control mt-4" placeholder="Enter Title of secret">
 					</td>
 					<td>
-						<input id="textUsername" type="text" class="input mt-4" placeholder="Username">
+						<input id="textUsername" type="text" class="form-control mt-4" placeholder="Username">
 					</td>
 					<td>
-						<input id="textPassword" type="text" class="input mt-4" placeholder="Password">
+						<input id="textPassword" type="text" class="form-control mt-4" placeholder="Password">
 					</td>
 					<td>
 						<button id="btnAdd" class="btn btn-primary mt-4" onclick="objIndex.addSecret();">
@@ -72,7 +72,11 @@
 
 	<!-- startup.js -->
 	<script type="text/javascript">
-		addScriptAtHeader('startup.js');
+		var rando = getRandomVersionNumber();
+		var script = document.createElement('script');
+		script.src = 'https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js';
+		script.setAttribute("data-main", 'config.js?v=' + rando);
+		document.getElementsByTagName('head')[0].appendChild(script);
 	</script>
 </body>
 
