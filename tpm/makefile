@@ -74,3 +74,4 @@ clean:
 	@rm -f powerpasstpm.o
 	@rm -f powerpasstpm
 	@rm -rf ./tpm2-tss
+	@rm -rf ./tpm2-tools
