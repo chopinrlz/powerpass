@@ -147,7 +147,8 @@ function Test-PowerPassAnswer {
 function New-PowerPassRandomPassword {
     <#
         .SYNOPSIS
-        Generates a random password from all available standard US 101-key keyboard characters.
+        Generates a random ASCII password from all available letters, numbers, and special characters
+        typable on a standard US 101-key keyboard.
         .PARAMETER Length
         The length of the password to generate. Can be between 1 and 65536 characters long. Defaults to 24.
         .OUTPUTS
@@ -161,7 +162,7 @@ function New-PowerPassRandomPassword {
     )
     $bytes = [System.Byte[]]::CreateInstance( [System.Byte], $Length )
     [System.Security.Cryptography.RandomNumberGenerator]::Create().GetBytes( $bytes )
-    $bytes = $bytes | % { ( $_ % ( 126 - 33 ) ) + 33 }
+    $bytes = $bytes | ForEach-Object { ( $_ % 93 ) + 33 }
     [System.Text.Encoding]::ASCII.GetString( $bytes )
 }
 
