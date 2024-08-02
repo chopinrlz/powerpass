@@ -16,9 +16,10 @@ WHOAMI != echo $$(whoami)
 #   2) Run 'make tpm2-tss-release' to build tpm2-tss from the latest Github release or 'make tpm2-tools' to build tpm2-tss from the master source on Github
 #   3) Once that is done, cd to the tpm2-tss subdirectory and run 'sudo make install' to deploy tpm2-tss
 #   4) Back in /powerpass/tpm run 'sudo make post' to run the tpm2-tss post-installation steps
-#   5) The previous step adds your user account to the new tss group so you'll need to logoff and log in again
-#   6) Run 'make' to build powerpasstpm with gcc
-#   7) Now you can deploy PowerPass using the built-in script
+#   5) Run 'make perms' to add your account to the new tss group
+#   6) The previous step changes your membership so you'll need to logoff and log in again
+#   7) Run 'make' to build powerpasstpm with gcc
+#   8) Now you can deploy PowerPass using the built-in script
 # If you also want to install tpm2-tools, follow these steps:
 #   1) Run 'sudo make depends' to install the prerequisite packages
 #   2) Run 'make tpm2-tools' to build tpm2-tools from the master source on Github
@@ -58,6 +59,7 @@ post:
 	sudo udevadm control --reload-rules && sudo udevadm trigger
 	@echo Updating shared library cache
 	sudo ldconfig
+perms:
 	@echo Adding $(WHOAMI) to the tss group
 	sudo usermod -a -G tss $(WHOAMI)
 	@echo Next steps: you must log out and log back in for your new permissions to take effect
