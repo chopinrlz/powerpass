@@ -8,7 +8,7 @@ USR_LIB != echo /usr/lib
 NPROC != nproc
 TPM2_TSS_DIR != if [ -d "./tpm2-tss" ]; then echo 1; fi
 TPM2_TOOLS_DIR != if [ -d "./tpm2-tools" ]; then echo 1; fi
-WHOAMI != echo $(whoami)
+WHOAMI != echo whoami
 
 # If you are starting from scratch and you do not have tpm2-tss installed already,
 # follow these steps.
