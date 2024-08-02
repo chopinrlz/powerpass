@@ -13,7 +13,7 @@ WHOAMI != echo $(whoami)
 # If you are starting from scratch and you do not have tpm2-tss installed already,
 # follow these steps.
 #   1) Run 'sudo make depends' to install the prerequisite packages
-#   2) Run 'make tpm2-tools' to build tpm2-tss from the master source on Github
+#   2) Run 'make tpm2-tss-release' to build tpm2-tss from the latest Github release or 'make tpm2-tools' to build tpm2-tss from the master source on Github
 #   3) Once that is done, cd to the tpm2-tss subdirectory and run 'sudo make install' to deploy tpm2-tss
 #   4) Back in /powerpass/tpm run 'sudo make post' to run the tpm2-tss post-installation steps
 #   5) The previous step adds your user account to the new tss group so you'll need to logoff and log in again
@@ -30,6 +30,19 @@ WHOAMI != echo $(whoami)
 powerpasstpm:
 	gcc -c powerpasstpm.c -o powerpasstpm.o
 	gcc powerpasstpm.o -L/usr/local/lib -ltss2-fapi -ltss2-rc -o powerpasstpm
+tpm2-tss-release:
+ifdef TPM2_TSS_DIR
+	rm -rf ./tpm2-tss
+	curl -L -o tpm2-tss.tar.gz https://github.com/tpm2-software/tpm2-tss/releases/download/4.1.3/tpm2-tss-4.1.3.tar.gz
+	tar xzf tpm2-tss.tar.gz
+endif
+ifndef TPM2_TSS_DIR
+	curl -L -o tpm2-tss.tar.gz https://github.com/tpm2-software/tpm2-tss/releases/download/4.1.3/tpm2-tss-4.1.3.tar.gz
+	tar xzf tpm2-tss.tar.gz
+endif
+	mv tpm2-tss-4.1.3 tpm2-tss
+	cd ./tpm2-tss; ./bootstrap; ./configure --with-udevrulesdir=/etc/udev/rules.d --with-udevrulesprefix=80; make -j$(NPROC)
+	@echo Run sudo make install to install TPM2-TSS
 tpm2-tss:
 ifdef TPM2_TSS_DIR
 	rm -rf ./tpm2-tss
