@@ -122,6 +122,7 @@ depends:
 # Removes everything that has been downloaded or compiled
 
 clean:
+	@rm -f tpm2-tss.tar.gz
 	@rm -f powerpasstpm.o
 	@rm -f powerpasstpm
 	@rm -rf ./tpm2-tss
