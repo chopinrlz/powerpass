@@ -31,7 +31,7 @@ int main(int argc, char** argv);
 int pptpm_test(void);
 int pptpm_init(void);
 TSS2_RC pptpm_provision_authcallback( const char* objectPath, const char* description, const char** auth, void* userData );
-int pptpm_echo(TSS2_RC res);
+int pptpm_echo(int command, TSS2_RC res);
 void pptpm_print(uint8_t* bytes, size_t len);
 int pptpm_enc(void);
 

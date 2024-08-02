@@ -53,15 +53,14 @@ int main( int argc, char** argv ) {
     -------------------------------------------------------------------
 */
 
-int pptpm_echo( TPM2_RC res ) {
+int pptpm_echo( int command, TPM2_RC res ) {
     if( res != TSS2_RC_SUCCESS ) {
         const char* decoded = Tss2_RC_Decode( res );
-        printf( "powerpasstpm:%d\n", res );
-        printf( "powerpasstpm:decoded:%s", decoded );
+        printf( "{\"powerpassedition\":\"tpm\",\"command\":\"tbd\",\"result\":%d,", res );
+        printf( "\"message\":\"%s\"}\n", decoded );
         return 1;
     } else {
-        printf( "powerpasstpm:0\n" );
-        printf( "powerpasstpm:decoded:success" );
+        printf( "{\"powerpassedition\":\"tpm\",\"command\":%d,\"result\":0,\"message\":\"success\"}\n", command );
         return 0;
     }
 }
@@ -95,7 +94,7 @@ int pptpm_test(void) {
     }
 
     // Check return code
-    return (pptpm_echo(res));
+    return (pptpm_echo(0,res));
 }
 
 /*
@@ -148,7 +147,7 @@ int pptpm_init(void) {
     }
 
     // Check return code
-    return (pptpm_echo(res));
+    return (pptpm_echo(1,res));
 }
 
 /*
@@ -221,7 +220,7 @@ int pptpm_enc(void) {
     }
 
     // Check return code
-    return (pptpm_echo(res));
+    return (pptpm_echo(2,res));
 }
 
 /*
