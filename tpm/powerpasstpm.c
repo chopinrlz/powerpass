@@ -47,9 +47,14 @@ int main( int argc, char** argv ) {
 
 /*
     -------------------------------------------------------------------
-    Function: int pptpm_echo( TPM2_RC )
+    Function: int pptpm_echo( int command, TPM2_RC res )
     Checks the TPM2 return code and prints and decodes and error message
     if the value is not TSS2_RC_SUCCESS then returns either 1 or 0.
+    The command argument is a number that indicates what action was
+    executed by this module:
+      0 - test
+      1 - init
+      2 - encryption test
     -------------------------------------------------------------------
 */
 
