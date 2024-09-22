@@ -58,7 +58,7 @@ This step usually works fine, but the two most common errors are:
 2. You deployed [tpm2-tss](https://github.com/tpm2-software/tpm2-tss) from a non-release build which has an issue with your current environment
 
 [tpm2-tss](https://github.com/tpm2-software/tpm2-tss) version 4.1.3 has been tested thoroughly on Ubuntu 24.04.
-However the current master source does not compile or work properly.
+The current master source does not always compile or work properly.
 ## 9. Initialize the PowerPass Encryption Key
 To provision the Feature API and create an encryption key, run:
 ### `./powerpasstpm init`
