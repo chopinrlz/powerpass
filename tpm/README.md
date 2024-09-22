@@ -50,11 +50,13 @@ From the current directory, run:
 You should see two outputs echo to the terminal:
 1. A very large JSON object from [tpm2-tss](https://github.com/tpm2-software/tpm2-tss) with the crypto profiles for the TPM
 2. A JSON object from PowerPass that says `{"powerpasstpm":"tpm","command":0,"result":0,"message":"success"}`
+
 That last bit from PowerPass is the result code and message from running the PowerPass TPM `test` command.
 If you do not see `success` or `"result":0` from `powerpasstpm` that means something went wrong and you'll need to debug the issue before you can proceed.
 This step usually works fine, but the two most common errors are:
 1. Permissions: your user account either isn't a member of `tss` or you didn't log out and log back in
 2. You deployed [tpm2-tss](https://github.com/tpm2-software/tpm2-tss) from a non-release build which has an issue with your current environment
+
 [tpm2-tss](https://github.com/tpm2-software/tpm2-tss) version 4.1.3 has been tested thoroughly on Ubuntu 24.04.
 However the current master source does not compile or work properly.
 ## 9. Initialize the PowerPass Encryption Key
