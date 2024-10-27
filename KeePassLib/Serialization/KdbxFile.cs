@@ -490,14 +490,14 @@ namespace KeePassLib.Serialization
 			return pbHeaderHmac;
 		}
 
-		private void CloseStreams(List<Stream> lStreams)
+		private void DisposeStreams(List<Stream> lStreams)
 		{
 			if(lStreams == null) { Debug.Assert(false); return; }
 
-			// Typically, closing a stream also closes its base
+			// Typically, disposing a stream also disposes its base
 			// stream; however, there may be streams that do not
 			// do this (e.g. some cipher plugin), thus for safety
-			// we close all streams manually, from the innermost
+			// we dispose all streams manually, from the innermost
 			// to the outermost
 
 			for(int i = lStreams.Count - 1; i >= 0; --i)
@@ -506,7 +506,7 @@ namespace KeePassLib.Serialization
 				Debug.Assert((lStreams.IndexOf(lStreams[i]) == i) &&
 					(lStreams.LastIndexOf(lStreams[i]) == i));
 
-				try { lStreams[i].Close(); }
+				try { lStreams[i].Dispose(); }
 				catch(Exception) { Debug.Assert(false); }
 			}
 

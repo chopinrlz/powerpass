@@ -115,7 +115,7 @@ namespace KeePassLib.Serialization
 					Flush();
 				}
 
-				m_sBase.Close();
+				m_sBase.Dispose();
 				m_sBase = null;
 			}
 

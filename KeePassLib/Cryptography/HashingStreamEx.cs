@@ -112,7 +112,7 @@ namespace KeePassLib.Cryptography
 					m_hash = null;
 				}
 
-				m_sBaseStream.Close();
+				m_sBaseStream.Dispose();
 			}
 
 			base.Dispose(disposing);

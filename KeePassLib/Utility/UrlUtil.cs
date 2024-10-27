@@ -180,64 +180,6 @@ namespace KeePassLib.Utility
 			return (strPath + UrlUtil.LocalDirSepChar);
 		}
 
-		/* /// <summary>
-		/// File access mode enumeration. Used by the <c>FileAccessible</c>
-		/// method.
-		/// </summary>
-		public enum FileAccessMode
-		{
-			/// <summary>
-			/// Opening a file in read mode. The specified file must exist.
-			/// </summary>
-			Read = 0,
-
-			/// <summary>
-			/// Opening a file in create mode. If the file exists already, it
-			/// will be overwritten. If it doesn't exist, it will be created.
-			/// The return value is <c>true</c>, if data can be written to the
-			/// file.
-			/// </summary>
-			Create
-		} */
-
-		/* /// <summary>
-		/// Test if a specified path is accessible, either in read or write mode.
-		/// </summary>
-		/// <param name="strFilePath">Path to test.</param>
-		/// <param name="fMode">Requested file access mode.</param>
-		/// <returns>Returns <c>true</c> if the specified path is accessible in
-		/// the requested mode, otherwise the return value is <c>false</c>.</returns>
-		public static bool FileAccessible(string strFilePath, FileAccessMode fMode)
-		{
-			Debug.Assert(strFilePath != null);
-			if(strFilePath == null) throw new ArgumentNullException("strFilePath");
-
-			if(fMode == FileAccessMode.Read)
-			{
-				FileStream fs;
-
-				try { fs = File.OpenRead(strFilePath); }
-				catch(Exception) { return false; }
-				if(fs == null) return false;
-
-				fs.Close();
-				return true;
-			}
-			else if(fMode == FileAccessMode.Create)
-			{
-				FileStream fs;
-
-				try { fs = File.Create(strFilePath); }
-				catch(Exception) { return false; }
-				if(fs == null) return false;
-
-				fs.Close();
-				return true;
-			}
-
-			return false;
-		} */
-
 		internal static int IndexOfSecondEnclQuote(string str)
 		{
 			if(str == null) { Debug.Assert(false); return -1; }

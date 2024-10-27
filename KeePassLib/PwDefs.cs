@@ -56,18 +56,18 @@ namespace KeePassLib
 		/// e.g. 2.19 = 0x02130000.
 		/// It is highly recommended to use <c>FileVersion64</c> instead.
 		/// </summary>
-		public static readonly uint Version32 = 0x02390000;
+		public static readonly uint Version32 = 0x02390100;
 
 		/// <summary>
 		/// Version, encoded as 64-bit unsigned integer
 		/// (component-wise, 16 bits per component).
 		/// </summary>
-		public static readonly ulong FileVersion64 = 0x0002003900000000UL;
+		public static readonly ulong FileVersion64 = 0x0002003900010000UL;
 
 		/// <summary>
 		/// Version, encoded as string.
 		/// </summary>
-		public static readonly string VersionString = "2.57";
+		public static readonly string VersionString = "2.57.1";
 
 		public static readonly string Copyright = @"Copyright © 2003-2024 Dominik Reichl";
 
@@ -234,6 +234,7 @@ namespace KeePassLib
 			if(strFileVersion == "2.42") return "2.42.1 / 2.42";
 			if(strFileVersion == "2.48") return "2.48.1 / 2.48";
 			if(strFileVersion == "2.51") return "2.51.1 / 2.51";
+			// if(strFileVersion == "2.57") return "2.57.1 / 2.57";
 
 			return strFileVersion;
 		}
@@ -262,7 +263,6 @@ namespace KeePassLib
 		}
 	}
 
-	// #pragma warning disable 1591 // Missing XML comments warning
 	/// <summary>
 	/// Search parameters for group and entry searches.
 	/// </summary>
@@ -500,9 +500,7 @@ namespace KeePassLib
 			return (SearchParameters)this.MemberwiseClone();
 		}
 	}
-	// #pragma warning restore 1591 // Missing XML comments warning
 
-	// #pragma warning disable 1591 // Missing XML comments warning
 	/// <summary>
 	/// Memory protection configuration structure (for default fields).
 	/// </summary>
@@ -532,7 +530,6 @@ namespace KeePassLib
 			return false;
 		}
 	}
-	// #pragma warning restore 1591 // Missing XML comments warning
 
 	public sealed class ObjectTouchedEventArgs : EventArgs
 	{

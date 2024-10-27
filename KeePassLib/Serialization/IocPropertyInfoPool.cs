@@ -42,6 +42,7 @@ namespace KeePassLib.Serialization
 
 		public static readonly string UserAgent = "UserAgent";
 		public static readonly string Expect100Continue = "Expect100Continue";
+		public static readonly string FollowRedirects = "FollowRedirects";
 
 		public static readonly string Passive = "Passive";
 	}
@@ -79,6 +80,8 @@ namespace KeePassLib.Serialization
 					typeof(string), KLRes.UserAgent, vHttp),
 				new IocPropertyInfo(IocKnownProperties.Expect100Continue,
 					typeof(bool), KLRes.Expect100Continue, vHttp),
+				new IocPropertyInfo(IocKnownProperties.FollowRedirects,
+					typeof(bool), KLRes.FollowRedirects, vHttp),
 
 				new IocPropertyInfo(IocKnownProperties.Passive,
 					typeof(bool), KLRes.Passive, vFtp)

@@ -468,30 +468,30 @@ namespace KeePassLib.Serialization
 				if(fMatchEnv("OneDriveCommercial", string.Empty)) return true;
 				if(fMatchEnv("OneDriveConsumer", string.Empty)) return true;
 
-				using(RegistryKey kAccs = Registry.CurrentUser.OpenSubKey(
-					"Software\\Microsoft\\OneDrive\\Accounts", false))
+				using(RegistryKey rkAccs = Registry.CurrentUser.OpenSubKey(
+					"Software\\Microsoft\\OneDrive\\Accounts"))
 				{
-					string[] vAccs = (((kAccs != null) ? kAccs.GetSubKeyNames() :
+					string[] vAccs = (((rkAccs != null) ? rkAccs.GetSubKeyNames() :
 						null) ?? MemUtil.EmptyArray<string>());
 
 					foreach(string strAcc in vAccs)
 					{
 						if(string.IsNullOrEmpty(strAcc)) { Debug.Assert(false); continue; }
 
-						using(RegistryKey kTenants = kAccs.OpenSubKey(
-							strAcc + "\\Tenants", false))
+						using(RegistryKey rkTenants = rkAccs.OpenSubKey(
+							strAcc + "\\Tenants"))
 						{
-							string[] vTenants = (((kTenants != null) ?
-								kTenants.GetSubKeyNames() : null) ?? MemUtil.EmptyArray<string>());
+							string[] vTenants = (((rkTenants != null) ?
+								rkTenants.GetSubKeyNames() : null) ?? MemUtil.EmptyArray<string>());
 
 							foreach(string strT in vTenants)
 							{
 								if(string.IsNullOrEmpty(strT)) { Debug.Assert(false); continue; }
 
-								using(RegistryKey kT = kTenants.OpenSubKey(strT, false))
+								using(RegistryKey rkT = rkTenants.OpenSubKey(strT))
 								{
-									string[] vPaths = (((kT != null) ?
-										kT.GetValueNames() : null) ?? MemUtil.EmptyArray<string>());
+									string[] vPaths = (((rkT != null) ?
+										rkT.GetValueNames() : null) ?? MemUtil.EmptyArray<string>());
 
 									foreach(string strPath in vPaths)
 									{

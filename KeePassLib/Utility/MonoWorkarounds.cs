@@ -29,7 +29,6 @@ using System.IO;
 using System.Reflection;
 using System.Text;
 using System.Threading;
-using System.Xml;
 
 #if !KeePassUAP
 using System.Windows.Forms;
@@ -627,8 +626,7 @@ namespace KeePassLib.Utility
 					{
 						// Mono's WriteRecentlyUsedFiles method also loads the
 						// XML file using XmlDocument
-						XmlDocument xd = XmlUtilEx.CreateXmlDocument();
-						xd.Load(strFile);
+						XmlUtilEx.LoadXmlDocument(strFile, StrUtil.Utf8);
 					}
 					catch(Exception) // The XML file is invalid
 					{

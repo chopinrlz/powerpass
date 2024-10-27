@@ -616,14 +616,11 @@ namespace KeePassLib.Utility
 		{
 			if(s == null) throw new ArgumentNullException("s");
 
-			byte[] pb;
 			using(MemoryStream ms = new MemoryStream())
 			{
-				MemUtil.CopyStream(s, ms);
-				pb = ms.ToArray();
+				CopyStream(s, ms);
+				return ms.ToArray();
 			}
-
-			return pb;
 		}
 
 		public static byte[] Read(Stream s, int nCount)
@@ -652,6 +649,17 @@ namespace KeePassLib.Utility
 			return pb;
 		}
 
+		internal static string ReadString(Stream s, Encoding enc)
+		{
+			if(s == null) throw new ArgumentNullException("s");
+			if(enc == null) throw new ArgumentNullException("enc");
+
+			using(StreamReader sr = new StreamReader(s, enc, true))
+			{
+				return sr.ReadToEnd();
+			}
+		}
+
 		public static void Write(Stream s, byte[] pbData)
 		{
 			if(s == null) { Debug.Assert(false); return; }
@@ -666,7 +674,6 @@ namespace KeePassLib.Utility
 			if(pbData == null) throw new ArgumentNullException("pbData");
 			if(pbData.Length == 0) return pbData;
 
-			byte[] pbCompressed;
 			using(MemoryStream msSource = new MemoryStream(pbData, false))
 			{
 				using(MemoryStream msCompressed = new MemoryStream())
@@ -674,14 +681,12 @@ namespace KeePassLib.Utility
 					using(GZipStream gz = new GZipStream(msCompressed,
 						CompressionMode.Compress))
 					{
-						MemUtil.CopyStream(msSource, gz);
+						CopyStream(msSource, gz);
 					}
 
-					pbCompressed = msCompressed.ToArray();
+					return msCompressed.ToArray();
 				}
 			}
-
-			return pbCompressed;
 		}
 
 		public static byte[] Decompress(byte[] pbCompressed)
@@ -689,7 +694,6 @@ namespace KeePassLib.Utility
 			if(pbCompressed == null) throw new ArgumentNullException("pbCompressed");
 			if(pbCompressed.Length == 0) return pbCompressed;
 
-			byte[] pbData;
 			using(MemoryStream msData = new MemoryStream())
 			{
 				using(MemoryStream msCompressed = new MemoryStream(pbCompressed, false))
@@ -697,14 +701,12 @@ namespace KeePassLib.Utility
 					using(GZipStream gz = new GZipStream(msCompressed,
 						CompressionMode.Decompress))
 					{
-						MemUtil.CopyStream(gz, msData);
+						CopyStream(gz, msData);
 					}
 				}
 
-				pbData = msData.ToArray();
+				return msData.ToArray();
 			}
-
-			return pbData;
 		}
 
 		public static int IndexOf<T>(T[] vHaystack, T[] vNeedle)
@@ -860,6 +862,33 @@ namespace KeePassLib.Utility
 
 			IDisposable d = (o as IDisposable);
 			if(d != null) d.Dispose();
+		}
+
+		internal static object GetEnumValue(Type tEnum, string strName)
+		{
+			if(tEnum == null) { Debug.Assert(false); return null; }
+			if(!tEnum.IsEnum) { Debug.Assert(false); return null; }
+			if(string.IsNullOrEmpty(strName)) { Debug.Assert(false); return null; }
+
+			return ((Array.IndexOf<string>(Enum.GetNames(tEnum), strName) >= 0) ?
+				Enum.Parse(tEnum, strName) : null);
+		}
+
+		internal static T ConvertObject<T>(object o, T tDefault)
+		{
+			if(o == null) return tDefault;
+
+			try
+			{
+				if(o is T) return (T)o;
+				return (T)Convert.ChangeType(o, typeof(T));
+			}
+			catch(Exception) { Debug.Assert(false); }
+
+			try { return (T)o; }
+			catch(Exception) { Debug.Assert(false); }
+
+			return tDefault;
 		}
 
 		internal static T BytesToStruct<T>(byte[] pb, int iOffset)

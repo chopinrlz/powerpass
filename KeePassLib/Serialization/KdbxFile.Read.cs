@@ -235,7 +235,7 @@ namespace KeePassLib.Serialization
 
 		private void CommonCleanUpRead(List<Stream> lStreams, HashingStreamEx sHashing)
 		{
-			CloseStreams(lStreams);
+			DisposeStreams(lStreams);
 
 			Debug.Assert(lStreams.Contains(sHashing)); // sHashing must be closed
 			m_pbHashOfFileOnDisk = sHashing.Hash;
@@ -269,52 +269,51 @@ namespace KeePassLib.Serialization
 			br.ReadExceptionText = KLRes.FileHeaderCorrupted + " " +
 				KLRes.FileIncompleteExpc;
 
-			MemoryStream msHeader = new MemoryStream();
-			Debug.Assert(br.CopyDataTo == null);
-			br.CopyDataTo = msHeader;
-
-			byte[] pbSig1 = br.ReadBytes(4);
-			uint uSig1 = MemUtil.BytesToUInt32(pbSig1);
-			byte[] pbSig2 = br.ReadBytes(4);
-			uint uSig2 = MemUtil.BytesToUInt32(pbSig2);
-
-			if((uSig1 == FileSignatureOld1) && (uSig2 == FileSignatureOld2))
-				throw new OldFormatException(PwDefs.ShortProductName + @" 1.x",
-					OldFormatException.OldFormatType.KeePass1x);
-
-			if((uSig1 == FileSignature1) && (uSig2 == FileSignature2)) { }
-			else if((uSig1 == FileSignaturePreRelease1) && (uSig2 ==
-				FileSignaturePreRelease2)) { }
-			else throw new FormatException(KLRes.FileSigInvalid);
-
-			byte[] pb = br.ReadBytes(4);
-			uint uVer = MemUtil.BytesToUInt32(pb);
-			uint uVerMajor = uVer & FileVersionCriticalMask;
-			uint uVerMinor = uVer & ~FileVersionCriticalMask;
-			const uint uVerMaxMajor = FileVersion32 & FileVersionCriticalMask;
-			const uint uVerMaxMinor = FileVersion32 & ~FileVersionCriticalMask;
-			if(uVerMajor > uVerMaxMajor)
-				throw new FormatException(KLRes.FileVersionUnsupported +
-					MessageService.NewParagraph + KLRes.FileNewVerReq);
-			if((uVerMajor == uVerMaxMajor) && (uVerMinor > uVerMaxMinor) &&
-				(g_fConfirmOpenUnkVer != null))
+			using(MemoryStream msHeader = new MemoryStream())
 			{
-				if(!g_fConfirmOpenUnkVer())
-					throw new OperationCanceledException();
+				Debug.Assert(br.CopyDataTo == null);
+				br.CopyDataTo = msHeader;
+
+				byte[] pbSig1 = br.ReadBytes(4);
+				uint uSig1 = MemUtil.BytesToUInt32(pbSig1);
+				byte[] pbSig2 = br.ReadBytes(4);
+				uint uSig2 = MemUtil.BytesToUInt32(pbSig2);
+
+				if((uSig1 == FileSignatureOld1) && (uSig2 == FileSignatureOld2))
+					throw new OldFormatException(PwDefs.ShortProductName + @" 1.x",
+						OldFormatException.OldFormatType.KeePass1x);
+
+				if((uSig1 == FileSignature1) && (uSig2 == FileSignature2)) { }
+				else if((uSig1 == FileSignaturePreRelease1) && (uSig2 ==
+					FileSignaturePreRelease2)) { }
+				else throw new FormatException(KLRes.FileSigInvalid);
+
+				byte[] pb = br.ReadBytes(4);
+				uint uVer = MemUtil.BytesToUInt32(pb);
+				uint uVerMajor = uVer & FileVersionCriticalMask;
+				uint uVerMinor = uVer & ~FileVersionCriticalMask;
+				const uint uVerMaxMajor = FileVersion32 & FileVersionCriticalMask;
+				const uint uVerMaxMinor = FileVersion32 & ~FileVersionCriticalMask;
+				if(uVerMajor > uVerMaxMajor)
+					throw new FormatException(KLRes.FileVersionUnsupported +
+						MessageService.NewParagraph + KLRes.FileNewVerReq);
+				if((uVerMajor == uVerMaxMajor) && (uVerMinor > uVerMaxMinor) &&
+					(g_fConfirmOpenUnkVer != null))
+				{
+					if(!g_fConfirmOpenUnkVer())
+						throw new OperationCanceledException();
+				}
+				m_uFileVersion = uVer;
+
+				while(true)
+				{
+					if(!ReadHeaderField(br)) break;
+				}
+
+				br.CopyDataTo = null;
+				br.ReadExceptionText = strPrevExcpText;
+				return msHeader.ToArray();
 			}
-			m_uFileVersion = uVer;
-
-			while(true)
-			{
-				if(!ReadHeaderField(br)) break;
-			}
-
-			br.CopyDataTo = null;
-			byte[] pbHeader = msHeader.ToArray();
-			msHeader.Close();
-
-			br.ReadExceptionText = strPrevExcpText;
-			return pbHeader;
 		}
 
 		private bool ReadHeaderField(BinaryReaderEx brSource)

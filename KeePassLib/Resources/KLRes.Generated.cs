@@ -51,6 +51,7 @@ namespace KeePassLib.Resources
 			m_strFileUnknownCompression = TryGetEx(dictNew, "FileUnknownCompression", m_strFileUnknownCompression);
 			m_strFileVersionUnsupported = TryGetEx(dictNew, "FileVersionUnsupported", m_strFileVersionUnsupported);
 			m_strFinalKeyCreationFailed = TryGetEx(dictNew, "FinalKeyCreationFailed", m_strFinalKeyCreationFailed);
+			m_strFollowRedirects = TryGetEx(dictNew, "FollowRedirects", m_strFollowRedirects);
 			m_strFrameworkNotImplExcp = TryGetEx(dictNew, "FrameworkNotImplExcp", m_strFrameworkNotImplExcp);
 			m_strGeneral = TryGetEx(dictNew, "General", m_strGeneral);
 			m_strGroupLower = TryGetEx(dictNew, "GroupLower", m_strGroupLower);
@@ -104,6 +105,7 @@ namespace KeePassLib.Resources
 			"FileUnknownCompression",
 			"FileVersionUnsupported",
 			"FinalKeyCreationFailed",
+			"FollowRedirects",
 			"FrameworkNotImplExcp",
 			"General",
 			"GroupLower",
@@ -409,6 +411,17 @@ namespace KeePassLib.Resources
 		public static string FinalKeyCreationFailed
 		{
 			get { return m_strFinalKeyCreationFailed; }
+		}
+
+		private static string m_strFollowRedirects =
+			@"Follow redirects";
+		/// <summary>
+		/// Look up a localized string similar to
+		/// 'Follow redirects'.
+		/// </summary>
+		public static string FollowRedirects
+		{
+			get { return m_strFollowRedirects; }
 		}
 
 		private static string m_strFrameworkNotImplExcp =

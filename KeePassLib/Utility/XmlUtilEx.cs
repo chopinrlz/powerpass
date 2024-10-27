@@ -21,6 +21,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Reflection;
 using System.Text;
 using System.Xml;
 using System.Xml.Serialization;
@@ -36,14 +37,62 @@ namespace KeePassLib.Utility
 	{
 		public static XmlDocument CreateXmlDocument()
 		{
-			XmlDocument d = new XmlDocument();
+			XmlDocument xd = new XmlDocument();
 
 			// .NET 4.5.2 and newer do not resolve external XML resources
 			// by default; for older .NET versions, we explicitly
 			// prevent resolving
-			d.XmlResolver = null; // Default in old .NET: XmlUrlResolver object
+			xd.XmlResolver = null; // Default in old .NET: XmlUrlResolver object
 
-			return d;
+			return xd;
+		}
+
+		private static XmlDocument LoadXmlDocument(TextReader tr)
+		{
+			if(tr == null) throw new ArgumentNullException("tr");
+
+			XmlDocument xd = CreateXmlDocument();
+			XmlReaderSettings xrs = CreateXmlReaderSettings();
+
+			using(XmlReader xr = XmlReader.Create(tr, xrs))
+			{
+				xd.Load(xr);
+			}
+
+			return xd;
+		}
+
+		internal static XmlDocument LoadXmlDocument(Stream s, Encoding enc)
+		{
+			if(s == null) throw new ArgumentNullException("s");
+			if(enc == null) throw new ArgumentNullException("enc");
+
+			using(StreamReader sr = new StreamReader(s, enc, true))
+			{
+				return LoadXmlDocument(sr);
+			}
+		}
+
+		internal static XmlDocument LoadXmlDocument(string strFilePath, Encoding enc)
+		{
+			if(strFilePath == null) throw new ArgumentNullException("strFilePath");
+			if(enc == null) throw new ArgumentNullException("enc");
+
+			using(FileStream fs = new FileStream(strFilePath, FileMode.Open,
+				FileAccess.Read, FileShare.Read))
+			{
+				return LoadXmlDocument(fs, enc);
+			}
+		}
+
+		internal static XmlDocument LoadXmlDocumentFromString(string strXml)
+		{
+			if(strXml == null) throw new ArgumentNullException("strXml");
+
+			using(StringReader sr = new StringReader(strXml))
+			{
+				return LoadXmlDocument(sr);
+			}
 		}
 
 		public static XmlReaderSettings CreateXmlReaderSettings()
@@ -56,11 +105,22 @@ namespace KeePassLib.Utility
 			xrs.IgnoreWhitespace = true;
 
 #if KeePassUAP
-			xrs.DtdProcessing = DtdProcessing.Prohibit;
+			xrs.DtdProcessing = DtdProcessing.Ignore;
 #else
-			// See also PrepMonoDev.sh script
-			xrs.ProhibitDtd = true; // Obsolete in .NET 4, but still there
-			// xrs.DtdProcessing = DtdProcessing.Prohibit; // .NET 4 only
+			Type tXrs = typeof(XmlReaderSettings);
+			Type tDtd = tXrs.Assembly.GetType("System.Xml.DtdProcessing", false);
+			object oDtdIgnore = ((tDtd != null) ? MemUtil.GetEnumValue(tDtd,
+				"Ignore") : null);
+			PropertyInfo piDtd = tXrs.GetProperty("DtdProcessing",
+				BindingFlags.Public | BindingFlags.Instance);
+			if((piDtd != null) && (oDtdIgnore != null))
+				piDtd.SetValue(xrs, oDtdIgnore, null); // .NET >= 4 only
+			else
+			{
+#pragma warning disable 618
+				xrs.ProhibitDtd = true; // Obsolete in .NET 4, but still there
+#pragma warning restore 618
+			}
 #endif
 
 			xrs.ValidationType = ValidationType.None;
@@ -172,13 +232,12 @@ namespace KeePassLib.Utility
 			if(strXml == null) throw new ArgumentNullException("strXml");
 			if(strXml.Length == 0) { Debug.Assert(false); return; }
 
-			string str = strXml;
+			strXml = strXml.Replace("<!DOCTYPE html>", string.Empty);
 
 			if(bReplaceStdEntities)
-				str = str.Replace("&nbsp;", "&#160;");
+				strXml = strXml.Replace("&nbsp;", "&#160;");
 
-			XmlDocument d = new XmlDocument();
-			d.LoadXml(str);
+			LoadXmlDocumentFromString(strXml);
 		}
 #endif
 
@@ -188,18 +247,16 @@ namespace KeePassLib.Utility
 			if(pd == null) throw new ArgumentNullException("pd");
 			if(strXPath == null) { Debug.Assert(false); strXPath = string.Empty; }
 
-			KdbxFile kdbx = new KdbxFile(pd);
-
-			byte[] pbXml;
-			using(MemoryStream ms = new MemoryStream())
+			using(MemoryStream msW = new MemoryStream())
 			{
-				kdbx.Save(ms, null, KdbxFormat.PlainXml, sl);
-				pbXml = ms.ToArray();
-			}
-			string strXml = StrUtil.Utf8.GetString(pbXml);
+				KdbxFile kdbx = new KdbxFile(pd);
+				kdbx.Save(msW, null, KdbxFormat.PlainXml, sl);
 
-			xd = CreateXmlDocument();
-			xd.LoadXml(strXml);
+				using(MemoryStream msR = new MemoryStream(msW.ToArray(), false))
+				{
+					xd = LoadXmlDocument(msR, StrUtil.Utf8);
+				}
+			}
 
 			XPathNavigator xpNav = xd.CreateNavigator();
 			return xpNav.Select(strXPath);

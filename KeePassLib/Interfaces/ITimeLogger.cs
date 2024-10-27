@@ -22,81 +22,51 @@ using System;
 namespace KeePassLib.Interfaces
 {
 	/// <summary>
-	/// Interface for objects that support various times (creation time, last
-	/// access time, last modification time and expiry time). Offers
-	/// several helper functions (for example a function to touch the current
-	/// object).
+	/// Interface for objects that support various times (creation time,
+	/// last modification time, last access time, etc.).
 	/// </summary>
 	public interface ITimeLogger
 	{
 		/// <summary>
 		/// The date/time when the object was created.
 		/// </summary>
-		DateTime CreationTime
-		{
-			get;
-			set;
-		}
+		DateTime CreationTime { get; set; }
 
 		/// <summary>
 		/// The date/time when the object was last modified.
 		/// </summary>
-		DateTime LastModificationTime
-		{
-			get;
-			set;
-		}
+		DateTime LastModificationTime { get; set; }
 
 		/// <summary>
 		/// The date/time when the object was last accessed.
 		/// </summary>
-		DateTime LastAccessTime
-		{
-			get;
-			set;
-		}
+		DateTime LastAccessTime { get; set; }
 
 		/// <summary>
 		/// The date/time when the object expires.
 		/// </summary>
-		DateTime ExpiryTime
-		{
-			get;
-			set;
-		}
+		DateTime ExpiryTime { get; set; }
 
 		/// <summary>
-		/// Flag that determines whether the object expires.
+		/// Flag that specifies whether the object expires.
 		/// </summary>
-		bool Expires
-		{
-			get;
-			set;
-		}
+		bool Expires { get; set; }
 
 		/// <summary>
 		/// Get or set the usage count of the object. To increase the usage
-		/// count by one, use the <c>Touch</c> function.
+		/// count by one, use the <c>Touch</c> method.
 		/// </summary>
-		ulong UsageCount
-		{
-			get;
-			set;
-		}
+		ulong UsageCount { get; set; }
 
 		/// <summary>
 		/// The date/time when the location of the object was last changed.
 		/// </summary>
-		DateTime LocationChanged
-		{
-			get;
-			set;
-		}
+		DateTime LocationChanged { get; set; }
 
 		/// <summary>
-		/// Touch the object. This function updates the internal last access
-		/// time. If the <paramref name="bModified" /> parameter is <c>true</c>,
-		/// the last modification time gets updated, too. Each time you call
+		/// Touch the object. This method updates the last access time.
+		/// If the <paramref name="bModified" /> parameter is <c>true</c>,
+		/// the last modification time is updated, too. Each time you call
 		/// <c>Touch</c>, the usage count of the object is increased by one.
 		/// </summary>
 		/// <param name="bModified">Update last modification time.</param>

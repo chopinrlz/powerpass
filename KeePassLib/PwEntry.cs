@@ -33,15 +33,14 @@ using KeePassLib.Utility;
 namespace KeePassLib
 {
 	/// <summary>
-	/// A class representing a password entry. A password entry consists of several
-	/// fields like title, user name, password, etc. Each password entry has a
-	/// unique ID (UUID).
+	/// An entry, consisting of various string fields (title, user name,
+	/// password, ...), binaries (attachments), etc.
 	/// </summary>
-	public sealed class PwEntry : ITimeLogger, IStructureItem, IDeepCloneable<PwEntry>
+	public sealed class PwEntry : IStructureItem, ITimeLogger, IDeepCloneable<PwEntry>
 	{
-		private PwUuid m_uuid = PwUuid.Zero;
-		private PwGroup m_pParentGroup = null;
-		private DateTime m_tParentGroupLastMod = PwDefs.DtDefaultNow;
+		// For implementing the IStructureItem interface
+		private PwUuid m_pu = PwUuid.Zero;
+		private PwGroup m_pgParent = null;
 		private PwUuid m_puPrevParentGroup = PwUuid.Zero;
 
 		private ProtectedStringDictionary m_dStrings = new ProtectedStringDictionary();
@@ -55,12 +54,14 @@ namespace KeePassLib
 		private Color m_clrForeground = Color.Empty;
 		private Color m_clrBackground = Color.Empty;
 
+		// For implementing the ITimeLogger interface
 		private DateTime m_tCreation = PwDefs.DtDefaultNow;
 		private DateTime m_tLastMod = PwDefs.DtDefaultNow;
 		private DateTime m_tLastAccess = PwDefs.DtDefaultNow;
 		private DateTime m_tExpire = PwDefs.DtDefaultNow;
 		private bool m_bExpires = false;
 		private ulong m_uUsageCount = 0;
+		private DateTime m_tParentGroupLastMod = PwDefs.DtDefaultNow;
 
 		private string m_strOverrideUrl = string.Empty;
 		private bool m_bQualityCheck = true;
@@ -69,39 +70,23 @@ namespace KeePassLib
 
 		private StringDictionaryEx m_dCustomData = new StringDictionaryEx();
 
-		/// <summary>
-		/// UUID of this entry.
-		/// </summary>
+		// Implement IStructureItem interface
 		public PwUuid Uuid
 		{
-			get { return m_uuid; }
+			get { return m_pu; }
 			set
 			{
 				if(value == null) { Debug.Assert(false); throw new ArgumentNullException("value"); }
-				m_uuid = value;
+				m_pu = value;
 			}
 		}
-
-		/// <summary>
-		/// Reference to a group which contains the current entry.
-		/// </summary>
 		public PwGroup ParentGroup
 		{
-			get { return m_pParentGroup; }
+			get { return m_pgParent; }
 
-			// Plugins: use <c>PwGroup.AddEntry</c> instead.
-			internal set { m_pParentGroup = value; }
+			// Plugins: use the PwGroup.AddEntry method instead.
+			internal set { m_pgParent = value; }
 		}
-
-		/// <summary>
-		/// The date/time when the location of the object was last changed.
-		/// </summary>
-		public DateTime LocationChanged
-		{
-			get { return m_tParentGroupLastMod; }
-			set { m_tParentGroupLastMod = value; }
-		}
-
 		public PwUuid PreviousParentGroup
 		{
 			get { return m_puPrevParentGroup; }
@@ -165,7 +150,7 @@ namespace KeePassLib
 		}
 
 		/// <summary>
-		/// Image ID specifying the icon that will be used for this entry.
+		/// Icon of the entry.
 		/// </summary>
 		public PwIcon IconId
 		{
@@ -174,8 +159,8 @@ namespace KeePassLib
 		}
 
 		/// <summary>
-		/// Get the custom icon ID. This value is 0, if no custom icon is
-		/// being used (i.e. the icon specified by the <c>IconID</c> property
+		/// Custom icon UUID. This is <c>PwUuid.Zero</c> if no custom icon
+		/// is used (i.e. the icon specified by the <c>IconId</c> property
 		/// should be displayed).
 		/// </summary>
 		public PwUuid CustomIconUuid
@@ -206,60 +191,41 @@ namespace KeePassLib
 			set { m_clrBackground = value; }
 		}
 
-		/// <summary>
-		/// The date/time when this entry was created.
-		/// </summary>
+		// Implement ITimeLogger interface
 		public DateTime CreationTime
 		{
 			get { return m_tCreation; }
 			set { m_tCreation = value; }
 		}
-
-		/// <summary>
-		/// The date/time when this entry was last modified.
-		/// </summary>
 		public DateTime LastModificationTime
 		{
 			get { return m_tLastMod; }
 			set { m_tLastMod = value; }
 		}
-
-		/// <summary>
-		/// The date/time when this entry was last accessed (read).
-		/// </summary>
 		public DateTime LastAccessTime
 		{
 			get { return m_tLastAccess; }
 			set { m_tLastAccess = value; }
 		}
-
-		/// <summary>
-		/// The date/time when this entry expires. Use the <c>Expires</c> property
-		/// to specify if the entry does actually expire or not.
-		/// </summary>
 		public DateTime ExpiryTime
 		{
 			get { return m_tExpire; }
 			set { m_tExpire = value; }
 		}
-
-		/// <summary>
-		/// Specifies whether the entry expires or not.
-		/// </summary>
 		public bool Expires
 		{
 			get { return m_bExpires; }
 			set { m_bExpires = value; }
 		}
-
-		/// <summary>
-		/// Get or set the usage count of the entry. To increase the usage
-		/// count by one, use the <c>Touch</c> function.
-		/// </summary>
 		public ulong UsageCount
 		{
 			get { return m_uUsageCount; }
 			set { m_uUsageCount = value; }
+		}
+		public DateTime LocationChanged
+		{
+			get { return m_tParentGroupLastMod; }
+			set { m_tParentGroupLastMod = value; }
 		}
 
 		/// <summary>
@@ -281,9 +247,6 @@ namespace KeePassLib
 			set { m_bQualityCheck = value; }
 		}
 
-		/// <summary>
-		/// List of tags associated with this entry.
-		/// </summary>
 		public List<string> Tags
 		{
 			get { StrUtil.NormalizeTags(m_lTags); return m_lTags; }
@@ -315,25 +278,21 @@ namespace KeePassLib
 		public EventHandler<ObjectTouchedEventArgs> Touched;
 
 		/// <summary>
-		/// Construct a new, empty password entry. Member variables will be initialized
-		/// to their default values.
+		/// Construct a new, empty entry.
 		/// </summary>
-		/// <param name="bCreateNewUuid">If <c>true</c>, a new UUID will be created
-		/// for this entry. If <c>false</c>, the UUID is zero and you must set it
-		/// manually later.</param>
-		/// <param name="bSetTimes">If <c>true</c>, the creation, last modification
-		/// and last access times will be set to the current system time.</param>
+		/// <param name="bCreateNewUuid">Create a new UUID for this object.</param>
+		/// <param name="bSetTimes">Set times to the current time.</param>
 		public PwEntry(bool bCreateNewUuid, bool bSetTimes)
 		{
-			if(bCreateNewUuid) m_uuid = new PwUuid(true);
+			if(bCreateNewUuid) m_pu = new PwUuid(true);
 
 			if(bSetTimes)
 			{
-				DateTime dtNow = DateTime.UtcNow;
-				m_tCreation = dtNow;
-				m_tLastMod = dtNow;
-				m_tLastAccess = dtNow;
-				m_tParentGroupLastMod = dtNow;
+				DateTime dt = DateTime.UtcNow;
+				m_tCreation = dt;
+				m_tLastMod = dt;
+				m_tLastAccess = dt;
+				m_tParentGroupLastMod = dt;
 			}
 		}
 
@@ -341,7 +300,7 @@ namespace KeePassLib
 		public PwEntry(PwGroup pgParent, bool bCreateNewUuid, bool bSetTimes) :
 			this(bCreateNewUuid, bSetTimes)
 		{
-			m_pParentGroup = pgParent;
+			m_pgParent = pgParent;
 		}
 
 #if DEBUG
@@ -360,50 +319,50 @@ namespace KeePassLib
 		/// <returns>Exact value clone. All references to mutable values changed.</returns>
 		public PwEntry CloneDeep()
 		{
-			PwEntry peNew = new PwEntry(false, false);
+			PwEntry pe = new PwEntry(false, false);
 
-			peNew.m_uuid = m_uuid; // PwUuid is immutable
-			peNew.m_pParentGroup = m_pParentGroup;
-			peNew.m_tParentGroupLastMod = m_tParentGroupLastMod;
-			peNew.m_puPrevParentGroup = m_puPrevParentGroup;
+			pe.m_pu = m_pu; // PwUuid is immutable
+			pe.m_pgParent = m_pgParent;
+			pe.m_puPrevParentGroup = m_puPrevParentGroup;
 
-			peNew.m_dStrings = m_dStrings.CloneDeep();
-			peNew.m_dBinaries = m_dBinaries.CloneDeep();
-			peNew.m_cfgAutoType = m_cfgAutoType.CloneDeep();
-			peNew.m_lHistory = m_lHistory.CloneDeep();
+			pe.m_dStrings = m_dStrings.CloneDeep();
+			pe.m_dBinaries = m_dBinaries.CloneDeep();
+			pe.m_cfgAutoType = m_cfgAutoType.CloneDeep();
+			pe.m_lHistory = m_lHistory.CloneDeep();
 
-			peNew.m_pwIcon = m_pwIcon;
-			peNew.m_puCustomIcon = m_puCustomIcon;
+			pe.m_pwIcon = m_pwIcon;
+			pe.m_puCustomIcon = m_puCustomIcon;
 
-			peNew.m_clrForeground = m_clrForeground;
-			peNew.m_clrBackground = m_clrBackground;
+			pe.m_clrForeground = m_clrForeground;
+			pe.m_clrBackground = m_clrBackground;
 
-			peNew.m_tCreation = m_tCreation;
-			peNew.m_tLastMod = m_tLastMod;
-			peNew.m_tLastAccess = m_tLastAccess;
-			peNew.m_tExpire = m_tExpire;
-			peNew.m_bExpires = m_bExpires;
-			peNew.m_uUsageCount = m_uUsageCount;
+			pe.m_tCreation = m_tCreation;
+			pe.m_tLastMod = m_tLastMod;
+			pe.m_tLastAccess = m_tLastAccess;
+			pe.m_tExpire = m_tExpire;
+			pe.m_bExpires = m_bExpires;
+			pe.m_uUsageCount = m_uUsageCount;
+			pe.m_tParentGroupLastMod = m_tParentGroupLastMod;
 
-			peNew.m_strOverrideUrl = m_strOverrideUrl;
-			peNew.m_bQualityCheck = m_bQualityCheck;
+			pe.m_strOverrideUrl = m_strOverrideUrl;
+			pe.m_bQualityCheck = m_bQualityCheck;
 
-			peNew.m_lTags.AddRange(m_lTags);
+			pe.m_lTags.AddRange(m_lTags);
 
-			peNew.m_dCustomData = m_dCustomData.CloneDeep();
+			pe.m_dCustomData = m_dCustomData.CloneDeep();
 
-			return peNew;
+			return pe;
 		}
 
 		public PwEntry CloneStructure()
 		{
-			PwEntry peNew = new PwEntry(false, false);
+			PwEntry pe = new PwEntry(false, false);
 
-			peNew.m_uuid = m_uuid; // PwUuid is immutable
-			peNew.m_tParentGroupLastMod = m_tParentGroupLastMod;
-			// Do not assign m_pParentGroup
+			pe.m_pu = m_pu; // PwUuid is immutable
+			// Do not assign m_pgParent
+			pe.m_tParentGroupLastMod = m_tParentGroupLastMod;
 
-			return peNew;
+			return pe;
 		}
 
 		private static PwCompareOptions BuildCmpOpt(bool bIgnoreParentGroup,
@@ -449,10 +408,10 @@ namespace KeePassLib
 			bool bIgnoreLastMod = ((pwOpt & PwCompareOptions.IgnoreLastMod) !=
 				PwCompareOptions.None);
 
-			if(!m_uuid.Equals(pe.m_uuid)) return false;
+			if(!m_pu.Equals(pe.m_pu)) return false;
 			if((pwOpt & PwCompareOptions.IgnoreParentGroup) == PwCompareOptions.None)
 			{
-				if(m_pParentGroup != pe.m_pParentGroup) return false;
+				if(m_pgParent != pe.m_pgParent) return false;
 				if(!bIgnoreLastMod && !TimeUtil.EqualsFloor(m_tParentGroupLastMod,
 					pe.m_tParentGroupLastMod))
 					return false;
@@ -538,13 +497,13 @@ namespace KeePassLib
 				return;
 
 			// Template UUID should be the same as the current one
-			Debug.Assert(m_uuid.Equals(peTemplate.m_uuid));
-			m_uuid = peTemplate.m_uuid;
+			Debug.Assert(m_pu.Equals(peTemplate.m_pu));
+			m_pu = peTemplate.m_pu;
 
 			if(bAssignLocationChanged)
 			{
-				m_tParentGroupLastMod = peTemplate.m_tParentGroupLastMod;
 				m_puPrevParentGroup = peTemplate.m_puPrevParentGroup;
+				m_tParentGroupLastMod = peTemplate.m_tParentGroupLastMod;
 			}
 
 			m_dStrings = peTemplate.m_dStrings.CloneDeep();
@@ -574,25 +533,11 @@ namespace KeePassLib
 			m_dCustomData = peTemplate.m_dCustomData.CloneDeep();
 		}
 
-		/// <summary>
-		/// Touch the entry. This function updates the internal last access
-		/// time. If the <paramref name="bModified" /> parameter is <c>true</c>,
-		/// the last modification time gets updated, too.
-		/// </summary>
-		/// <param name="bModified">Modify last modification time.</param>
 		public void Touch(bool bModified)
 		{
 			Touch(bModified, true);
 		}
 
-		/// <summary>
-		/// Touch the entry. This function updates the internal last access
-		/// time. If the <paramref name="bModified" /> parameter is <c>true</c>,
-		/// the last modification time gets updated, too.
-		/// </summary>
-		/// <param name="bModified">Modify last modification time.</param>
-		/// <param name="bTouchParents">If <c>true</c>, all parent objects
-		/// get touched, too.</param>
 		public void Touch(bool bModified, bool bTouchParents)
 		{
 			m_tLastAccess = DateTime.UtcNow;
@@ -607,8 +552,8 @@ namespace KeePassLib
 				PwEntry.EntryTouched(this, new ObjectTouchedEventArgs(this,
 					bModified, bTouchParents));
 
-			if(bTouchParents && (m_pParentGroup != null))
-				m_pParentGroup.Touch(bModified, true);
+			if(bTouchParents && (m_pgParent != null))
+				m_pgParent.Touch(bModified, true);
 		}
 
 		/// <summary>
@@ -703,7 +648,7 @@ namespace KeePassLib
 			if(pwSettings == null) { Debug.Assert(false); return false; }
 
 			// Fix UUIDs of history entries; should not be necessary
-			PwUuid pu = m_uuid;
+			PwUuid pu = m_pu;
 			foreach(PwEntry pe in m_lHistory)
 			{
 				if(!pe.Uuid.Equals(pu)) { Debug.Assert(false); pe.Uuid = pu; }
@@ -764,8 +709,8 @@ namespace KeePassLib
 		{
 			if(!m_cfgAutoType.Enabled) return false;
 
-			if(m_pParentGroup != null)
-				return m_pParentGroup.GetAutoTypeEnabledInherited();
+			if(m_pgParent != null)
+				return m_pgParent.GetAutoTypeEnabledInherited();
 
 			return PwGroup.DefaultAutoTypeEnabled;
 		}
@@ -774,7 +719,7 @@ namespace KeePassLib
 		{
 			string strSeq = m_cfgAutoType.DefaultSequence;
 
-			PwGroup pg = m_pParentGroup;
+			PwGroup pg = m_pgParent;
 			while(pg != null)
 			{
 				if(strSeq.Length != 0) break;
@@ -791,8 +736,8 @@ namespace KeePassLib
 
 		public bool GetSearchingEnabled()
 		{
-			if(m_pParentGroup != null)
-				return m_pParentGroup.GetSearchingEnabledInherited();
+			if(m_pgParent != null)
+				return m_pgParent.GetSearchingEnabledInherited();
 
 			return PwGroup.DefaultSearchingEnabled;
 		}
@@ -872,8 +817,8 @@ namespace KeePassLib
 
 		internal List<string> GetTagsInherited()
 		{
-			List<string> l = ((m_pParentGroup != null) ?
-				m_pParentGroup.GetTagsInherited(false) : new List<string>());
+			List<string> l = ((m_pgParent != null) ?
+				m_pgParent.GetTagsInherited(false) : new List<string>());
 			l.AddRange(this.Tags);
 			StrUtil.NormalizeTags(l);
 			return l;
@@ -881,7 +826,7 @@ namespace KeePassLib
 
 		public bool IsContainedIn(PwGroup pgContainer)
 		{
-			PwGroup pgCur = m_pParentGroup;
+			PwGroup pgCur = m_pgParent;
 			while(pgCur != null)
 			{
 				if(pgCur == pgContainer) return true;
@@ -892,14 +837,14 @@ namespace KeePassLib
 			return false;
 		}
 
-		public void SetUuid(PwUuid pwNewUuid, bool bAlsoChangeHistoryUuids)
+		public void SetUuid(PwUuid puNew, bool bAlsoChangeHistoryUuids)
 		{
-			this.Uuid = pwNewUuid;
+			this.Uuid = puNew;
 
 			if(bAlsoChangeHistoryUuids)
 			{
 				foreach(PwEntry peHist in m_lHistory)
-					peHist.Uuid = pwNewUuid;
+					peHist.Uuid = puNew;
 			}
 		}
 

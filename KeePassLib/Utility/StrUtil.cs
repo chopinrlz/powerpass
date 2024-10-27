@@ -1807,22 +1807,24 @@ namespace KeePassLib.Utility
 
 			if(bBase64) return Convert.FromBase64String(strData);
 
-			MemoryStream ms = new MemoryStream();
-			Encoding enc = Encoding.ASCII;
-
-			string[] v = strData.Split('%');
-			byte[] pb = enc.GetBytes(v[0]);
-			ms.Write(pb, 0, pb.Length);
-			for(int i = 1; i < v.Length; ++i)
+			using(MemoryStream ms = new MemoryStream())
 			{
-				ms.WriteByte(Convert.ToByte(v[i].Substring(0, 2), 16));
-				pb = enc.GetBytes(v[i].Substring(2));
-				ms.Write(pb, 0, pb.Length);
-			}
+				string[] v = strData.Split('%');
+				Encoding enc = Encoding.ASCII;
 
-			pb = ms.ToArray();
-			ms.Close();
-			return pb;
+				byte[] pb = enc.GetBytes(v[0]);
+				ms.Write(pb, 0, pb.Length);
+
+				for(int i = 1; i < v.Length; ++i)
+				{
+					ms.WriteByte(Convert.ToByte(v[i].Substring(0, 2), 16));
+
+					pb = enc.GetBytes(v[i].Substring(2));
+					ms.Write(pb, 0, pb.Length);
+				}
+
+				return ms.ToArray();
+			}
 		}
 
 		// https://www.iana.org/assignments/media-types/media-types.xhtml

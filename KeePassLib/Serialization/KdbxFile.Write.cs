@@ -219,7 +219,7 @@ namespace KeePassLib.Serialization
 		{
 			if(m_xmlWriter != null) { m_xmlWriter.Close(); m_xmlWriter = null; }
 
-			CloseStreams(lStreams);
+			DisposeStreams(lStreams);
 
 			Debug.Assert(lStreams.Contains(sHashing)); // sHashing must be closed
 			m_pbHashOfFileOnDisk = sHashing.Hash;

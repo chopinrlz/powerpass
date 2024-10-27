@@ -55,36 +55,31 @@ namespace KeePassLib.Translation
 			set
 			{
 				if(value == null) throw new ArgumentNullException("value");
-
 				m_props = value;
 			}
 		}
 
-		private List<KPStringTable> m_vStringTables = new List<KPStringTable>();
-
+		private List<KPStringTable> m_lStringTables = new List<KPStringTable>();
 		[XmlArrayItem("StringTable")]
 		public List<KPStringTable> StringTables
 		{
-			get { return m_vStringTables; }
+			get { return m_lStringTables; }
 			set
 			{
 				if(value == null) throw new ArgumentNullException("value");
-
-				m_vStringTables = value;
+				m_lStringTables = value;
 			}
 		}
 
-		private List<KPFormCustomization> m_vForms = new List<KPFormCustomization>();
-
+		private List<KPFormCustomization> m_lForms = new List<KPFormCustomization>();
 		[XmlArrayItem("Form")]
 		public List<KPFormCustomization> Forms
 		{
-			get { return m_vForms; }
+			get { return m_lForms; }
 			set
 			{
 				if(value == null) throw new ArgumentNullException("value");
-
-				m_vForms = value;
+				m_lForms = value;
 			}
 		}
 
@@ -96,22 +91,21 @@ namespace KeePassLib.Translation
 			set
 			{
 				if(value == null) throw new ArgumentNullException("value");
-
 				m_strUnusedText = value;
 			}
 		}
 
-		public static void Save(KPTranslation kpTrl, string strFileName,
+		public static void Save(KPTranslation kpt, string strFileName,
 			IXmlSerializerEx xs)
 		{
 			using(FileStream fs = new FileStream(strFileName, FileMode.Create,
 				FileAccess.Write, FileShare.None))
 			{
-				Save(kpTrl, fs, xs);
+				Save(kpt, fs, xs);
 			}
 		}
 
-		public static void Save(KPTranslation kpTrl, Stream sOut,
+		public static void Save(KPTranslation kpt, Stream sOut,
 			IXmlSerializerEx xs)
 		{
 			if(xs == null) throw new ArgumentNullException("xs");
@@ -124,31 +118,23 @@ namespace KeePassLib.Translation
 			{
 				using(XmlWriter xw = XmlUtilEx.CreateXmlWriter(gz))
 				{
-					xs.Serialize(xw, kpTrl);
+					xs.Serialize(xw, kpt);
 				}
 			}
-
-			sOut.Close();
 		}
 
 		public static KPTranslation Load(string strFile, IXmlSerializerEx xs)
 		{
-			KPTranslation kpTrl = null;
-
 			using(FileStream fs = new FileStream(strFile, FileMode.Open,
 				FileAccess.Read, FileShare.Read))
 			{
-				kpTrl = Load(fs, xs);
+				return Load(fs, xs);
 			}
-
-			return kpTrl;
 		}
 
 		public static KPTranslation Load(Stream s, IXmlSerializerEx xs)
 		{
 			if(xs == null) throw new ArgumentNullException("xs");
-
-			KPTranslation kpTrl = null;
 
 #if !KeePassLibSD
 			using(GZipStream gz = new GZipStream(s, CompressionMode.Decompress))
@@ -156,17 +142,14 @@ namespace KeePassLib.Translation
 			using(GZipInputStream gz = new GZipInputStream(s))
 #endif
 			{
-				kpTrl = (xs.Deserialize(gz) as KPTranslation);
+				return (xs.Deserialize(gz) as KPTranslation);
 			}
-
-			s.Close();
-			return kpTrl;
 		}
 
 		public Dictionary<string, string> SafeGetStringTableDictionary(
 			string strTableName)
 		{
-			foreach(KPStringTable kpst in m_vStringTables)
+			foreach(KPStringTable kpst in m_lStringTables)
 			{
 				if(kpst.Name == strTableName) return kpst.ToDictionary();
 			}
@@ -190,7 +173,7 @@ namespace KeePassLib.Translation
 			}
 
 			string strTypeName = form.GetType().FullName;
-			foreach(KPFormCustomization kpfc in m_vForms)
+			foreach(KPFormCustomization kpfc in m_lForms)
 			{
 				if(kpfc.FullName == strTypeName)
 				{
@@ -302,7 +285,7 @@ namespace KeePassLib.Translation
 			if(tsic == null) throw new ArgumentNullException("tsic");
 
 			KPStringTable kpst = null;
-			foreach(KPStringTable kpstEnum in m_vStringTables)
+			foreach(KPStringTable kpstEnum in m_lStringTables)
 			{
 				if(kpstEnum.Name == strTableName)
 				{

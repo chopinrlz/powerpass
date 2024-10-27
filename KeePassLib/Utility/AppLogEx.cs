@@ -80,7 +80,7 @@ namespace KeePassLib.Utility
 		{
 			if(m_swOut == null) return;
 
-			m_swOut.Close();
+			m_swOut.Dispose();
 			m_swOut = null;
 		}
 

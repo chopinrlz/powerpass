@@ -270,7 +270,7 @@ namespace KeePassLib.Native
 						EnsureNoBom(p.StandardInput);
 
 						p.StandardInput.Write(strStdInput);
-						p.StandardInput.Close();
+						p.StandardInput.Dispose();
 					}
 
 					string strOutput = string.Empty;

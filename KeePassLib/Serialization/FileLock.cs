@@ -120,18 +120,16 @@ namespace KeePassLib.Serialization
 
 			public static LockFileInfo Load(IOConnectionInfo iocLockFile)
 			{
-				Stream s = null;
 				try
 				{
-					s = IOConnection.OpenRead(iocLockFile);
-					if(s == null) return null;
-
 					string str;
-					using(StreamReader sr = new StreamReader(s, StrUtil.Utf8))
+					using(Stream s = IOConnection.OpenRead(iocLockFile))
 					{
-						str = sr.ReadToEnd();
+						if(s == null) return null;
+
+						str = MemUtil.ReadString(s, StrUtil.Utf8);
+						if(str == null) { Debug.Assert(false); return null; }
 					}
-					if(str == null) { Debug.Assert(false); return null; }
 
 					str = StrUtil.NormalizeNewLines(str, false);
 					string[] v = str.Split('\n');
@@ -142,7 +140,6 @@ namespace KeePassLib.Serialization
 				}
 				catch(FileNotFoundException) { }
 				catch(Exception) { Debug.Assert(false); }
-				finally { if(s != null) s.Close(); }
 
 				return null;
 			}
@@ -150,48 +147,44 @@ namespace KeePassLib.Serialization
 			// Throws on error
 			public static LockFileInfo Create(IOConnectionInfo iocLockFile)
 			{
-				LockFileInfo lfi;
-				Stream s = null;
-				try
-				{
-					byte[] pbID = CryptoRandom.Instance.GetRandomBytes(16);
-					string strTime = TimeUtil.SerializeUtc(DateTime.UtcNow);
+				byte[] pbID = CryptoRandom.Instance.GetRandomBytes(16);
+				string strTime = TimeUtil.SerializeUtc(DateTime.UtcNow);
 
-					lfi = new LockFileInfo(Convert.ToBase64String(pbID), strTime,
+				LockFileInfo lfi = new LockFileInfo(Convert.ToBase64String(pbID), strTime,
 #if KeePassUAP
-						EnvironmentExt.UserName, EnvironmentExt.MachineName,
-						EnvironmentExt.UserDomainName);
+					EnvironmentExt.UserName, EnvironmentExt.MachineName,
+					EnvironmentExt.UserDomainName);
 #elif KeePassLibSD
-						string.Empty, string.Empty, string.Empty);
+					string.Empty, string.Empty, string.Empty);
 #else
-						Environment.UserName, Environment.MachineName,
-						Environment.UserDomainName);
+					Environment.UserName, Environment.MachineName,
+					Environment.UserDomainName);
 #endif
 
-					StringBuilder sb = new StringBuilder();
+				StringBuilder sb = new StringBuilder();
 #if !KeePassLibSD
-					sb.AppendLine(LockFileHeader);
-					sb.AppendLine(lfi.ID);
-					sb.AppendLine(strTime);
-					sb.AppendLine(lfi.UserName);
-					sb.AppendLine(lfi.Machine);
-					sb.AppendLine(lfi.Domain);
+				sb.AppendLine(LockFileHeader);
+				sb.AppendLine(lfi.ID);
+				sb.AppendLine(strTime);
+				sb.AppendLine(lfi.UserName);
+				sb.AppendLine(lfi.Machine);
+				sb.AppendLine(lfi.Domain);
 #else
-					sb.Append(LockFileHeader + MessageService.NewLine);
-					sb.Append(lfi.ID + MessageService.NewLine);
-					sb.Append(strTime + MessageService.NewLine);
-					sb.Append(lfi.UserName + MessageService.NewLine);
-					sb.Append(lfi.Machine + MessageService.NewLine);
-					sb.Append(lfi.Domain + MessageService.NewLine);
+				sb.Append(LockFileHeader + MessageService.NewLine);
+				sb.Append(lfi.ID + MessageService.NewLine);
+				sb.Append(strTime + MessageService.NewLine);
+				sb.Append(lfi.UserName + MessageService.NewLine);
+				sb.Append(lfi.Machine + MessageService.NewLine);
+				sb.Append(lfi.Domain + MessageService.NewLine);
 #endif
 
-					byte[] pbFile = StrUtil.Utf8.GetBytes(sb.ToString());
+				byte[] pbFile = StrUtil.Utf8.GetBytes(sb.ToString());
 
-					s = IOConnection.OpenWrite(iocLockFile);
+				using(Stream s = IOConnection.OpenWrite(iocLockFile))
+				{
 					if(s == null) throw new IOException(iocLockFile.GetDisplayName());
 					s.Write(pbFile, 0, pbFile.Length);
 				}
-				finally { if(s != null) s.Close(); }
 
 				return lfi;
 			}

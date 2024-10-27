@@ -324,6 +324,9 @@ namespace KeePassLib.Serialization
 				{
 					string strUA = p.Get(IocKnownProperties.UserAgent);
 					if(!string.IsNullOrEmpty(strUA)) hwr.UserAgent = strUA;
+
+					bool? obRedir = p.GetBool(IocKnownProperties.FollowRedirects);
+					if(obRedir.HasValue) hwr.AllowAutoRedirect = obRedir.Value;
 				}
 				else { Debug.Assert(false); }
 #endif
@@ -515,24 +518,18 @@ namespace KeePassLib.Serialization
 				// introduced in .NET 4.5 and must not be set when running on
 				// older .NET versions (otherwise an exception is thrown)
 				Type tSpt = typeof(SecurityProtocolType);
-				string[] vSpt = Enum.GetNames(tSpt);
 				bool bSystem = false;
-				foreach(string strSpt in vSpt)
+				foreach(string strSpt in Enum.GetNames(tSpt))
 				{
 					// When running on .NET 4.7 or higher, let the system
 					// choose the supported/enabled protocols;
 					// https://learn.microsoft.com/en-us/dotnet/framework/network-programming/tls
 					// https://learn.microsoft.com/en-us/windows/win32/secauthn/protocols-in-tls-ssl--schannel-ssp-
-					if(strSpt.Equals("SystemDefault", StrUtil.CaseIgnoreCmp))
-					{
-						bSystem = true;
-						break;
-					}
+					if(strSpt == "SystemDefault") { bSystem = true; break; }
 
-					if(strSpt.Equals("Tls11", StrUtil.CaseIgnoreCmp) || // .NET 4.5
-						strSpt.Equals("Tls12", StrUtil.CaseIgnoreCmp) || // .NET 4.5
-						strSpt.Equals("Tls13", StrUtil.CaseIgnoreCmp)) // .NET 4.8
-						spt |= (SecurityProtocolType)Enum.Parse(tSpt, strSpt, true);
+					if((strSpt == "Tls11") || (strSpt == "Tls12") || // Both .NET 4.5
+						(strSpt == "Tls13")) // .NET 4.8 (should imply SystemDefault)
+						spt |= (SecurityProtocolType)Enum.Parse(tSpt, strSpt);
 				}
 
 				if(!bSystem) ServicePointManager.SecurityProtocol = spt;
@@ -687,7 +684,7 @@ namespace KeePassLib.Serialization
 
 				// We didn't download the file completely; close may throw
 				// an exception -- that's okay
-				try { s.Close(); }
+				try { s.Dispose(); }
 				catch(Exception) { }
 			}
 			catch(Exception)
@@ -796,10 +793,7 @@ namespace KeePassLib.Serialization
 			//	using(Stream sOut = IOConnection.OpenWrite(iocTo))
 			//	{
 			//		MemUtil.CopyStream(sIn, sOut);
-			//		sOut.Close();
 			//	}
-			//
-			//	sIn.Close();
 			// }
 			// DeleteFile(iocFrom);
 		}
@@ -828,7 +822,7 @@ namespace KeePassLib.Serialization
 				if(bGetStream)
 				{
 					Stream s = wr.GetResponseStream();
-					if(s != null) s.Close();
+					if(s != null) s.Dispose();
 				}
 			}
 			catch(Exception) { Debug.Assert(false); }

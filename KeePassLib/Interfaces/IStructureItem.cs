@@ -23,20 +23,20 @@ namespace KeePassLib.Interfaces
 {
 	public interface IStructureItem : ITimeLogger // Provides LocationChanged
 	{
-		PwUuid Uuid
-		{
-			get;
-			set;
-		}
+		/// <summary>
+		/// UUID that identifies this object.
+		/// </summary>
+		PwUuid Uuid { get; set; }
 
-		PwGroup ParentGroup
-		{
-			get;
-		}
+		/// <summary>
+		/// Get the group that contains this object.
+		/// </summary>
+		PwGroup ParentGroup { get; }
 
-		PwUuid PreviousParentGroup
-		{
-			get;
-		}
+		/// <summary>
+		/// Get the group that has contained this object before it has been
+		/// moved the last time.
+		/// </summary>
+		PwUuid PreviousParentGroup { get; }
 	}
 }

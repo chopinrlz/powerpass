@@ -76,9 +76,10 @@ namespace KeePassLib.Utility
 		{
 			if(pb == null) throw new ArgumentNullException("pb");
 
-			MemoryStream ms = new MemoryStream(pb, false);
-			try { return Image.FromStream(ms); }
-			finally { ms.Close(); }
+			using(MemoryStream ms = new MemoryStream(pb, false))
+			{
+				return Image.FromStream(ms);
+			}
 		}
 #else
 		public static Image LoadImage(byte[] pb)
@@ -98,9 +99,10 @@ namespace KeePassLib.Utility
 			catch(Exception) { Debug.Assert(false); }
 #endif
 
-			MemoryStream ms = new MemoryStream(pb, false);
-			try { return LoadImagePriv(ms); }
-			finally { ms.Close(); }
+			using(MemoryStream ms = new MemoryStream(pb, false))
+			{
+				return LoadImagePriv(ms);
+			}
 		}
 
 		private static Image LoadImagePriv(Stream s)
