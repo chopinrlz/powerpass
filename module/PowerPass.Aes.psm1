@@ -399,6 +399,8 @@ function Import-PowerPassLocker {
         The path to the locker file on disk to import.
         .PARAMETER Force
         Import the locker files without prompting for confirmation.
+        .PARAMETER Merge
+        Merge the contents of the Locker file backup with your existing Locker.
     #>
     [CmdletBinding()]
     param(
@@ -406,7 +408,9 @@ function Import-PowerPassLocker {
         [string]
         $LockerFile,
         [switch]
-        $Force
+        $Force,
+        [switch]
+        $Merge
     )
 
     # Define variables
@@ -445,21 +449,62 @@ function Import-PowerPassLocker {
         $warn = $false
     }
 
-    # Check for warning message
-    if( $warn ) {
-        $answer = Read-Host "You are about to overwrite your existing locker. Proceed? [N/y]"
-        if( Test-PowerPassAnswer $answer ) { 
-            Write-Output "Restoring locker from $LockerFile"
-        } else {
-            throw "Import cancelled by user"
-        }
-    }
+    # Determine the import routine
+    if( $Merge ) {
 
-    # Import the locker
-    $aes = New-Object "PowerPass.AesCrypto"
-    $aes.ReadKeyFromDisk( $script:PowerPass.LockerKeyFilePath, [ref] (Get-PowerPassEphemeralKey) )
-    $aes.Encrypt( $data, $script:PowerPass.LockerFilePath )
-    $aes.Dispose()
+        # Parse the imported data into object format for parsing
+        $lockerJson = ConvertTo-Utf8String -InputObject $data
+        $from = ConvertFrom-Json $lockerJson
+
+        # Import the current locker
+        $modified = $false
+        [PSCustomObject]$to = $null
+        Get-PowerPassLocker -Locker ([ref] $to)
+        foreach( $secret in $from.Secrets ) {
+            $existing = $to.Secrets | Where-Object { $_.Title -eq ($secret.Title) }
+            if( $existing ) {
+                $existing.UserName = $secret.UserName
+                $existing.Password = $secret.Password
+                $existing.URL = $secret.URL
+                $existing.Notes = $secret.Notes
+                $existing.Expires = $secret.Expires
+                $existing.Modified = (Get-Date).ToUniversalTime()
+                $modified = $true
+            } else {
+                $to.Secrets += $secret
+                $modified = $true
+            }
+        }
+
+        # Write out the new Locker file
+        if( $modified ) {
+            $pathToLocker = $script:PowerPass.LockerFilePath
+            $pathToLockerKey = $script:PowerPass.LockerKeyFilePath
+            [byte[]]$newData = $null
+            Get-PowerPassLockerBytes -Locker $to -Data ([ref] $newData)
+            $aes = New-Object "PowerPass.AesCrypto"
+            $aes.ReadKeyFromDisk( $pathToLockerKey, [ref] (Get-PowerPassEphemeralKey) )
+            $aes.Encrypt( $newData, $pathToLocker )
+            $aes.Dispose()
+        }
+    } else {
+
+        # Check for warning message
+        if( $warn ) {
+            $answer = Read-Host "You are about to overwrite your existing locker. Proceed? [N/y]"
+            if( Test-PowerPassAnswer $answer ) { 
+                Write-Output "Restoring locker from $LockerFile"
+            } else {
+                throw "Import cancelled by user"
+            }
+        }
+
+        # Import the locker
+        $aes = New-Object "PowerPass.AesCrypto"
+        $aes.ReadKeyFromDisk( $script:PowerPass.LockerKeyFilePath, [ref] (Get-PowerPassEphemeralKey) )
+        $aes.Encrypt( $data, $script:PowerPass.LockerFilePath )
+        $aes.Dispose()
+    }
 }
 
 # ------------------------------------------------------------------------------------------------------------- #
