@@ -80,7 +80,7 @@ PowerPass works and is tested on every PowerShell edition including WinPS and PS
 5. To view the roadmap of upcoming features see [Roadmap](https://chopinrlz.github.io/powerpass/roadmap)
 
 # License and Copyright
-PowerPass is copyright 2023-2024 by ShwaTech LLC.
+PowerPass is copyright 2023-2025 by ShwaTech LLC.
 PowerPass is open-source, free software. You may use PowerPass for any purpose.
 PowerPass is licensed under the GNU Public License v2.0.
 The license can be found in the [LICENSE](https://github.com/chopinrlz/powerpass/blob/main/LICENSE) file.

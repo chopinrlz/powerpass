@@ -4,7 +4,7 @@ Here is the roadmap of upcoming features.
 ## Web Browser PowerPass
 Currently under development is a port of PowerPass into TypeScript for use with a web browser as a fully client-side password manager that can be hosted anywhere and uses local storage for your Locker.
 <table>
-<tr><th>As of June 5, 2024</th><th>Status</th></tr>
+<tr><th>As of January 30, 2025</th><th>Status</th></tr>
 <tr><td>Core Functions</td><td>In Progress</td></tr>
 <tr><td>Serialization</td><td>Not Started</td></tr>
 <tr><td>Key Generation</td><td>Not Started</td></tr>
@@ -21,13 +21,14 @@ A cryptography API has yet to be chosen, but it will likely be the [Web Crypto A
 ## TPM Support on Linux
 Currently under development is TPM support for Linux.
 <table>
-<tr><th>As of May 12, 2024</th><th>Status</th></tr>
+<tr><th>As of January 30, 2025</th><th>Status</th></tr>
 <tr><td>Initialize Context</td><td>Complete</td></tr>
 <tr><td>Get Info</td><td>Complete</td></tr>
 <tr><td>Create Key</td><td>Complete</td></tr>
 <tr><td>Encrypt Locker</td><td>Proofed</td></tr>
 <tr><td>Decrypt Locker</td><td>Pending</td></tr>
 <tr><td>Unit Testing</td><td>Available</td></tr>
+<tr><td>Installation</td><td>In Progress</td></tr>
 </table>
 
 The library chosen to provide support is the open-source **[tpm2-tss](https://github.com/tpm2-software/tpm2-tss)** project.
