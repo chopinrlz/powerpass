@@ -1,8 +1,9 @@
 # Usage
-#### _Revised: May 6, 2024_
+#### _Revised: March 3, 2025_
 Service accounts and other non-interactive logins can access credentials you store for them.
-And of course you can always user PowerPass with your own login, too.
+And of course you can always use PowerPass with your own login, too.
 Login to the system with your account, or the service account you use for automation, deploy PowerPass, and use `Write-PowerPassSecret` to store a credential for that account.
+Keep in mind that you should NOT be using `Run as administrator` in Windows when interfacing with PowerPass.
 
 ### **_The credentials you store while logged in will only be accessible to that same account._**
 
@@ -37,8 +38,8 @@ To incorporate PowerPass into your scritps and modules, follow these examples.
 1. For the AES edition: [PowerPass AES Cmdlet Reference](https://chopinrlz.github.io/powerpass/aes-cmdlet-ref)
 2. For the DP API edition: [PowerPass DP API Cmdlet Reference](https://chopinrlz.github.io/powerpass/dpapi-cmdlet-ref)
 
-# Getting Secrets from KeePass
-* To open a KeePass database use the `Open-PowerPassDatabase` cmdlet.
+# Getting Secrets from KeePass 2
+* To open a KeePass 2 database use the `Open-PowerPassDatabase` cmdlet.
 * Pipe or pass the output to `Get-PowerPassSecret` to fetch secrets from the KeePass database.
 
 ## Storing KeePass Database Passwords

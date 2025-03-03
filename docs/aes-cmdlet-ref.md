@@ -1,23 +1,23 @@
-# PowerPass Cmdlet Reference for AES Implementation
-#### _Revised: May 5, 2024_
-The AES implementation of PowerPass works on Windows PowerShell and PowerShell 7 on Linux, MacOS, and Windows. These are the cmdlets:
-1. [Add-PowerPassAttachment](#add-powerpassattachment)
-2. [Clear-PowerPassLocker](#clear-powerpasslocker)
-3. [Export-PowerPassAttachment](#export-powerpassattachment)
-4. [Export-PowerPassLocker](#export-powerpasslocker)
-5. [Get-PowerPass](#get-powerpass)
-6. [Get-PowerPassAttachments](#get-powerpassattachments)
-7. [Import-PowerPassLocker](#import-powerpasslocker)
-8. [New-PowerPassRandomPassword](#new-powerpassrandompassword)
-9. [Read-PowerPassAttachment](#read-powerpassattachment)
-10. [Read-PowerPassSecret](#read-powerpasssecret)
-11. [Remove-PowerPassAttachment](#remove-powerpassattachment)
-12. [Remove-PowerPassSecret](#remove-powerpasssecret)
-13. [Update-PowerPassKey](#update-powerpasskey)
-14. [Write-PowerPassAttachment](#write-powerpassattachment)
-15. [Write-PowerPassSecret](#write-powerpasssecret)
+# PowerPass Cmdlet Reference for the AES Edition
+#### _Revised: March 3, 2025_
+The AES edition of PowerPass works on Windows PowerShell and PowerShell 7 on Linux, MacOS, and Windows. These are the cmdlets:
+1. [Add-PowerPassAttachment](#add-powerpassattachment): adds one or more attachments (files) into your Locker
+2. [Clear-PowerPassLocker](#clear-powerpasslocker): erases all secrets and attachments from your Locker
+3. [Export-PowerPassAttachment](#export-powerpassattachment): exports attachments (files) from your Locker to disk
+4. [Export-PowerPassLocker](#export-powerpasslocker): backup your Locker to disk
+5. [Get-PowerPass](#get-powerpass): get details about your PowerPass deployment
+6. [Get-PowerPassAttachments](#get-powerpassattachments): lists the attachments (files) that are in your Locker
+7. [Import-PowerPassLocker](#import-powerpasslocker): restore your Locker from a backup
+8. [New-PowerPassRandomPassword](#new-powerpassrandompassword): generate a random password
+9. [Read-PowerPassAttachment](#read-powerpassattachment): output the contents of an attachment (file)
+10. [Read-PowerPassSecret](#read-powerpasssecret): fetches one or more secrets from your Locker
+11. [Remove-PowerPassAttachment](#remove-powerpassattachment): deletes an attachment (file) from your Locker
+12. [Remove-PowerPassSecret](#remove-powerpasssecret): deletes a secret from your Locker
+13. [Update-PowerPassKey](#update-powerpasskey): rotates your Locker key
+14. [Write-PowerPassAttachment](#write-powerpassattachment): adds one attachment (file) into your Locker
+15. [Write-PowerPassSecret](#write-powerpasssecret): adds secrets to your Locker
 
-Here are the cmdlets for the AES implementation of PowerPass.
+Here are the cmdlets for the AES edition of PowerPass.
 # Add-PowerPassAttachment
 ### SYNOPSIS
 Adds files from the file system into your locker. The difference between `Add-PowerPassAttachment` and

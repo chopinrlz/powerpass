@@ -3,12 +3,12 @@ A cross-platform PowerShell module for secret storage and retrieval on Linux, Ma
 PowerPass supports Windows PowerShell 5 and PowerShell 7.
 
 ## Purpose
-PowerPass provides an easy to use set of cmdlets for securely storing and retrieving credentials automatically without user input and without external dependencies. In automated scenarios, there is no user present to type in a set of credentials.
+PowerPass provides an easy to use set of cmdlets for securely storing and retrieving credentials automatically without user input and without external dependencies. Especially for automated scenarios, where there is no user present to type in a set of credentials, PowerPass provides a facility for secure credential storage and retrieval without user input.
 
-1. PowerPass facilitates the use of credentials in automated scenarios.
-2. PowerPass credentials are locked down so that only the user who stored them can access them.
+1. PowerPass stores credentials securely without the need for a password.
+2. PowerPass does not require any user input when retrieving credentials.
 3. PowerPass retrieves credentials automatically for the current user.
-4. PowerPass does not require any user input when retrieving credentials.
+4. PowerPass credentials are only accessible to the user who stored them.
 
 ## Features
 PowerPass has the following features:
@@ -19,7 +19,7 @@ PowerPass has the following features:
 * Fetch secrets in `PSCredential` format
 * Retrieve secrets from KeePass 2 databases (Windows PowerShell-only)
 * Store and retrieve files/attachments
-* Compress stored files/attachment with GZip
+* Compress stored files/attachments with GZip
 * Export and import secrets and files to/from a backup file
 * Import secrets from KeePass 2 into PowerPass
 * Generate random passwords
@@ -58,10 +58,10 @@ You can also do this to downgrade to an older release.
 
 # Editions
 PowerPass comes in four flavors and supports Linux, macOS, and Windows.
-1. 256-bit AES Encryption
-2. Windows Data Protection API
-3. TPM Encryption (in development, see [Roadmap](https://chopinrlz.github.io/powerpass/roadmap))
-4. Web Browser (in development, see [Roadmap](https://chopinrlz.github.io/powerpass/roadmap))
+* **AES Edition:** 256-bit AES Encryption
+* **DPAPI Edition:** Windows Data Protection API
+* **TPM Edition:** Trusted Platform Module (in development, see [Roadmap](https://chopinrlz.github.io/powerpass/roadmap))
+* **Web Edition:** Web Browser Local Storage (in development, see [Roadmap](https://chopinrlz.github.io/powerpass/roadmap))
 
 ## Operating System Compatibility
 | OS | AES | DPAPI | TPM | Web |
@@ -87,4 +87,4 @@ The license can be found in the [LICENSE](https://github.com/chopinrlz/powerpass
 You may copy, modify, and distribute PowerPass for personal or commercial use under the terms of the GNU Public License v2.0.
 
 # Repository Directory
-The directory of assets in this repo can be found in the [REPO](https://github.com/chopinrlz/powerpass/blob/main/REPO.md) markdown file.
+For the directory of assets in this repo please see [REPO](https://github.com/chopinrlz/powerpass/blob/main/REPO.md)

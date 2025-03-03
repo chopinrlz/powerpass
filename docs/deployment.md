@@ -1,5 +1,5 @@
 # Deployment
-#### _Revised: May 6, 2024_
+#### _Revised: March 3, 2025_
 PowerPass is not your typical PowerShell module.
 It works like a module, it's deployed like a module, but due to its nature it must be deployed using a deployment script packaged with PowerPass.
 Depending on the edition of PowerPass that you want to use, the AES edition or the Data Protection API edition (and in the future the TPM edition), PowerPass has different dependencies and requirements that are validated and/or configured at deployment time.
@@ -38,18 +38,16 @@ PowerPass on Linux requires PowerShell 7 which is provided for many distros as a
 If you do not already have PowerShell 7 installed on your Linux distro, you can browse the [PowerShell readme file](https://github.com/PowerShell/PowerShell/blob/master/README.md) on GitHub for instructions on installing PowerShell 7 for your distro.
 <br/>
 Supported distros currently include:
-1. CentOS 7/8
-2. Debian 10/11
-3. Fedora 35
-4. openSUSE 42.3
-5. Red Hat Enterprise 7
-6. Ubuntu 16.04 through 22.04  
+1. Alpine 3.20
+2. Debian 12
+3. RHEL (Red Hat Enterprise Linux) 8 or 9
+4. Ubuntu 20.04, 22.04, and 24.04  
 
 Once PowerShell 7 is installed, simply run the [deployment](#deploying-powerpass) script in PowerShell 7 to deploy PowerPass.
 ## MacOS
 PowerPass runs on PowerShell 7 on macOS.
 ### _[Main Article: Installing PowerShell on macOS](https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell-on-macos?view=powershell-7.4)_
-PowerPass on MacOS requires PowerShell 7 which is supported on macOS 10.13 and higher on x64 processors and macOS 11 and higher on arm64 processors.
+PowerPass on MacOS requires PowerShell 7 which is supported on macOS 13 and higher on x64 and arm64 processors.
 <br/>
 
 If you do not already have PowerShell 7 installed on your Mac, you can browse the [PowerShell readme file](https://github.com/PowerShell/PowerShell/blob/master/README.md) on GitHub to find the release for your hardware and macOS version.
@@ -67,11 +65,12 @@ PowerPass comes with a deployment script which will verify and/or create all the
 For the AES edition it will generate a key for you and deploy the module.
 <br/>
 
-PowerPass is ALWAYS deployed to YOUR user's home directory.
-PowerPass must be deployed once for each user who needs to use it.
-PowerPass does NOT require administrative permissions.
-PowerPass should NOT be deployed with administrative permissions.
-PowerPass is designed to run under USER permissions within the user's home directory.
+### _Important Considerations_
+* PowerPass is ALWAYS deployed to YOUR user's home directory.
+* PowerPass must be deployed once for each user who needs to use it.
+* PowerPass does NOT require administrative permissions.
+* PowerPass should NOT be deployed with administrative permissions.
+* PowerPass is designed to run under USER permissions within the user's home directory.
 <br/>
 
 For details on prerequisites for each implementation, please see the [Prerequisites](https://chopinrlz.github.io/powerpass/prerequisites) page.

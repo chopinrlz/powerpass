@@ -1,13 +1,13 @@
 # How It Works
-## AES
+#### _Revised: March 3, 2025_
+## AES Edition
 PowerPass on Linux, MacOS, or Windows in PowerShell 7 can read and write secrets from PowerPass Lockers encrypted with AES.
 
 ### PowerPass Lockers
 A Locker is a 256-bit AES encrypted file which stores your secrets and their metadata in UTF-8 JSON format. The AES implementation used is native to the operating system on which it runs. Linux, MacOS, and Windows all provide native 256-bit AES block cipher encryption.
 
 #### Locker Keys
-AES locker keys are generated automatically using the cryptographic random number generator class. All locker keys are 256-bits in length.
-This is the maximum AES key length supported by .NET on all operating systems.
+AES locker keys are generated automatically using the cryptographic random number generator class. All locker keys are 256-bits in length. This is the maximum AES key length supported by .NET on all operating systems.
 
 #### Key Generation and Storage
 When you first use PowerPass, the module will generate a key for you. The key is generated using the cryptographic random number generator. The Locker is stored in your home directory while the key is stored in your application data directory. These directories can only be accessed by you, but can also be accessed by anyone with admin rights to the computer, so bear that in mind when you store secrets in your Locker. The Locker is encrypted with the key while the key is encrypted with an ephemeral key that is based on your hostname, username, and primary MAC address. You can get the file paths to you locker and key files using the `Get-PowerPass` cmdlet.
@@ -17,12 +17,13 @@ If you are using the AES edition of PowerPass, please be aware of the following 
 1. Your Locker key is linked to your login name, hostname, and primary MAC address
 2. This linkage is **case-sensitive**
 3. Changing your login name, hostname, or primary MAC address will make your Locker inaccessible
-4. If you need to change any of the above, take a backup of your Locker then restore it after you make the changes
+4. If you need to change any of the above, take a backup of your Locker with `Export-PowerPassLocker` first then restore it after you make the changes  
+<br/>
 
-Tl; dr: don't change your username, hostname, or primary MAC address without backing up your Locker first.
+<blockquote>Tl;dr: DO NOT change your username, hostname, or primary MAC address without backing up your Locker first.</blockquote>
 
 #### Exporting and Importing your Locker
-You can export your locker to save a backup copy elsewhere. When you export your locker, you specify a password to encrypt the locker. The password must be between 4 and 32 characters in length.
+You can export your locker to save a backup copy elsewhere with the `Export-PowerPassLocker` cmdlet. When you export your locker, you specify a password to encrypt the locker. The password must be between 4 and 32 characters in length.
 
 #### Rotating your Locker Key
 You can also rotate your locker key automatically. When you rotate your locker key PowerPass will decrypt your locker, generate a new key, encrypt your locker with the new key, and encrypt the new key with the ephemeral key.
@@ -55,7 +56,7 @@ If you are using the DP API edition of PowerPass, please be aware of the followi
 Your Locker is linked to your local Windows user profile. Always backup your Locker if you plan to make any changes to your local Windows user profile, such as if you are deleting it to have Windows recreate it due to profile directory issues.
 
 #### Exporting your Locker and Key
-You can export your locker and key to save a backup copy elsewhere. You can also rotate your locker salts automatically, but the locker key is built-in to your Windows profile. The Data Protection API does not allow you to explicitly rotate your user profile key.
+You can export your locker and key to save a backup copy elsewhere using the `Export-PowerPassLocker` cmdlet. You can also rotate your locker salts automatically, but the locker key is built-in to your Windows profile. The Data Protection API does not allow you to explicitly rotate your user profile key.
 
 # All PowerPass Topics
 Select one of the links below to browse to another topic.

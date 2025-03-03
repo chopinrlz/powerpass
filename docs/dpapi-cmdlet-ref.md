@@ -1,25 +1,25 @@
-# PowerPass Cmdlet Reference for Windows PowerShell DP API / KeePass 2 Implementation
-#### _Revised: May 5, 2024_
+# PowerPass Cmdlet Reference for the Windows PowerShell Data Protection API and KeePass 2 Edition
+#### _Revised: March 3, 2025_
 The Windows PowerShell Data Protection API implementation supports Windows PowerShell 5.1 and includes support for KeePass 2 databases as well as PowerPass Lockers. Cmdlets for this implementation are as follows:
-1. [Add-PowerPassAttachment](#add-powerpassattachment)
-2. [Clear-PowerPassLocker](#clear-powerpasslocker)
-3. [Export-PowerPassAttachment](#export-powerpassattachment)
-4. [Export-PowerPassLocker](#export-powerpasslocker)
-5. [Get-PowerPass](#get-powerpass)
-6. [Get-PowerPassAttachments](#get-powerpassattachments)
-7. [Get-PowerPassSecret](#get-powerpasssecret)
-8. [Import-PowerPassLocker](#import-powerpasslocker)
-9. [Import-PowerPassSecrets](#import-powerpasssecrets)
-10. [New-PowerPassRandomPassword](#new-powerpassrandompassword)
-11. [Open-PowerPassDatabase](#open-powerpassdatabase)
-12. [Open-PowerPassTestDatabase](#open-powerpasstestdatabase)
-13. [Read-PowerPassAttachment](#read-powerpassattachment)
-14. [Read-PowerPassSecret](#read-powerpasssecret)
-15. [Remove-PowerPassAttachment](#remove-powerpassattachment)
-16. [Remove-PowerPassSecret](#remove-powerpasssecret)
-17. [Update-PowerPassSalt](#update-powerpasssalt)
-18. [Write-PowerPassAttachment](#write-powerpassattachment)
-19. [Write-PowerPassSecret](#write-powerpasssecret)
+1. [Add-PowerPassAttachment](#add-powerpassattachment): adds one or more attachments (files) into your Locker
+2. [Clear-PowerPassLocker](#clear-powerpasslocker): erases all secrets and attachments from your Locker
+3. [Export-PowerPassAttachment](#export-powerpassattachment): exports attachments (files) from your Locker to disk
+4. [Export-PowerPassLocker](#export-powerpasslocker): backup your Locker to disk
+5. [Get-PowerPass](#get-powerpass): get details about your PowerPass deployment
+6. [Get-PowerPassAttachments](#get-powerpassattachments): lists the attachments (files) that are in your Locker
+7. [Get-PowerPassSecret](#get-powerpasssecret): gets secrets from a KeePass 2 database opened with PowerPass
+8. [Import-PowerPassLocker](#import-powerpasslocker): restore your Locker from a backup
+9. [Import-PowerPassSecrets](#import-powerpasssecrets): imports all the secrets from a KeePass 2 database opened with PowerPass into your PowerPass Locker
+10. [New-PowerPassRandomPassword](#new-powerpassrandompassword): generate a random password
+11. [Open-PowerPassDatabase](#open-powerpassdatabase): opens a KeePass 2 database file from disk
+12. [Open-PowerPassTestDatabase](#open-powerpasstestdatabase): opens the KeePass 2 test database provided with PowerPass for testing
+13. [Read-PowerPassAttachment](#read-powerpassattachment): output the contents of an attachment (file)
+14. [Read-PowerPassSecret](#read-powerpasssecret): fetches one or more secrets from your Locker
+15. [Remove-PowerPassAttachment](#remove-powerpassattachment): deletes an attachment (file) from your Locker
+16. [Remove-PowerPassSecret](#remove-powerpasssecret): deletes a secret from your Locker
+17. [Update-PowerPassSalt](#update-powerpasssalt): rotates the salt used for encrypting your Locker
+18. [Write-PowerPassAttachment](#write-powerpassattachment): adds one attachment (file) into your Locker
+19. [Write-PowerPassSecret](#write-powerpasssecret): adds secrets to your Locker
 
 Continue reading for the cmdlet details.
 # Add-PowerPassAttachment
