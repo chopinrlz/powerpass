@@ -57,7 +57,7 @@ from the location on disk as the filename and we enable GZip compression for eac
 # Compress and attach all files in the current directory using the full path and filename
 Get-ChildItem | Add-PowerPassAttachment -FullPath -GZip
 ```
-##### ***[Back to Top](#powerpass-cmdlet-reference-for-aes-edition)***
+##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-aes-edition)***
 ### NOTES
 Rather than using Write-PowerPassAttachment, you can use Add-PowerPassAttachment to add multiple files
 to your locker at once by piping the output of Get-ChildItem to Add-PowerPassAttachment. Each file fetched
@@ -68,7 +68,7 @@ Deletes all your locker secrets and your locker key. PowerPass will generate a n
 for you the next time you write or read secrets to or from your locker.
 ### PARAMETER Force
 WARNING: If you specify Force, your locker and salt will be removed WITHOUT confirmation.
-##### ***[Back to Top](#powerpass-cmdlet-reference-for-aes-edition)***
+##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-aes-edition)***
 # Export-PowerPassAttachment
 ### SYNOPSIS
 Exports one or more attachments from your locker.
@@ -99,7 +99,7 @@ These attachments were loaded into our locker using `Add-PowerPassAttachment` wi
 # Save our attachments back to their original location
 Export-PowerPassAttachment -FileName "C:\Secrets\*" -OriginalPath
 ```
-##### ***[Back to Top](#powerpass-cmdlet-reference-for-aes-edition)***
+##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-aes-edition)***
 # Export-PowerPassLocker
 ### SYNOPSIS
 Exports your PowerPass Locker to an encrypted backup file named `powerpass_locker.bin` in the directory
@@ -118,7 +118,7 @@ In this example, we backup our Locker and key to a USB drive mounted as the E: d
 # Backup my locker and key to a USB drive
 Export-PowerPassLocker -Path "E:\" -Password "mySecretPassphrase"
 ```
-##### ***[Back to Top](#powerpass-cmdlet-reference-for-aes-edition)***
+##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-aes-edition)***
 # Get-PowerPass
 ### SYNOPSIS
 Gets all the information about this PowerPass deployment.
@@ -136,14 +136,14 @@ A PSCustomObject with these properties:
 * Version             : The version number of the PowerPass module you have deployed
 
 You can access these properties after assigning the output of `Get-PowerPass` to a variable.
-##### ***[Back to Top](#powerpass-cmdlet-reference-for-aes-edition)***
+##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-aes-edition)***
 # Get-PowerPassAttachments
 ### SYNOPSIS
 Exports all the attachments to a list so you can search for attachments and see what attachments are
 in your locker without exposing the file data.
 ### OUTPUTS
 Outputs each attachment from your locker including the FileName, Created date, and Modified date.
-##### ***[Back to Top](#powerpass-cmdlet-reference-for-aes-edition)***
+##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-aes-edition)***
 # Import-PowerPassLocker
 ### SYNOPSIS
 Imports a PowerPass locker file.
@@ -159,7 +159,7 @@ In this example, we import a Locker file which will overwrite your existing Lock
 # Import my old locker file
 Import-PowerPassLocker -LockerFile "E:\Backup\powerpass_locker.bin" -Password "mySecretPassphrase"
 ```
-##### ***[Back to Top](#powerpass-cmdlet-reference-for-aes-edition)***
+##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-aes-edition)***
 # New-PowerPassRandomPassword
 ### SYNOPSIS
 Generates a random password from all available standard US 101-key keyboard characters.
@@ -167,7 +167,7 @@ Generates a random password from all available standard US 101-key keyboard char
 The length of the password to generate. Can be between 1 and 65536 characters long. Defaults to 24.
 ### OUTPUTS
 Outputs a random string of typable characters to the pipeline which can be used as a password.
-##### ***[Back to Top](#powerpass-cmdlet-reference-for-aes-edition)***
+##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-aes-edition)***
 # Read-PowerPassAttachment
 ### SYNOPSIS
 Reads an attachment from your locker.
@@ -227,7 +227,7 @@ File data for raw attachments is stored as base64-encoded text in the `Data` pro
 # Get the readme file as a raw PSCustomObject
 Read-PowerPassAttachment -FileName "readme.txt" -Raw | Get-Member
 ```
-##### ***[Back to Top](#powerpass-cmdlet-reference-for-aes-edition)***
+##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-aes-edition)***
 # Read-PowerPassSecret
 ### SYNOPSIS
 Reads secrets from your PowerPass locker.
@@ -304,7 +304,7 @@ If no secret matching the Title is found, nothing is returned.
 # Get a specific secret from the locker
 $sec = Read-PowerPassSecret -Title "Domain Admin Account"
 ```
-##### ***[Back to Top](#powerpass-cmdlet-reference-for-aes-edition)***
+##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-aes-edition)***
 # Remove-PowerPassAttachment
 ### SYNOPSIS
 Removes an attachment from your locker.
@@ -313,7 +313,7 @@ The filename of the attachment to remove from your locker.
 ### NOTES
 The filename parameter can be passed from the pipeline. You can see what attachments are in your locker
 by running [Get-PowerPassAttachments](#get-powerpassattachments). You are not prompted to remove attachments.
-##### ***[Back to Top](#powerpass-cmdlet-reference-for-aes-edition)***
+##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-aes-edition)***
 # Remove-PowerPassSecret
 ### SYNOPSIS
 Removes a secret from your locker.
@@ -333,7 +333,7 @@ In this example we demonstrate removing several secrets from the Locker at once.
 # Remove all the service accounts
 "svc_sqlserver","svc_sharepoint","svc_spadmin" | Remove-PowerPassSecret
 ```
-##### ***[Back to Top](#powerpass-cmdlet-reference-for-aes-edition)***
+##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-aes-edition)***
 # Update-PowerPassKey
 ### SYNOPSIS
 Rotates the Locker key to a new random key.
@@ -349,7 +349,7 @@ Simply execute it and PowerPass with rotate your locker key.
 # Rotate my locker key
 Update-PowerPassKey
 ```
-##### ***[Back to Top](#powerpass-cmdlet-reference-for-aes-edition)***
+##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-aes-edition)***
 # Write-PowerPassAttachment
 ### SYNOPSIS
 Writes an attachment into your locker.
@@ -455,7 +455,7 @@ using the default encoding provided by PowerPass `Unicode`.
 $license = Get-Content ".\LICENSE" -Raw
 Write-PowerPassAttachment -FileName "license.txt" -Text $license
 ```
-##### ***[Back to Top](#powerpass-cmdlet-reference-for-aes-edition)***
+##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-aes-edition)***
 # Write-PowerPassSecret
 ### SYNOPSIS
 Writes one or more secrets into your PowerPass locker.
@@ -534,7 +534,7 @@ $mySecret = [PSCustomObject]@{
 }
 $mySecret | Write-PowerPassSecret
 ```
-##### ***[Back to Top](#powerpass-cmdlet-reference-for-aes-edition)***
+##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-aes-edition)***
 # All PowerPass Topics
 Select one of the links below to browse to another topic.
 ## [AES Cmdlet Reference](https://chopinrlz.github.io/powerpass/aes-cmdlet-ref) | [Data Structures](https://chopinrlz.github.io/powerpass/data-structures) | [Deployment](https://chopinrlz.github.io/powerpass/deployment) | [Domain Credentials](https://chopinrlz.github.io/powerpass/domain-credentials) | [DP API Cmdlet Reference](https://chopinrlz.github.io/powerpass/dpapi-cmdlet-ref) | [Home](https://chopinrlz.github.io/powerpass) | [How It Works](https://chopinrlz.github.io/powerpass/readme-cont) | [OneDrive Backup](https://chopinrlz.github.io/powerpass/onedrivebackup) | [Prerequisites](https://chopinrlz.github.io/powerpass/prerequisites) | [Release Notes](https://chopinrlz.github.io/powerpass/release-notes) | [Usage](https://chopinrlz.github.io/powerpass/usage)
