@@ -59,7 +59,7 @@ This example also supports adding GZip compression to all the files in the curre
 # Add all the file in the current directory as attachments with the full path as the stored filename
 Get-ChildItem | Add-PowerPassAttachment -FullPath -GZip
 ```
-##### ***[Back to Top](#powerpass-cmdlet-reference-for-windows-powershell-dp-api--keepass-2-implementation)***
+##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-windows-powershell-data-protection-api-and-keepass-2-edition)***
 # Clear-PowerPassLocker
 ### SYNOPSIS
 Deletes all your locker secrets.
@@ -71,7 +71,7 @@ redeploying the module, you will no longer be able to access your locker and wil
 clean locker.
 ### PARAMETER Force
 WARNING: If you specify Force, your locker and salt will be removed WITHOUT confirmation.
-##### ***[Back to Top](#powerpass-cmdlet-reference-for-windows-powershell-dp-api--keepass-2-implementation)***
+##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-windows-powershell-data-protection-api-and-keepass-2-edition)***
 # Export-PowerPassAttachment
 ### SYNOPSIS
 Exports one or more attachments from your locker.
@@ -102,7 +102,7 @@ These attachments were loaded into our locker using `Add-PowerPassAttachment` wi
 # Save our attachments back to their original location
 Export-PowerPassAttachment -FileName "C:\Secrets\*" -OriginalPath
 ```
-##### ***[Back to Top](#powerpass-cmdlet-reference-for-windows-powershell-dp-api--keepass-2-implementation)***
+##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-windows-powershell-data-protection-api-and-keepass-2-edition)***
 # Export-PowerPassLocker
 ### SYNOPSIS
 Exports your PowerPass Locker to an encrypted backup file powerpass_locker.bin.
@@ -113,7 +113,7 @@ The path where the exported file will go. This is mandatory, and this path must 
 ### OUTPUTS
 This cmdlet does not output to the pipeline. It creates the file powerpass_locker.bin
 in the target Path. If the file already exists, you will be prompted to replace it.
-##### ***[Back to Top](#powerpass-cmdlet-reference-for-windows-powershell-dp-api--keepass-2-implementation)***
+##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-windows-powershell-data-protection-api-and-keepass-2-edition)***
 # Import-PowerPassLocker
 # SYNOPSIS
 Imports an encrypted PowerPass locker created from Export-PowerPassLocker.
@@ -123,14 +123,14 @@ You can import any locker, either from the AES edition or the DP API edition of 
 You will be prompted to enter the password to the locker.
 ### PARAMETER LockerFilePath
 The path to the locker file on disk. This is mandatory.
-##### ***[Back to Top](#powerpass-cmdlet-reference-for-windows-powershell-dp-api--keepass-2-implementation)***
+##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-windows-powershell-data-protection-api-and-keepass-2-edition)***
 # Get-PowerPassAttachments
 ### SYNOPSIS
 Exports all the attachments to a list so you can search for attachments and see what attachments are
 in your locker without exposing the file data.
 ### OUTPUTS
 Outputs each attachment from your locker including the FileName, Created date, and Modified date.
-##### ***[Back to Top](#powerpass-cmdlet-reference-for-windows-powershell-dp-api--keepass-2-implementation)***
+##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-windows-powershell-data-protection-api-and-keepass-2-edition)***
 # Get-PowerPassSecret
 ### SYNOPSIS
 Retrieves secrets from a KeePass 2 database opened with `Open-PowerPassDatabase`.
@@ -203,7 +203,7 @@ In this example, we demonstrate using the pipeline to get a secret with a single
 # Get a secret with one line
 $secret = "C:\Secrets\KeePassDb.kdbx" | Open-PowerPassDatabase -WindowsUserAccount | Get-PowerPassSecret -Match "Domain Service Account"
 ```
-##### ***[Back to Top](#powerpass-cmdlet-reference-for-windows-powershell-dp-api--keepass-2-implementation)***
+##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-windows-powershell-data-protection-api-and-keepass-2-edition)***
 # Get-PowerPass
 ### SYNOPSIS
 Gets all the information about this PowerPass deployment.
@@ -226,7 +226,7 @@ This cmdlet outputs a PSCustomObject with the following properties:
 14. Implementation     = The type of implementation either "DPAPI" or "AES", in this case "DPAPI"
 15. Version            = The version number of the PowerPass release you have installed
 ```
-##### ***[Back to Top](#powerpass-cmdlet-reference-for-windows-powershell-dp-api--keepass-2-implementation)***
+##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-windows-powershell-data-protection-api-and-keepass-2-edition)***
 # Import-PowerPassSecrets
 ### SYNOPSIS
 Imports secrets from a KeePass 2 database into your PowerPass Locker.
@@ -251,7 +251,7 @@ KeePass 2 database into your PowerPass Locker.
 $db = Open-PowerPassDatabase -Path ".\MyDatabase.kdbx" -KeyFile "C:\Secrets\MyKeyFile.kdbx"
 Import-PowerPassSecrets -Database $db
 ```
-##### ***[Back to Top](#powerpass-cmdlet-reference-for-windows-powershell-dp-api--keepass-2-implementation)***
+##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-windows-powershell-data-protection-api-and-keepass-2-edition)***
 # New-PowerPassRandomPassword
 ### SYNOPSIS
 Generates a random password from all available standard US 101-key keyboard characters.
@@ -259,7 +259,7 @@ Generates a random password from all available standard US 101-key keyboard char
 The length of the password to generate. Can be between 1 and 65536 characters long. Defaults to 24.
 ### OUTPUTS
 Outputs a random string of typable characters to the pipeline which can be used as a password.
-##### ***[Back to Top](#powerpass-cmdlet-reference-for-windows-powershell-dp-api--keepass-2-implementation)***
+##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-windows-powershell-data-protection-api-and-keepass-2-edition)***
 # Open-PowerPassDatabase
 ### SYNOPSIS
 Opens a KeePass 2 database file.
@@ -336,7 +336,7 @@ These databases can be opened using the `-WindowsUserAccount` parameter with `Op
 
 $db = Open-PowerPassDatabase -Path "C:\Secrets\MyKeePassDatabase.kdbx" -WindowsUserAccount
 ```
-##### ***[Back to Top](#powerpass-cmdlet-reference-for-windows-powershell-dp-api--keepass-2-implementation)***
+##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-windows-powershell-data-protection-api-and-keepass-2-edition)***
 # Open-PowerPassTestDatabase
 ### SYNOPSIS
 Opens the TestDatabase.kdbx database bundled with PowerPass for testing.
@@ -378,7 +378,7 @@ foreach( $entry in $rootGroup.Entries ) {
 ```
 ### NOTES
 This function will fail if the test database file is not found in the module folder.
-##### ***[Back to Top](#powerpass-cmdlet-reference-for-windows-powershell-dp-api--keepass-2-implementation)***
+##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-windows-powershell-data-protection-api-and-keepass-2-edition)***
 # Read-PowerPassAttachment
 ### SYNOPSIS
 Reads an attachment from your locker.
@@ -438,7 +438,7 @@ File data for raw attachments is stored as base64-encoded text in the `Data` pro
 # Get the readme file as a raw PSCustomObject
 Read-PowerPassAttachment -FileName "readme.txt" -Raw | Get-Member
 ```
-##### ***[Back to Top](#powerpass-cmdlet-reference-for-windows-powershell-dp-api--keepass-2-implementation)***
+##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-windows-powershell-data-protection-api-and-keepass-2-edition)***
 # Read-PowerPassSecret
 ### SYNOPSIS
 Reads secrets from your PowerPass locker.
@@ -527,7 +527,7 @@ If either property is blank, the operation may fail with an error.
 $svcAccount = Read-PowerPassSecret -Title "Domain Admin Login" -AsCredential
 Get-ADUser -Credential $svcAccount
 ```
-##### ***[Back to Top](#powerpass-cmdlet-reference-for-windows-powershell-dp-api--keepass-2-implementation)***
+##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-windows-powershell-data-protection-api-and-keepass-2-edition)***
 # Remove-PowerPassAttachment
 ### SYNOPSIS
 Removes an attachment from your locker.
@@ -536,7 +536,7 @@ The filename of the attachment to remove from your locker.
 ### NOTES
 The filename parameter can be passed from the pipeline. You can see what attachments are in your locker
 by running [Get-PowerPassAttachments](#get-powerpassattachments). You are not prompted to remove attachments.
-##### ***[Back to Top](#powerpass-cmdlet-reference-for-windows-powershell-dp-api--keepass-2-implementation)***
+##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-windows-powershell-data-protection-api-and-keepass-2-edition)***
 # Remove-PowerPassSecret
 ### SYNOPSIS
 Removes a secret from your locker.
@@ -564,7 +564,7 @@ As a routine precaution, key rotation is recommended as a best practice when dea
 encrypted data. When you rotate a key, PowerPass re-encrypts your PowerPass Locker with a new Locker
 salt. This ensures that even if a previous encryption was broken, a new attempt must be made if an
 attacker regains access to your encrypted Locker.
-##### ***[Back to Top](#powerpass-cmdlet-reference-for-windows-powershell-dp-api--keepass-2-implementation)***
+##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-windows-powershell-data-protection-api-and-keepass-2-edition)***
 # Write-PowerPassAttachment
 ### SYNOPSIS
 Writes an attachment into your locker.
@@ -666,7 +666,7 @@ using the default encoding provided by PowerPass `Unicode`.
 $license = Get-Content ".\LICENSE" -Raw
 Write-PowerPassAttachment -FileName "license.txt" -Text $license
 ```
-##### ***[Back to Top](#powerpass-cmdlet-reference-for-windows-powershell-dp-api--keepass-2-implementation)***
+##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-windows-powershell-data-protection-api-and-keepass-2-edition)***
 # Write-PowerPassSecret
 ### SYNOPSIS
 Writes a secret into your PowerPass locker.
@@ -746,7 +746,7 @@ $mySecret = [PSCustomObject]@{
 }
 $mySecret | Write-PowerPassSecret
 ```
-##### ***[Back to Top](#powerpass-cmdlet-reference-for-windows-powershell-dp-api--keepass-2-implementation)***
+##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-windows-powershell-data-protection-api-and-keepass-2-edition)***
 # All PowerPass Topics
 Select one of the links below to browse to another topic.
 ## [AES Cmdlet Reference](https://chopinrlz.github.io/powerpass/aes-cmdlet-ref) | [Data Structures](https://chopinrlz.github.io/powerpass/data-structures) | [Deployment](https://chopinrlz.github.io/powerpass/deployment) | [Domain Credentials](https://chopinrlz.github.io/powerpass/domain-credentials) | [DP API Cmdlet Reference](https://chopinrlz.github.io/powerpass/dpapi-cmdlet-ref) | [Home](https://chopinrlz.github.io/powerpass) | [How It Works](https://chopinrlz.github.io/powerpass/readme-cont) | [OneDrive Backup](https://chopinrlz.github.io/powerpass/onedrivebackup) | [Prerequisites](https://chopinrlz.github.io/powerpass/prerequisites) | [Release Notes](https://chopinrlz.github.io/powerpass/release-notes) | [Usage](https://chopinrlz.github.io/powerpass/usage)
