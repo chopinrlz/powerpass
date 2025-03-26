@@ -1,3 +1,6 @@
+# Ignore the build directory
+/Build/*
+
 # Ignore binaries
 /bin/*
 
