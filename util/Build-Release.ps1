@@ -9,13 +9,7 @@
 <#
     .SYNOPSIS
     Builds a release of PowerPass or cleans up all release files.
-    .PARAMETER Clean
-    If specified, will clean up the tree by removing release files.
 #>
-param(
-    [switch]
-    $Clean
-)
 
 # Verify version of PowerShell
 Write-Progress -Activity "Building KeePass Release" -Status "Checking PowerShell version" -PercentComplete 10
@@ -32,20 +26,19 @@ Set-Location -Path "$PSScriptRoot\.."
 Write-Progress -Activity "Building KeePass Release" -Status "Compiling the KeePass assembly" -PercentComplete 20
 $keePassLib = Join-Path -Path (Get-Location) -ChildPath "KeePassLib.dll"
 if( Test-Path $keePassLib ) { Remove-Item -Path $keePassLib -Force }
-if( -not $Clean ) {
-    $cscDir = [System.Runtime.InteropServices.RuntimeEnvironment]::GetRuntimeDirectory()
-    $cscPath = Join-Path -Path $cscDir -ChildPath "csc.exe"
-    if( -not (Test-Path $cscPath) ) {
-        throw "No C# compiler could be found in the current runtime directory"
-    }
-    $compilerArgs = @()
-    $compilerArgs += '/target:library'
-    $compilerArgs += '/out:KeePassLib.dll'
-    Get-ChildItem -Path '.\KeePassLib' -Recurse -Filter "*.cs" | ForEach-Object {
-        $compilerArgs += ($_.FullName)
-    }
-    & $cscPath $compilerArgs | Out-Null
+$cscDir = [System.Runtime.InteropServices.RuntimeEnvironment]::GetRuntimeDirectory()
+$cscPath = Join-Path -Path $cscDir -ChildPath "csc.exe"
+if( -not (Test-Path $cscPath) ) {
+    throw "No C# compiler could be found in the current runtime directory"
 }
+$compilerArgs = @(
+    '/target:library',
+    '/out:KeePassLib.dll'
+)
+Get-ChildItem -Path '.\KeePassLib' -Recurse -Filter "*.cs" | ForEach-Object {
+    $compilerArgs += ($_.FullName)
+}
+& $cscPath $compilerArgs | Out-Null
 
 # Define the main directory with the resources
 Write-Progress -Activity "Building KeePass Release" -Status "Declaring build resources" -PercentComplete 30
@@ -73,9 +66,7 @@ foreach( $file in $powerPassFiles ) {
 # Declare each root file for the release and verify presence
 $rootFiles = @()
 $rootFiles += (Join-Path -Path (Get-Location) -ChildPath "Deploy-PowerPass.ps1")
-if( -not $Clean ) {
-    $rootFiles += (Join-Path -Path (Get-Location) -ChildPath "KeePassLib.dll")
-}
+$rootFiles += (Join-Path -Path (Get-Location) -ChildPath "KeePassLib.dll")
 $rootFiles += (Join-Path -Path (Get-Location) -ChildPath "LICENSE")
 $rootFiles += (Join-Path -Path (Get-Location) -ChildPath "README.md")
 $rootFiles += (Join-Path -Path (Get-Location) -ChildPath "TestDatabase.kdbx")
@@ -90,7 +81,7 @@ Write-Progress -Activity "Building KeePass Release" -Status "Interrogating the m
 $powerPassAesManifest = Import-PowerShellDataFile $powerPassAesPsd1
 $powerPassDpApiManifest = Import-PowerShellDataFile $powerPassDpApiPsd1
 if( $powerPassDpApiManifest.ModuleVersion -ne $powerPassAesManifest.ModuleVersion ) {
-    throw "Module versions are not equivalent"
+    throw "Module versions are not identical"
 }
 
 # Initialize the release files
@@ -107,12 +98,6 @@ Write-Progress -Activity "Building KeePass Release" -Status "Initializing the bu
 $releaseDir = Join-Path -Path (Get-Location) -ChildPath "release"
 $releaseDirSubDir = Join-Path -Path $releaseDir -ChildPath "module"
 if( Test-path $releaseDir ) { Remove-Item -Path $releaseDir -Recurse -Force }
-if( $Clean ) {
-    $hashFile = Join-Path -Path (Get-Location) -ChildPath "hash.json"
-    if( Test-Path $hashFile ) { Remove-Item -Path $hashFile -Force }
-    Set-Location -Path $callerLocation
-    exit
-}
 
 # Build the release directory
 Write-Progress -Activity "Building KeePass Release" -Status "Copying release assets" -PercentComplete 70
