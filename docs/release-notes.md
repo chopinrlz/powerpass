@@ -1,4 +1,4 @@
-**NOTE: This is a BREAKING CHANGE from v1.x. If you are on v1.x please EXPORT your Locker before deploying v2.x.** If your forget to do this, simply go back to v1.6.2, export your Locker, then deploy v2.3.1. PowerPass will not overwrite your Locker or your Locker keys if they already exist.
+**NOTE: This is a BREAKING CHANGE from v1.x. If you are on v1.x please EXPORT your Locker before deploying v2.x.** If you forget to do this, simply go back to v1.6.2, export your Locker, then deploy v2.3.1. PowerPass will not overwrite your Locker or your Locker keys if they already exist.
 # Updates
 This release of PowerPass updates the KeePassLib version to 2.59. The KeePassLib project files and signing key have also been removed from this repo since they are not used when compiling KeePassLib for PowerPass DP API edition.
 # Deployment
