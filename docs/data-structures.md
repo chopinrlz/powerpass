@@ -1,5 +1,5 @@
 # Data Structures
-#### _Revised: March 3, 2025_
+#### _Revised: July 31, 2025_
 PowerPass uses the `PSCustomObject` type to define several custom data structures suitable for storing and recalling your PowerShell Locker, its Secrets and Attachments, as well as KeePass 2 databases and their connection information.
 ## Lockers
 Both the AES edition and the Data Protection API edition use the same data structures for common objects including:

@@ -1,5 +1,5 @@
 # PowerPass Cmdlet Reference for the AES Edition
-#### _Revised: March 3, 2025_
+#### _Revised: July 31, 2025_
 The AES edition of PowerPass works on Windows PowerShell and PowerShell 7 on Linux, MacOS, and Windows. These are the cmdlets:
 1. [Add-PowerPassAttachment](#add-powerpassattachment): adds one or more attachments (files) into your Locker
 2. [Clear-PowerPassLocker](#clear-powerpasslocker): erases all secrets and attachments from your Locker

@@ -1,5 +1,5 @@
 # OneDrive Backup
-#### _Revised: May 5, 2024_
+#### _Revised: July 31, 2025_
 ## Overview
 OneDrive Backup is a feature of OneDrive which automatically maps your local user profile folders to your OneDrive cloud share.
 When you enable OneDrive Backup, PowerShell modules installed for your user profile are moved to a new location on disk and the `PSModulePath` environment variable is updated by OneDrive to reflect the change.

@@ -1,5 +1,5 @@
 # Usage
-#### _Revised: March 3, 2025_
+#### _Revised: July 31, 2025_
 Service accounts and other non-interactive logins can access credentials you store for them.
 And of course you can always use PowerPass with your own login, too.
 Login to the system with your account, or the service account you use for automation, deploy PowerPass, and use `Write-PowerPassSecret` to store a credential for that account.

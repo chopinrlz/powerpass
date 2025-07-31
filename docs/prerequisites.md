@@ -1,5 +1,5 @@
 # Prerequisites
-#### _Revised: March 3, 2025_
+#### _Revised: July 31, 2025_
 ## AES Edition
 If you deploy the AES edition of PowerPass on Windows PowerShell, or PowerShell 7, there are no prerequisites.
 PowerPass AES will work natively with Windows PowerShell or PowerShell 7.

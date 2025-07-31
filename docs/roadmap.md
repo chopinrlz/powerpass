@@ -1,5 +1,5 @@
 # Roadmap
-#### _Revised: March 3, 2025_
+#### _Revised: July 31, 2025_
 Here is the roadmap of upcoming features.
 
 ## Web Browser PowerPass
