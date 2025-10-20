@@ -5,10 +5,11 @@
     You may copy, modify or distribute this software under the terms of the GNU Public License 2.0.
 #>
 
-# Setup the constants for this module
+# Setup basic variables for this module
 $PowerPassEdition = "powerpassv2"
 $LockerFileName = ".powerpass_locker"
 $LockerKeyFileName = ".locker_key"
+$CustomSettingsFileName = ".powerpass_settings"
 
 # Determine where application data should be stored
 $AppDataPath  = if( $IsLinux ) {
@@ -36,6 +37,20 @@ $PowerPass = [PSCustomObject]@{
     LockerKeyFilePath   = Join-Path -Path $AppDataPath -ChildPath "$PowerPassEdition/$LockerKeyFileName"
     Implementation      = "AES"
     Version             = (Import-PowerShellDataFile -Path "$PSScriptRoot/PowerPass.psd1").ModuleVersion
+    CustomSettingsFile  = Join-Path -Path $UserDataPath -ChildPath $CustomSettingsFileName
+}
+
+# Test for custom settings
+if( Test-Path ($PowerPass.CustomSettingsFile) ) {
+    $customSettings = ConvertFrom-Json (Get-Content ($PowerPass.CustomSettingsFile) -Raw)
+    if( $customSettings ) {
+        $script:LockerFileName = ($customSettings.LockerFileName)
+        $script:LockerKeyFileName = ($customSettings.LockerKeyFileName)
+        $script:PowerPass.LockerFolderPath = ($customSettings.LockerFolderPath)
+        $script:PowerPass.LockerFilePath = Join-Path -Path ($customSettings.LockerFolderPath) -ChildPath ($customSettings.LockerFileName)
+        $script:PowerPass.LockerKeyFolderPath = ($customSettings.LockerKeyFolderPath)
+        $script:PowerPass.LockerKeyFilePath = Join-Path -Path ($customSettings.LockerKeyFolderPath) -ChildPath ($customSettings.LockerKeyFileName)
+    }
 }
 
 # Compile and load the AesCrypto implementation
@@ -557,6 +572,91 @@ function Get-PowerPass {
             Implementation      : The implementation you are using, either AES or DPAPI
     #>
     $PowerPass
+}
+
+# ------------------------------------------------------------------------------------------------------------- #
+# FUNCTION: Set-PowerPass
+# ------------------------------------------------------------------------------------------------------------- #
+
+function Set-PowerPass {
+    <#
+        .SYNOPSIS
+        Sets custom parameters for your PowerPass setup.
+        .PARAMETER NewLockerFolderPath
+        Set an alternate path for your Locker file.
+        .PARAMETER NewLockerFileName
+        Set an alternate file name for your Locker.
+        .PARAMETER NewLockerKeyFolderPath
+        Set an alternate path for your Locker's key file.
+        .PARAMETER NewLockerKeyFileName
+        Set an alternate file name for your Locker's key.
+        .PARAMETER Reset
+        Resets all settings to their default values. Cannot be combined with other parameters.
+    #>
+    param(
+        [Parameter(ParameterSetName="New")]
+        [string]
+        $NewLockerFolderPath,
+        [Parameter(ParameterSetName="New")]
+        [string]
+        $NewLockerFileName,
+        [Parameter(ParameterSetName="New")]
+        [string]
+        $NewLockerKeyFolderPath,
+        [Parameter(ParameterSetName="New")]
+        [string]
+        $NewLockerKeyFileName,
+        [Parameter(ParameterSetName="Reset")]
+        [switch]
+        $Reset
+    )
+    if( $Reset ) {
+        if( Test-Path ($PowerPass.CustomSettingsFile) ) {
+            Remove-Item -Path ($PowerPass.CustomSettingsFile)
+            if( Test-Path ($PowerPass.CustomSettingsFile) ) {
+                Write-Warning "Could not remove custom settings file $($PowerPass.CustomSettingsFile)"
+            }
+        }
+        $script:LockerFileName = ".powerpass_locker"
+        $script:LockerKeyFileName = ".locker_key"
+        $script:PowerPass.LockerFolderPath = $UserDataPath
+        $script:PowerPass.LockerFilePath = Join-Path -Path $UserDataPath -ChildPath $LockerFileName
+        $script:PowerPass.LockerKeyFolderPath = Join-Path -Path $AppDataPath -ChildPath $PowerPassEdition
+        $script:PowerPass.LockerKeyFilePath = Join-Path -Path $AppDataPath -ChildPath "$PowerPassEdition/$LockerKeyFileName"
+    } else {
+        $customSettings = [PSCustomObject]@{
+            LockerFolderPath = $PowerPass.LockerFolderPath
+            LockerFileName = $LockerFileName
+            LockerKeyFolderPath = $PowerPass.LockerKeyFolderPath
+            LockerKeyFileName = $LockerKeyFileName
+        }
+        if( Test-Path ($PowerPass.CustomSettingsFile) ) {
+            $customSettings = ConvertFrom-Json (Get-Content ($PowerPass.CustomSettingsFile) -Raw)
+        } else {
+            ConvertTo-Json -InputObject $customSettings | Out-File -FilePath ($PowerPass.CustomSettingsFile)
+        }
+        if( -not (Test-Path ($PowerPass.CustomSettingsFile)) ) {
+            throw "Cannot write settings file $($PowerPass.CustomSettingsFile)"
+        }
+        if( $NewLockerFolderPath ) {
+            $customSettings.LockerFolderPath = $NewLockerFolderPath
+        }
+        if( $NewLockerFileName ) {
+            $customSettings.LockerFileName = $NewLockerFileName
+        }
+        if( $NewLockerKeyFolderPath ) {
+            $customSettings.LockerKeyFolderPath = $NewLockerKeyFolderPath
+        }
+        if( $NewLockerKeyFileName ) {
+            $customSettings.LockerKeyFileName = $NewLockerKeyFileName
+        }
+        $script:PowerPass.LockerFolderPath = ($customSettings.LockerFolderPath)
+        $script:PowerPass.LockerFilePath = [System.IO.Path]::Combine( ($customSettings.LockerFolderPath), ($customSettings.LockerFileName) )
+        $script:PowerPass.LockerKeyFolderPath = ($customSettings.LockerKeyFolderPath)
+        $script:PowerPass.LockerKeyFilePath = [System.IO.Path]::Combine( ($customSettings.LockerKeyFolderPath), ($customSettings.LockerKeyFileName) )
+        Remove-Item -Path ($PowerPass.CustomSettingsFile)
+        ConvertTo-Json -InputObject $customSettings | Out-File -FilePath ($PowerPass.CustomSettingsFile)
+    }
 }
 
 # ------------------------------------------------------------------------------------------------------------- #
