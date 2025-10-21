@@ -69,6 +69,17 @@ namespace PowerPass {
         public int DecryptionBufferSize { get; set; }
 
         /// <summary>
+        /// Erases the contents of the specified buffer replacing it with random numbers.
+        /// </summary>
+        /// <param name="buffer">A reference to the memory buffer to scramble with random numbers.</param>
+        public static void EraseBuffer( byte[] buffer ) {
+            if( buffer == null ) return;
+            if( buffer.Length <= 0 ) return;
+            var rng = RandomNumberGenerator.Create();
+            rng.GetBytes( buffer );
+        }
+
+        /// <summary>
         /// Creates a new 256-bit encryption key using a cryptographic random number generator.
         /// </summary>
         public void GenerateKey() {
@@ -297,12 +308,11 @@ namespace PowerPass {
         }
 
         /// <summary>
-        /// Zeroes out the key bytes from memory.
+        /// Zeroes out the key bytes from memory by filling it with random numbers.
         /// </summary>
         private void ZeroKeyBytes() {
-            for( int i = 0; i < _key.Length; i++ ) {
-                _key[i] = 0x00;
-            }
+            var rng = RandomNumberGenerator.Create();
+            rng.GetBytes( _key );
         }
     }
 }

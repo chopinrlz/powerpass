@@ -10,10 +10,10 @@ function New-PowerPassSecret {
     #>
     $nps = [PSCustomObject]@{
         Title = "Default"
-        UserName = "PowerPass"
-        Password = "PowerPass"
-        URL = "https://github.com/chopinrlz/powerpass"
-        Notes = "This is the default secret for the PowerPass locker."
+        UserName = "PowerPass" | Lock-PowerPassString
+        Password = "PowerPass" | Lock-PowerPassString
+        URL = "https://github.com/chopinrlz/powerpass" | Lock-PowerPassString
+        Notes = "This is the default secret for the PowerPass locker." | Lock-PowerPassString
         Expires = [DateTime]::MaxValue
         Created = (Get-Date).ToUniversalTime()
         Modified = (Get-Date).ToUniversalTime()
@@ -58,6 +58,8 @@ function New-PowerPassLocker {
         Modified = (Get-Date).ToUniversalTime()
         Secrets = @()
         Attachments = @()
+        # Added a Revision flag in PowerPass v3 for OTP support
+        Revision = 3
     }
     if( $Populated ) {
         $locker.Attachments += (New-PowerPassAttachment)
@@ -87,7 +89,7 @@ function Set-PowerPassSecureString {
         # Do not remove
     } process {
         if( $Secret.Password ) {
-            $Secret.Password = ConvertTo-SecureString -String ($Secret.Password) -AsPlainText -Force
+            $Secret.Password = ConvertTo-SecureString -String ($Secret.Password | Unlock-PowerPassString) -AsPlainText -Force
         }
         Write-Output $Secret
     } end {
@@ -183,7 +185,7 @@ function Get-PowerPassCredential {
     begin {
         # Do not remove
     } process {
-        $x = @(($Secret.UserName), (ConvertTo-SecureString -String ($Secret.Password) -AsPlainText -Force))
+        $x = @(($Secret.UserName), (ConvertTo-SecureString -String ($Secret.Password | Unlock-PowerPassString) -AsPlainText -Force))
         $c = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $x
         Write-Output $c
     } end {
@@ -384,7 +386,7 @@ function Read-PowerPassSecret {
         if( $Match ) {
             $secrets = $locker.Secrets | Where-Object { $_.Title -like $Match }
             if( $PlainTextPasswords ) {
-                Write-Output $secrets
+                $secrets | Unlock-PowerPassSecret
             } else {
                 if( $AsCredential ) {
                     $secrets | Get-PowerPassCredential
@@ -396,7 +398,7 @@ function Read-PowerPassSecret {
             foreach( $secret in $locker.Secrets ) {
                 if( $secret.Title -eq $Title ) {
                     if( $PlainTextPasswords ) {
-                        Write-Output $secret
+                        $secret | Unlock-PowerPassSecret
                     } else {
                         if( $AsCredential ) {
                             $secret | Get-PowerPassCredential
@@ -408,7 +410,7 @@ function Read-PowerPassSecret {
             }
         } else {
             if( $PlainTextPasswords ) {
-                Write-Output $locker.Secrets
+                $locker.Secrets | Unlock-PowerPassSecret
             } else {
                 if( $AsCredential ) {
                     $locker.Secrets | Get-PowerPassCredential
@@ -579,4 +581,139 @@ function Get-PowerPassEphemeralKey {
     $compKeyBytes = ConvertTo-Utf8ByteArray -InputString $compKey
     $sha = [System.Security.Cryptography.Sha256]::Create()
     Write-Output $sha.ComputeHash( $compKeyBytes )
+}
+
+function Lock-PowerPassString {
+    <#
+        .SYNOPSIS
+        Encrypts a string using the ephemeral key as a one-time pad.
+        .PARAMETER InputObject
+        The input string object to encrypt.
+    #>
+    param(
+        [Parameter(Mandatory,ValueFromPipeline,Position = 0)]
+        [string]
+        $InputObject
+    )
+    if( -not $InputObject ) {
+        throw "No input string passed to Set-PowerPassOneTimePad"
+    }
+    $ek = Get-PowerPassEphemeralKey
+    $eki = 0
+    $ca = [System.Text.Encoding]::UTF8.GetBytes( $InputObject )
+    $ea = [System.Array]::CreateInstance( [System.Byte], $ca.Length )
+    for( $cai = 0; $cai -lt $ca.Length; $cai++ ) {
+        [UInt16]$cau = ($ca[$cai])
+        [UInt16]$eku = ($ek[$eki])
+        [byte]$cae = ($cau + $eku) % 256
+        $ea[$cai] = $cae
+        $eki++
+        if( $eki -ge $ek.Length ) {
+            $eki = 0
+        }
+    }
+    [PowerPass.AesCrypto]::EraseBuffer( $ek )
+    [PowerPass.AesCrypto]::EraseBuffer( $ca )
+    Write-Output (ConvertTo-Base64String -InputObject $ea)
+}
+
+function Unlock-PowerPassString {
+    <#
+        .SYNOPSIS
+        Decrypts a string encrypted with the ephemeral key as a one-time pad.
+        .PARAMETER InputObject
+        The encrypted string.
+    #>
+    param(
+        [Parameter(Mandatory,ValueFromPipeline,Position = 0)]
+        [string]
+        $InputObject
+    )
+    if( -not $InputObject ) {
+        throw "No input string passed to Get-PowerPassOneTimePad"
+    }
+    $ek = Get-PowerPassEphemeralKey
+    $eki = 0
+    $ea = ConvertFrom-Base64String -InputString $InputObject
+    $ca = [System.Array]::CreateInstance( [System.Byte], $ea.Length )
+    for( $eai = 0; $eai -lt $ea.Length; $eai++ ) {
+        [Int16]$eau = $ea[$eai]
+        [Int16]$eku = $ek[$eki]
+        [Int16]$cas = $eau - $eku
+        [byte]$cau = if( $cas -lt 0 ) { $cas + 256 } else { $cas }
+        $ca[$eai] = $cau
+        $ea[$eai] = 0
+        $eki++
+        if( $eki -ge $ek.Length ) {
+            $eki = 0
+        }
+    }
+    [PowerPass.AesCrypto]::EraseBuffer( $ek )
+    Write-Output ([System.Text.Encoding]::UTF8.GetString($ca))
+}
+
+function Unlock-PowerPassSecret {
+    <#
+        .SYNOPSIS
+        Unlocks the UserName, Password, URL and Notes fields for a Locker secret.
+        .PARAMETER Secret
+        The secret to unlock.
+    #>
+    param(
+        [Parameter(Mandatory,ValueFromPipeline,Position = 0)]
+        [PSCustomObject]
+        $Secret
+    )
+    begin {
+        # Blocks for pipelining
+    } process {
+        if( $Secret.UserName ) {
+            $Secret.UserName = $Secret.UserName | Unlock-PowerPassString
+        }
+        if( $Secret.Password ) {
+            $Secret.Password = $Secret.Password | Unlock-PowerPassString
+        }
+        if( $Secret.URL ) {
+            $Secret.URL = $Secret.URL | Unlock-PowerPassString
+        }
+        if( $Secret.Notes ) {
+            $Secret.Notes = $Secret.Notes | Unlock-PowerPassString
+        }
+        Write-Output $Secret
+    } end {
+        # Blocks for pipelining
+    }
+}
+
+function Lock-PowerPassSecret {
+    <#
+        .SYNOPSIS
+        Locks the UserName, Password, URL and Notes field of a Locker secret.
+        .PARAMETER Secret
+        The secret to lock.
+    #>
+    param(
+        [Parameter(Mandatory,ValueFromPipeline,Position = 0)]
+        [PSCustomObject]
+        $Secret
+    )
+    begin {
+        # Blocks for pipelining
+    } process {
+        if( $Secret.UserName ) {
+            $Secret.UserName = $Secret.UserName | Lock-PowerPassString
+        }
+        if( $Secret.Password ) {
+            $Secret.Password = $Secret.Password | Lock-PowerPassString
+        }
+        if( $Secret.URL ) {
+            $Secret.URL = $Secret.URL | Lock-PowerPassString
+        }
+        if( $Secret.Notes ) {
+            $Secret.Notes = $Secret.Notes | Lock-PowerPassString
+        }
+        Write-Output $Secret
+    } end {
+        # Blocks for pipelining
+    }
 }
