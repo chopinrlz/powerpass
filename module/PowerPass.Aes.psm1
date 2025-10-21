@@ -142,47 +142,35 @@ function Get-PowerPassLocker {
             $aes = New-Object -TypeName "PowerPass.AesCrypto"
             $aes.ReadKeyFromDisk( $pathToLockerKey, [ref] (Get-PowerPassEphemeralKey) )
             $lockerBytes = $aes.Decrypt( $pathToLocker )
+            if( -not $lockerBytes ) {
+                throw "Decryption failed for [$pathToLocker]"
+            }
             $lockerJson = [System.Text.Encoding]::UTF8.GetString( $lockerBytes )
-            $Locker.Value = ConvertFrom-Json $lockerJson
-            if( $Locker.Value.Revision ) {
-                # Rev 3 or higher, strings are "locked"
-                if( $Unlocked ) {
-                    $newLocker = New-PowerPassLocker
-                    $newLocker.Created = $Locker.Value.Created
-                    if( $Locker.Value.Modified ) {
-                        $newLocker.Modified = $Locker.Value.Modified
-                    }
-                    if( $Locker.Value.Secrets ) {
-                        foreach( $secret in $Locker.Value.Secrets ) {
-                            $newLocker.Secrets += (Unlock-PowerPassSecret -Secret $secret)
-                        }
-                    }
-                    if( $Locker.Value.Attachments ) {
-                        $newLocker.Attachments = $Locker.Value.Attachments
-                    }
-                    $Locker.Value = $newLocker
-                } else {
-                    # No action needed
-                }
-            } else {
+            $openLocker = ConvertFrom-Json $lockerJson
+            if( -not $openLocker ) {
+                throw "Invalid data format for [$pathToLocker]"
+            }
+            if( -not $openLocker.Revision ) {
+                Write-Warning "Your Locker has not been upgraded"
+            }
+            if( $Unlocked ) {
                 $newLocker = New-PowerPassLocker
-                $newLocker.Created = $Locker.Value.Created
-                if( $Locker.Value.Modified ) {
-                    $newLocker.Modified = $Locker.Value.Modified
+                $newLocker.Created = $openLocker.Created
+                # Old lockers do not have a Modified flag
+                if( $openLocker.Modified ) {
+                    $newLocker.Modified = $openLocker.Modified
                 }
-                if( $Locker.Value.Secrets ) {
-                    foreach( $secret in $Locker.Value.Secrets ) {
-                        if( $Unlocked ) {
-                            $newLocker.Secrets += $secret
-                        } else {
-                            $newLocker.Secrets += (Lock-PowerPassSecret -Secret $secret)
-                        }
+                if( $openLocker.Secrets ) {
+                    foreach( $secret in $openLocker.Secrets ) {
+                        Unlock-PowerPassSecret $secret
                     }
                 }
-                if( $Locker.Value.Attachments ) {
-                    $newLocker.Attachments = $Locker.Value.Attachments
+                if( $openLocker.Attachments ) {
+                    $newLocker.Attachments = $openLocker.Attachments
                 }
                 $Locker.Value = $newLocker
+            } else {
+                $Locker.Value = $openLocker
             }
             $aes.Dispose()
             $aes = $null
@@ -253,24 +241,25 @@ function Write-PowerPassSecret {
     } process {
         $existingSecret = $locker.Secrets | Where-Object { $_.Title -eq $Title }
         if( $existingSecret ) {
+            Unlock-PowerPassSecret $existingSecret
             if( $UserName ) {
-                $existingSecret.UserName = $UserName | Lock-PowerPassString
+                $existingSecret.UserName = $UserName
                 $changed = $true
             }
             if( $Password ) {
-                $existingSecret.Password = $Password | Lock-PowerPassString
+                $existingSecret.Password = $Password
                 $changed = $true
             }
             if( $MaskPassword ) {
-                $existingSecret.Password = Get-PowerPassMaskedPassword -Prompt "Enter the Password for the secret" | Lock-PowerPassString
+                $existingSecret.Password = Get-PowerPassMaskedPassword -Prompt "Enter the Password for the secret"
                 $changed = $true
             }
             if( $URL ) {
-                $existingSecret.URL = $URL | Lock-PowerPassString
+                $existingSecret.URL = $URL
                 $changed = $true
             }
             if( $Notes ) {
-                $existingSecret.Notes = $Notes | Lock-PowerPassString
+                $existingSecret.Notes = $Notes
                 $changed = $true
             }
             if( $Expires -ne ($existing.Expires) ) {
@@ -279,20 +268,22 @@ function Write-PowerPassSecret {
             }
             if( $changed ) {
                 $existingSecret.Modified = (Get-Date).ToUniversalTime()
+                Lock-PowerPassSecret $existingSecret
             }
         } else {
             $changed = $true
             $newSecret = New-PowerPassSecret
             $newSecret.Title = $Title
-            $newSecret.UserName = if( $UserName ) { $UserName | Lock-PowerPassString } else { "" }
-            $newSecret.Password = if( $Password ) { $Password | Lock-PowerPassString } else { "" }
+            $newSecret.UserName = $UserName
+            $newSecret.Password = $Password
             if( $MaskPassword ) {
-                $newSecret.Password = Get-PowerPassMaskedPassword -Prompt "Enter the Password for the secret" | Lock-PowerPassString
+                $newSecret.Password = Get-PowerPassMaskedPassword -Prompt "Enter the Password for the secret"
                 $changed = $true
             }
-            $newSecret.URL = if( $URL ) { $URL | Lock-PowerPassString } else { "" }
-            $newSecret.Notes = if( $Notes ) { $Notes | Lock-PowerPassString } else { "" }
+            $newSecret.URL = $URL
+            $newSecret.Notes = $Notes
             $newSecret.Expires = $Expires
+            Lock-PowerPassSecret $newSecret
             $locker.Secrets += $newSecret
         }
     } end {
@@ -495,7 +486,7 @@ function Import-PowerPassLocker {
         throw "$LockerFile does not exist"
     }
     if( -not $data ) {
-        throw "Decryption failed"
+        throw "Decryption failed for [$LockerFile]"
     }
 
     # Check for existing locker
@@ -520,15 +511,17 @@ function Import-PowerPassLocker {
         foreach( $secret in $from.Secrets ) {
             $existing = $to.Secrets | Where-Object { $_.Title -eq ($secret.Title) }
             if( $existing ) {
-                $existing.UserName = if( $secret.UserName ) { $secret.UserName | Lock-PowerPassString } else { "" }
-                $existing.Password = if( $secret.Password ) { $secret.Password | Lock-PowerPassString } else { "" }
-                $existing.URL = if( $secret.URL ) { $secret.URL | Lock-PowerPassString } else { "" }
-                $existing.Notes = if( $secret.Notes ) { $secret.Notes | Lock-PowerPassString } else { "" }
+                $existing.UserName = $secret.UserName
+                $existing.Password = $secret.Password
+                $existing.URL = $secret.URL
+                $existing.Notes = $secret.Notes
                 $existing.Expires = $secret.Expires
                 $existing.Modified = (Get-Date).ToUniversalTime()
                 $modified = $true
+                Lock-PowerPassSecret $existing
             } else {
-                $to.Secrets += ($secret | Lock-PowerPassSecret)
+                Lock-PowerPassSecret $secret
+                $to.Secrets += $secret
                 $modified = $true
             }
         }

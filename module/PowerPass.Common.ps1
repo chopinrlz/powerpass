@@ -10,16 +10,17 @@ function New-PowerPassSecret {
     #>
     $nps = [PSCustomObject]@{
         Title = "Default"
-        UserName = "PowerPass" | Lock-PowerPassString
-        Password = "PowerPass" | Lock-PowerPassString
-        URL = "https://github.com/chopinrlz/powerpass" | Lock-PowerPassString
-        Notes = "This is the default secret for the PowerPass locker." | Lock-PowerPassString
+        UserName = "PowerPass"
+        Password = "PowerPass"
+        URL = "https://github.com/chopinrlz/powerpass"
+        Notes = "This is the default secret for the PowerPass locker."
         Expires = [DateTime]::MaxValue
         Created = (Get-Date).ToUniversalTime()
         Modified = (Get-Date).ToUniversalTime()
         # Marked For Deletion: flag used by Remove-PowerPassSecret
         Mfd = $false
     }
+    Lock-PowerPassSecret $nps
     Write-Output $nps
 }
 
@@ -82,6 +83,7 @@ function Set-PowerPassSecureString {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory=$true,ValueFromPipeline,Position=0)]
+        [PSCustomObject]
         $Secret
     )
     # Process blocks are required for pipeline to correctly process reads on multiple items
@@ -89,7 +91,7 @@ function Set-PowerPassSecureString {
         # Do not remove
     } process {
         if( $Secret.Password ) {
-            $Secret.Password = ConvertTo-SecureString -String ($Secret.Password | Unlock-PowerPassString) -AsPlainText -Force
+            $Secret.Password = ConvertTo-SecureString -String ($Secret.Password) -AsPlainText -Force
         }
         Write-Output $Secret
     } end {
@@ -185,7 +187,7 @@ function Get-PowerPassCredential {
     begin {
         # Do not remove
     } process {
-        $x = @(($Secret.UserName), (ConvertTo-SecureString -String ($Secret.Password | Unlock-PowerPassString) -AsPlainText -Force))
+        $x = @(($Secret.UserName), (ConvertTo-SecureString -String ($Secret.Password) -AsPlainText -Force))
         $c = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $x
         Write-Output $c
     } end {
@@ -383,39 +385,47 @@ function Read-PowerPassSecret {
         throw "Could not create or fetch your locker"
     }
     if( $locker.Secrets ) {
-        if( $Match ) {
-            $secrets = $locker.Secrets | Where-Object { $_.Title -like $Match }
-            if( $PlainTextPasswords ) {
-                $secrets | Unlock-PowerPassSecret
-            } else {
-                if( $AsCredential ) {
-                    $secrets | Get-PowerPassCredential
-                } else {
-                    $secrets | Set-PowerPassSecureString
-                }
-            }
-        } elseif( $Title ) {
-            foreach( $secret in $locker.Secrets ) {
-                if( $secret.Title -eq $Title ) {
+        foreach( $s in $locker.Secrets ) {
+            if( $Match ) {
+                if( $s.Title -like $Match ) {
+                    Unlock-PowerPassSecret $s
                     if( $PlainTextPasswords ) {
-                        $secret | Unlock-PowerPassSecret
+                        Write-Output $s
                     } else {
                         if( $AsCredential ) {
-                            $secret | Get-PowerPassCredential
+                            Get-PowerPassCredential $s
                         } else {
-                            $secret | Set-PowerPassSecureString
+                            Set-PowerPassSecureString $s
                         }
                     }
-                }
-            }
-        } else {
-            if( $PlainTextPasswords ) {
-                $locker.Secrets | Unlock-PowerPassSecret
-            } else {
-                if( $AsCredential ) {
-                    $locker.Secrets | Get-PowerPassCredential
                 } else {
-                    $locker.Secrets | Set-PowerPassSecureString
+                    Write-Output $null
+                }
+            } elseif( $Title ) {
+                if( $s.Title -eq $Title ) {
+                    Unlock-PowerPassSecret $s
+                    if( $PlainTextPasswords ) {
+                        Write-Output $s
+                    } else {
+                        if( $AsCredential ) {
+                            Get-PowerPassCredential $s
+                        } else {
+                            Set-PowerPassSecureString $s
+                        }
+                    }
+                } else {
+                    Write-Output $null
+                }
+            } else {
+                Unlock-PowerPassSecret $s
+                if( $PlainTextPasswords ) {
+                    Write-Output $s
+                } else {
+                    if( $AsCredential ) {
+                        Get-PowerPassCredential $s
+                    } else {
+                        Set-PowerPassSecureString $s
+                    }
                 }
             }
         }
@@ -660,28 +670,21 @@ function Unlock-PowerPassSecret {
         The secret to unlock.
     #>
     param(
-        [Parameter(Mandatory,ValueFromPipeline,Position = 0)]
+        [Parameter(Mandatory,Position = 0)]
         [PSCustomObject]
         $Secret
     )
-    begin {
-        # Blocks for pipelining
-    } process {
-        if( $Secret.UserName ) {
-            $Secret.UserName = $Secret.UserName | Unlock-PowerPassString
-        }
-        if( $Secret.Password ) {
-            $Secret.Password = $Secret.Password | Unlock-PowerPassString
-        }
-        if( $Secret.URL ) {
-            $Secret.URL = $Secret.URL | Unlock-PowerPassString
-        }
-        if( $Secret.Notes ) {
-            $Secret.Notes = $Secret.Notes | Unlock-PowerPassString
-        }
-        Write-Output $Secret
-    } end {
-        # Blocks for pipelining
+    if( $Secret.UserName ) {
+        $Secret.UserName = Unlock-PowerPassString ($Secret.UserName)
+    }
+    if( $Secret.Password ) {
+        $Secret.Password = Unlock-PowerPassString ($Secret.Password)
+    }
+    if( $Secret.URL ) {
+        $Secret.URL = Unlock-PowerPassString ($Secret.URL)
+    }
+    if( $Secret.Notes ) {
+        $Secret.Notes = Unlock-PowerPassString ($Secret.Notes)
     }
 }
 
@@ -693,27 +696,20 @@ function Lock-PowerPassSecret {
         The secret to lock.
     #>
     param(
-        [Parameter(Mandatory,ValueFromPipeline,Position = 0)]
+        [Parameter(Mandatory,Position = 0)]
         [PSCustomObject]
         $Secret
     )
-    begin {
-        # Blocks for pipelining
-    } process {
-        if( $Secret.UserName ) {
-            $Secret.UserName = $Secret.UserName | Lock-PowerPassString
-        }
-        if( $Secret.Password ) {
-            $Secret.Password = $Secret.Password | Lock-PowerPassString
-        }
-        if( $Secret.URL ) {
-            $Secret.URL = $Secret.URL | Lock-PowerPassString
-        }
-        if( $Secret.Notes ) {
-            $Secret.Notes = $Secret.Notes | Lock-PowerPassString
-        }
-        Write-Output $Secret
-    } end {
-        # Blocks for pipelining
+    if( $Secret.UserName ) {
+        $Secret.UserName = Lock-PowerPassString ($Secret.UserName)
+    }
+    if( $Secret.Password ) {
+        $Secret.Password = Lock-PowerPassString ($Secret.Password)
+    }
+    if( $Secret.URL ) {
+        $Secret.URL = Lock-PowerPassString ($Secret.URL)
+    }
+    if( $Secret.Notes ) {
+        $Secret.Notes = Lock-PowerPassString ($Secret.Notes)
     }
 }
