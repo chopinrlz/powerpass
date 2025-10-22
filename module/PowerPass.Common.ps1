@@ -608,7 +608,10 @@ function Lock-PowerPassString {
     if( -not $InputObject ) {
         throw "No input string passed to Set-PowerPassOneTimePad"
     }
-    $ek = Get-PowerPassEphemeralKey
+    $ek = $script:EphemeralKey
+    if( -not $ek ) {
+        throw "Ephemeral key not initialized"
+    }
     $eki = 0
     $ca = [System.Text.Encoding]::UTF8.GetBytes( $InputObject )
     $ea = [System.Array]::CreateInstance( [System.Byte], $ca.Length )
@@ -622,7 +625,6 @@ function Lock-PowerPassString {
             $eki = 0
         }
     }
-    [PowerPass.AesCrypto]::EraseBuffer( $ek )
     [PowerPass.AesCrypto]::EraseBuffer( $ca )
     Write-Output (ConvertTo-Base64String -InputObject $ea)
 }
@@ -642,7 +644,10 @@ function Unlock-PowerPassString {
     if( -not $InputObject ) {
         throw "No input string passed to Get-PowerPassOneTimePad"
     }
-    $ek = Get-PowerPassEphemeralKey
+    $ek = $script:EphemeralKey
+    if( -not $ek ) {
+        throw "Ephemeral key not initialized"
+    }
     $eki = 0
     $ea = ConvertFrom-Base64String -InputString $InputObject
     $ca = [System.Array]::CreateInstance( [System.Byte], $ea.Length )
@@ -658,7 +663,6 @@ function Unlock-PowerPassString {
             $eki = 0
         }
     }
-    [PowerPass.AesCrypto]::EraseBuffer( $ek )
     Write-Output ([System.Text.Encoding]::UTF8.GetString($ca))
 }
 
@@ -674,6 +678,7 @@ function Unlock-PowerPassSecret {
         [PSCustomObject]
         $Secret
     )
+    New-Variable -Name EphemeralKey -Value (Get-PowerPassEphemeralKey) -Scope Script
     if( $Secret.UserName ) {
         $Secret.UserName = Unlock-PowerPassString ($Secret.UserName)
     }
@@ -686,6 +691,8 @@ function Unlock-PowerPassSecret {
     if( $Secret.Notes ) {
         $Secret.Notes = Unlock-PowerPassString ($Secret.Notes)
     }
+    [PowerPass.AesCrypto]::EraseBuffer( $script:EphemeralKey )
+    Remove-Variable -Name EphemeralKey -Scope Script
 }
 
 function Lock-PowerPassSecret {
@@ -700,6 +707,7 @@ function Lock-PowerPassSecret {
         [PSCustomObject]
         $Secret
     )
+    New-Variable -Name EphemeralKey -Value (Get-PowerPassEphemeralKey) -Scope Script
     if( $Secret.UserName ) {
         $Secret.UserName = Lock-PowerPassString ($Secret.UserName)
     }
@@ -712,4 +720,6 @@ function Lock-PowerPassSecret {
     if( $Secret.Notes ) {
         $Secret.Notes = Lock-PowerPassString ($Secret.Notes)
     }
+    [PowerPass.AesCrypto]::EraseBuffer( $script:EphemeralKey )
+    Remove-Variable -Name EphemeralKey -Scope Script
 }
