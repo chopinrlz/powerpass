@@ -32,6 +32,8 @@ function Test-Mismatch {
 
 # Import the module
 
+"Importing the module"
+
 Import-Module PowerPass
 $module = Get-Module | ? Name -eq "PowerPass"
 if( -not $module ) {
@@ -56,9 +58,13 @@ if( $answer ) {
 
 # Setup constants for testing
 
+"Setting up constants"
+
 $lockerExport = Join-Path -Path $PSScriptRoot -ChildPath "powerpass_locker.bin"
 
 # Test - reading secrets from an empty locker
+
+"Reading secrets from an empty locker"
 
 $secret = Read-PowerPassSecret | ? Title -eq "Default"
 $secretCount = (Measure-Object -InputObject $secret).Count
@@ -77,6 +83,8 @@ $secret = $null
 $secretCount = -1
 
 # Test - write a secret and read it back
+
+"Write a secret and read it back"
 
 Write-PowerPassSecret -Title "Unit Test"
 $secret = Read-PowerPassSecret -Match "Unit Test"
@@ -97,6 +105,8 @@ $secretCount = -1
 
 # Test - write a secret with a masked password and read it back
 
+"Write a secret with a masked password and read it back"
+
 Write-PowerPassSecret -Title "Masking Test" -MaskPassword
 $secret = Read-PowerPassSecret -Match "Masking Test"
 $secretCount = (Measure-Object -InputObject $secret).Count
@@ -116,6 +126,8 @@ $secretCount = -1
 
 # Test - read secret with pipeline input
 
+"Read secret with pipeline input"
+
 $secret = "Unit Test" | Read-PowerPassSecret
 $secretCount = (Measure-Object -InputObject $secret).Count
 if( -not $secret ) {
@@ -133,6 +145,8 @@ $secret = $null
 $secretCount = -1
 
 # Test - read secret with pipeline filter
+
+"Read secret with pipeline filter"
 
 $secret = Read-PowerPassSecret | ? Title -eq "Unit Test"
 $secretCount = (Measure-Object -InputObject $secret).Count
@@ -152,9 +166,13 @@ $secretCount = -1
 
 # Clear out the locker to setup for the next tests
 
+"Clear out the locker to setup for the next tests"
+
 Clear-PowerPassLocker -Force
 
 # Test - double check clear works and read results in Default secret
+
+"Double check locker clear works"
 
 $secret = Read-PowerPassSecret | ? Title -eq "Default"
 $secretCount = (Measure-Object -InputObject $secret).Count
@@ -174,6 +192,8 @@ $secretCount = -1
 
 # Test - make sure the unit test secret has been cleared
 
+"Make sure the unit test secret has been cleared"
+
 $secret = Read-PowerPassSecret | ? Title -eq "Unit Test"
 if( $secret ) {
     Write-Warning "Test failed: unit test secret not cleared"
@@ -191,6 +211,8 @@ if( $secret ) {
 $secret = $null
 
 # Test - load locker with various test secrets via pipeline
+
+"Load locker with test secrets via pipeline"
 
 $numTempSecrets = 24
 $tempSecrets = 1..$numTempSecrets | % {
@@ -224,6 +246,8 @@ if( -not $readSecrets ) {
 
 # Test - load the locker with secrets from a CSV file
 
+"Load locker with secrets from a CSV file"
+
 $csvFilePath = Join-Path -Path $PSScriptRoot -ChildPath "test-secrets.csv"
 $csvSecrets = Import-Csv $csvFilePath
 $csvSecrets | Write-PowerPassSecret
@@ -247,6 +271,8 @@ if( -not $readSecrets ) {
 
 # Test - export locker
 
+"Export locker"
+
 if( Test-Path $lockerExport ) { Remove-Item $lockerExport -Force }
 Write-PowerPassSecret -Title "Export Test"
 Export-PowerPassLocker -Path $PSScriptRoot
@@ -255,6 +281,8 @@ if( -not (Test-Path $lockerExport) ) {
 }
 
 # Test - import locker
+
+"Import locker"
 
 Import-PowerPassLocker -LockerFile $lockerExport
 $secret = Read-PowerPassSecret | ? Title -eq "Export Test"
@@ -275,10 +303,14 @@ $secretCount = -1
 
 # Clean up for the next test by clearing the locker and the export file
 
+"Clean up for the next test"
+
 Clear-PowerPassLocker -Force
 if( Test-Path $lockerExport ) { Remove-Item $lockerExport -Force }
 
 # Test - key rotation
+
+"Key rotation"
 
 Write-PowerPassSecret -Title "Key Rotation"
 Update-PowerPassKey
@@ -300,6 +332,8 @@ $secretCount = -1
 
 # Test - removing secrets
 
+"Removing secrets"
+
 Write-PowerPassSecret -Title "Delete Me"
 Write-PowerPassSecret -Title "Keep Me"
 $secret = Read-PowerPassSecret -Match "Delete Me"
@@ -320,6 +354,8 @@ if( $secret ) {
 $secret = $null
 
 # Test - performance
+
+"Performance"
 
 $start = Get-Date
 $numTempSecrets = 100
@@ -349,6 +385,8 @@ $pace = ($numTempSecrets / $duration).ToString("0.00")
 Write-Output "Performance test (single writes): $pace secrets per second"
 
 # Clean up everything
+
+"Final clean up"
 
 Clear-PowerPassLocker -Force
 if( Test-Path $lockerExport ) { Remove-Item $lockerExport -Force }

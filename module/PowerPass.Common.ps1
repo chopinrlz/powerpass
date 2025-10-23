@@ -20,7 +20,6 @@ function New-PowerPassSecret {
         # Marked For Deletion: flag used by Remove-PowerPassSecret
         Mfd = $false
     }
-    Lock-PowerPassSecret $nps
     Write-Output $nps
 }
 
@@ -595,12 +594,12 @@ function Lock-PowerPassString {
         The input string object to encrypt.
     #>
     param(
-        [Parameter(Mandatory,ValueFromPipeline,Position = 0)]
+        [Parameter(ValueFromPipeline,Position = 0)]
         [string]
         $InputObject
     )
     if( -not $InputObject ) {
-        throw "No input string passed to Set-PowerPassOneTimePad"
+        return
     }
     $ek = $script:EphemeralKey
     if( -not $ek ) {
@@ -631,12 +630,12 @@ function Unlock-PowerPassString {
         The encrypted string.
     #>
     param(
-        [Parameter(Mandatory,ValueFromPipeline,Position = 0)]
+        [Parameter(ValueFromPipeline,Position = 0)]
         [string]
         $InputObject
     )
     if( -not $InputObject ) {
-        throw "No input string passed to Get-PowerPassOneTimePad"
+        return
     }
     $ek = $script:EphemeralKey
     if( -not $ek ) {

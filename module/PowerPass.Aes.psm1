@@ -133,8 +133,8 @@ function Get-PowerPassLocker {
         $Locker
     )
     Initialize-PowerPassLocker
-    $pathToLockerKey = $script:PowerPass.LockerKeyFilePath
-    $pathToLocker = $script:PowerPass.LockerFilePath
+    $pathToLockerKey = $PowerPass.LockerKeyFilePath
+    $pathToLocker = $PowerPass.LockerFilePath
     if( Test-Path $pathToLocker ) {
         if( Test-Path $pathToLockerKey ) {
             $aes = New-Object -TypeName "PowerPass.AesCrypto"
@@ -219,28 +219,28 @@ function Write-PowerPassSecret {
             throw "Could not create or fetch your locker"
         }
         $changed = $false
+        New-Variable -Name EphemeralKey -Value (Get-PowerPassEphemeralKey) -Scope Script
     } process {
         $existingSecret = $locker.Secrets | Where-Object { $_.Title -eq $Title }
         if( $existingSecret ) {
-            Unlock-PowerPassSecret $existingSecret
             if( $UserName ) {
-                $existingSecret.UserName = $UserName
+                $existingSecret.UserName = Lock-PowerPassString $UserName
                 $changed = $true
             }
             if( $Password ) {
-                $existingSecret.Password = $Password
+                $existingSecret.Password = Lock-PowerPassString $Password
                 $changed = $true
             }
             if( $MaskPassword ) {
-                $existingSecret.Password = Get-PowerPassMaskedPassword -Prompt "Enter the Password for the secret"
+                $existingSecret.Password = Get-PowerPassMaskedPassword -Prompt "Enter the Password for the secret" | Lock-PowerPassString
                 $changed = $true
             }
             if( $URL ) {
-                $existingSecret.URL = $URL
+                $existingSecret.URL = Lock-PowerPassString $URL
                 $changed = $true
             }
             if( $Notes ) {
-                $existingSecret.Notes = $Notes
+                $existingSecret.Notes = Lock-PowerPassString $Notes
                 $changed = $true
             }
             if( $Expires -ne ($existing.Expires) ) {
@@ -249,28 +249,28 @@ function Write-PowerPassSecret {
             }
             if( $changed ) {
                 $existingSecret.Modified = (Get-Date).ToUniversalTime()
-                Lock-PowerPassSecret $existingSecret
             }
         } else {
             $changed = $true
             $newSecret = New-PowerPassSecret
             $newSecret.Title = $Title
-            $newSecret.UserName = $UserName
-            $newSecret.Password = $Password
+            $newSecret.UserName = Lock-PowerPassString $UserName
+            $newSecret.Password = Lock-PowerPassString $Password
             if( $MaskPassword ) {
-                $newSecret.Password = Get-PowerPassMaskedPassword -Prompt "Enter the Password for the secret"
+                $newSecret.Password = Get-PowerPassMaskedPassword -Prompt "Enter the Password for the secret" | Lock-PowerPassString
                 $changed = $true
             }
-            $newSecret.URL = $URL
-            $newSecret.Notes = $Notes
+            $newSecret.URL = Lock-PowerPassString $URL
+            $newSecret.Notes = Lock-PowerPassString $Notes
             $newSecret.Expires = $Expires
-            Lock-PowerPassSecret $newSecret
             $locker.Secrets += $newSecret
         }
     } end {
+        [PowerPass.AesCrypto]::EraseBuffer( $script:EphemeralKey )
+        Remove-Variable -Name EphemeralKey -Scope Script
         if( $changed ) {
-            $pathToLocker = $script:PowerPass.LockerFilePath
-            $pathToLockerKey = $script:PowerPass.LockerKeyFilePath
+            $pathToLocker = $PowerPass.LockerFilePath
+            $pathToLockerKey = $PowerPass.LockerKeyFilePath
             [byte[]]$data = $null
             Get-PowerPassLockerBytes -Locker $locker -Data ([ref] $data)
             $aes = New-Object "PowerPass.AesCrypto"
@@ -326,7 +326,7 @@ function Initialize-PowerPassLocker {
         be loaded, or if the locker file could not be written to the user data directory.
     #>
     Initialize-PowerPassUserDataFolder
-    $pathToLockerKey = $script:PowerPass.LockerKeyFilePath
+    $pathToLockerKey = $PowerPass.LockerKeyFilePath
     if( -not (Test-Path $pathToLockerKey) ) {
         $aes = New-Object -TypeName "PowerPass.AesCrypto"
         $aes.GenerateKey()
@@ -336,9 +336,10 @@ function Initialize-PowerPassLocker {
     if( -not (Test-Path $pathToLockerKey) ) {
         throw "Cannot write to app data path to initialize key file"
     }
-    $pathToLocker = $script:PowerPass.LockerFilePath
+    $pathToLocker = $PowerPass.LockerFilePath
     if( -not (Test-Path $pathToLocker) ) {
         $locker = New-PowerPassLocker -Populated
+        $locker.Secrets | Lock-PowerPassSecret
         [byte[]]$data = $null
         Get-PowerPassLockerBytes -Locker $locker -Data ([ref] $data)
         $aes = New-Object -TypeName "PowerPass.AesCrypto"
