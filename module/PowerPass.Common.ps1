@@ -398,8 +398,6 @@ function Read-PowerPassSecret {
                             Set-PowerPassSecureString $s
                         }
                     }
-                } else {
-                    Write-Output $null
                 }
             } elseif( $Title ) {
                 if( $s.Title -eq $Title ) {
@@ -413,8 +411,6 @@ function Read-PowerPassSecret {
                             Set-PowerPassSecureString $s
                         }
                     }
-                } else {
-                    Write-Output $null
                 }
             } else {
                 Unlock-PowerPassSecret $s
@@ -429,8 +425,6 @@ function Read-PowerPassSecret {
                 }
             }
         }
-    } else {
-        Write-Output $null
     }
 }
 
@@ -674,25 +668,29 @@ function Unlock-PowerPassSecret {
         The secret to unlock.
     #>
     param(
-        [Parameter(Mandatory,Position = 0)]
+        [Parameter(Mandatory,ValueFromPipeline,Position = 0)]
         [PSCustomObject]
         $Secret
     )
-    New-Variable -Name EphemeralKey -Value (Get-PowerPassEphemeralKey) -Scope Script
-    if( $Secret.UserName ) {
-        $Secret.UserName = Unlock-PowerPassString ($Secret.UserName)
+    begin {
+        New-Variable -Name EphemeralKey -Value (Get-PowerPassEphemeralKey) -Scope Script
+    } process {
+        if( $Secret.UserName ) {
+            $Secret.UserName = Unlock-PowerPassString ($Secret.UserName)
+        }
+        if( $Secret.Password ) {
+            $Secret.Password = Unlock-PowerPassString ($Secret.Password)
+        }
+        if( $Secret.URL ) {
+            $Secret.URL = Unlock-PowerPassString ($Secret.URL)
+        }
+        if( $Secret.Notes ) {
+            $Secret.Notes = Unlock-PowerPassString ($Secret.Notes)
+        }
+    } end {
+        [PowerPass.AesCrypto]::EraseBuffer( $script:EphemeralKey )
+        Remove-Variable -Name EphemeralKey -Scope Script
     }
-    if( $Secret.Password ) {
-        $Secret.Password = Unlock-PowerPassString ($Secret.Password)
-    }
-    if( $Secret.URL ) {
-        $Secret.URL = Unlock-PowerPassString ($Secret.URL)
-    }
-    if( $Secret.Notes ) {
-        $Secret.Notes = Unlock-PowerPassString ($Secret.Notes)
-    }
-    [PowerPass.AesCrypto]::EraseBuffer( $script:EphemeralKey )
-    Remove-Variable -Name EphemeralKey -Scope Script
 }
 
 function Lock-PowerPassSecret {
@@ -703,23 +701,27 @@ function Lock-PowerPassSecret {
         The secret to lock.
     #>
     param(
-        [Parameter(Mandatory,Position = 0)]
+        [Parameter(Mandatory,ValueFromPipeline,Position = 0)]
         [PSCustomObject]
         $Secret
     )
-    New-Variable -Name EphemeralKey -Value (Get-PowerPassEphemeralKey) -Scope Script
-    if( $Secret.UserName ) {
-        $Secret.UserName = Lock-PowerPassString ($Secret.UserName)
+    begin {
+        New-Variable -Name EphemeralKey -Value (Get-PowerPassEphemeralKey) -Scope Script
+    } process {
+        if( $Secret.UserName ) {
+            $Secret.UserName = Lock-PowerPassString ($Secret.UserName)
+        }
+        if( $Secret.Password ) {
+            $Secret.Password = Lock-PowerPassString ($Secret.Password)
+        }
+        if( $Secret.URL ) {
+            $Secret.URL = Lock-PowerPassString ($Secret.URL)
+        }
+        if( $Secret.Notes ) {
+            $Secret.Notes = Lock-PowerPassString ($Secret.Notes)
+        }
+    } end {
+        [PowerPass.AesCrypto]::EraseBuffer( $script:EphemeralKey )
+        Remove-Variable -Name EphemeralKey -Scope Script
     }
-    if( $Secret.Password ) {
-        $Secret.Password = Lock-PowerPassString ($Secret.Password)
-    }
-    if( $Secret.URL ) {
-        $Secret.URL = Lock-PowerPassString ($Secret.URL)
-    }
-    if( $Secret.Notes ) {
-        $Secret.Notes = Lock-PowerPassString ($Secret.Notes)
-    }
-    [PowerPass.AesCrypto]::EraseBuffer( $script:EphemeralKey )
-    Remove-Variable -Name EphemeralKey -Scope Script
 }

@@ -130,9 +130,7 @@ function Get-PowerPassLocker {
     param(
         [Parameter(Mandatory)]
         [ref]
-        $Locker,
-        [switch]
-        $Unlocked
+        $Locker
     )
     Initialize-PowerPassLocker
     $pathToLockerKey = $script:PowerPass.LockerKeyFilePath
@@ -146,6 +144,7 @@ function Get-PowerPassLocker {
                 throw "Decryption failed for [$pathToLocker]"
             }
             $lockerJson = [System.Text.Encoding]::UTF8.GetString( $lockerBytes )
+            [PowerPass.AesCrypto]::EraseBuffer( $lockerBytes )
             $openLocker = ConvertFrom-Json $lockerJson
             if( -not $openLocker ) {
                 throw "Invalid data format for [$pathToLocker]"
@@ -153,25 +152,7 @@ function Get-PowerPassLocker {
             if( -not $openLocker.Revision ) {
                 Write-Warning "Your Locker has not been upgraded"
             }
-            if( $Unlocked ) {
-                $newLocker = New-PowerPassLocker
-                $newLocker.Created = $openLocker.Created
-                # Old lockers do not have a Modified flag
-                if( $openLocker.Modified ) {
-                    $newLocker.Modified = $openLocker.Modified
-                }
-                if( $openLocker.Secrets ) {
-                    foreach( $secret in $openLocker.Secrets ) {
-                        Unlock-PowerPassSecret $secret
-                    }
-                }
-                if( $openLocker.Attachments ) {
-                    $newLocker.Attachments = $openLocker.Attachments
-                }
-                $Locker.Value = $newLocker
-            } else {
-                $Locker.Value = $openLocker
-            }
+            $Locker.Value = $openLocker
             $aes.Dispose()
             $aes = $null
             $lockerBytes = $null
@@ -393,14 +374,20 @@ function Export-PowerPassLocker {
         [string]
         $Path
     )
+
+    # Assert the provided path location
     if( -not (Test-Path $Path) ) {
         throw "$Path does not exist"
     }
+
+    # Open the locker
     [PSCustomObject]$locker = $null
-    Get-PowerPassLocker -Locker ([ref] $locker) -Unlocked
+    Get-PowerPassLocker -Locker ([ref] $locker)
     if( -not $locker ) {
         throw "Could not load you PowerPass locker"
     }
+
+    # Prompt for a password to encrypt the locker
     $password = ""
     if( $PSVersionTable.PSVersion.Major -eq 5 ) {
         $secString = Read-Host "Enter a password (4 - 32 characters)" -AsSecureString
@@ -416,6 +403,8 @@ function Export-PowerPassLocker {
     if( ($password.Length -lt 4) -or ($password.Length -gt 32) ) {
         throw "The password must be between 4 and 32 characters."
     }
+
+    # Generate the output filename for the export and test for overwrite
     $output = Join-Path -Path $Path -ChildPath "powerpass_locker.bin"
     if( Test-Path $output ) {
         $answer = Read-Host "$output already exists, overwrite? [N/y]"
@@ -425,6 +414,13 @@ function Export-PowerPassLocker {
             throw "Export cancelled by user"
         }
     }
+
+    # Unlock all the secrets in the locker for export
+    if( $locker.Secrets ) {
+        $locker.Secrets | Unlock-PowerPassSecret
+    }
+
+    # Export the encrypted locker data to disk
     [byte[]]$data = $null
     Get-PowerPassLockerBytes -Locker $locker -Data ([ref] $data)
     $aes = New-Object -TypeName "PowerPass.AesCrypto"
@@ -490,7 +486,7 @@ function Import-PowerPassLocker {
     }
 
     # Check for existing locker
-    if( Test-Path ($script:PowerPass.LockerFilePath) ) {
+    if( Test-Path ($PowerPass.LockerFilePath) ) {
         $warn = if( $Force ) { $false } else { $true }
     } else {
         Initialize-PowerPassLocker
@@ -503,6 +499,10 @@ function Import-PowerPassLocker {
         # Parse the imported data into object format for parsing
         $lockerJson = ConvertTo-Utf8String -InputObject $data
         $from = ConvertFrom-Json $lockerJson
+        if( -not $from ) {
+            throw "Invalid data format for [$LockerFile]"
+        }
+        [PowerPass.AesCrypto]::EraseBuffer( $data )
 
         # Import the current locker
         $modified = $false
@@ -517,8 +517,8 @@ function Import-PowerPassLocker {
                 $existing.Notes = $secret.Notes
                 $existing.Expires = $secret.Expires
                 $existing.Modified = (Get-Date).ToUniversalTime()
-                $modified = $true
                 Lock-PowerPassSecret $existing
+                $modified = $true
             } else {
                 Lock-PowerPassSecret $secret
                 $to.Secrets += $secret
@@ -528,14 +528,15 @@ function Import-PowerPassLocker {
 
         # Write out the new Locker file
         if( $modified ) {
-            $pathToLocker = $script:PowerPass.LockerFilePath
-            $pathToLockerKey = $script:PowerPass.LockerKeyFilePath
+            $pathToLocker = $PowerPass.LockerFilePath
+            $pathToLockerKey = $PowerPass.LockerKeyFilePath
             [byte[]]$newData = $null
             Get-PowerPassLockerBytes -Locker $to -Data ([ref] $newData)
             $aes = New-Object "PowerPass.AesCrypto"
             $aes.ReadKeyFromDisk( $pathToLockerKey, [ref] (Get-PowerPassEphemeralKey) )
             $aes.Encrypt( $newData, $pathToLocker )
             $aes.Dispose()
+            [PowerPass.AesCrypto]::EraseBuffer( $newData )
         }
     } else {
 
@@ -549,11 +550,24 @@ function Import-PowerPassLocker {
             }
         }
 
-        # Import the locker
+        # Lock the imported locker
+        $lockerJson = [System.Text.Encoding]::UTF8.GetString( $data )
+        $openLocker = ConvertFrom-Json $lockerJson
+        if( -not $openLocker ) {
+            throw "Invalid data format for [$pathToLocker]"
+        }
+        if( $openLocker.Secrets ) {
+            $openLocker.Secrets | Lock-PowerPassSecret
+        }
+        [PowerPass.AesCrypto]::EraseBuffer( $data )
+        Get-PowerPassLockerBytes -Locker $openLocker -Data ([ref] $data)
+
+        # Save the imported locker
         $aes = New-Object "PowerPass.AesCrypto"
-        $aes.ReadKeyFromDisk( $script:PowerPass.LockerKeyFilePath, [ref] (Get-PowerPassEphemeralKey) )
-        $aes.Encrypt( $data, $script:PowerPass.LockerFilePath )
+        $aes.ReadKeyFromDisk( $PowerPass.LockerKeyFilePath, [ref] (Get-PowerPassEphemeralKey) )
+        $aes.Encrypt( $data, $PowerPass.LockerFilePath )
         $aes.Dispose()
+        [PowerPass.AesCrypto]::EraseBuffer( $data )
     }
 }
 
@@ -576,17 +590,18 @@ function Update-PowerPassKey {
     if( -not $locker ) {
         throw "Unable to fetch your PowerPass Locker"
     }
-    Remove-Item -Path $script:PowerPass.LockerKeyFilePath -Force
-    if( Test-Path $script:PowerPass.LockerKeyFilePath ) {
+    Remove-Item -Path $PowerPass.LockerKeyFilePath -Force
+    if( Test-Path $PowerPass.LockerKeyFilePath ) {
         throw "Could not delete Locker key file"
     }
     $aes = New-Object -TypeName "PowerPass.AesCrypto"
     $aes.GenerateKey()
-    $aes.WriteKeyToDisk( $script:PowerPass.LockerKeyFilePath, [ref] (Get-PowerPassEphemeralKey) )
+    $aes.WriteKeyToDisk( $PowerPass.LockerKeyFilePath, [ref] (Get-PowerPassEphemeralKey) )
     [byte[]]$data = $null
     Get-PowerPassLockerBytes -Locker $locker -Data ([ref] $data)
-    $aes.Encrypt( $data, $script:PowerPass.LockerFilePath )
+    $aes.Encrypt( $data, $PowerPass.LockerFilePath )
     $aes.Dispose()
+    [PowerPass.AesCrypto]::EraseBuffer( $data )
 }
 
 # ------------------------------------------------------------------------------------------------------------- #
