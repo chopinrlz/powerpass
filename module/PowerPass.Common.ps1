@@ -427,6 +427,110 @@ function Read-PowerPassSecret {
     }
 }
 
+function Write-PowerPassSecret {
+    <#
+        .SYNOPSIS
+        Writes a secret into your PowerPass locker.
+        .PARAMETER Title
+        Mandatory. The Title of the secret. This is unique to your locker. If you already have a secret in your
+        locker with this Title, it will be updated, but only the parameters you specify will be updated.
+        .PARAMETER UserName
+        Optional. Sets the UserName property of the secret in your locker.
+        .PARAMETER Password
+        Optional. Sets the Password property of the secret in your locker.
+        .PARAMETER URL
+        Optional. Sets the URL property of the secret in your locker.
+        .PARAMETER Notes
+        Optional. Sets the Notes property of the secret in your locker.
+        .PARAMETER Expires
+        Optional. Sets the Expiras property of the secret in your locker.
+        .PARAMETER MaskPassword
+        An optional switch that, when specified, will prompt you to enter a password rather than having to use the Password parameter.
+    #>
+    param(
+        [Parameter(Mandatory,ValueFromPipeline,ValueFromPipelineByPropertyName,Position=0)]
+        [string]
+        $Title,
+        [Parameter(ValueFromPipelineByPropertyName)]
+        [string]
+        $UserName,
+        [Parameter(ValueFromPipelineByPropertyName)]
+        [string]
+        $Password,
+        [Parameter(ValueFromPipelineByPropertyName)]
+        [string]
+        $URL,
+        [Parameter(ValueFromPipelineByPropertyName)]
+        [string]
+        $Notes,
+        [Parameter(ValueFromPipelineByPropertyName)]
+        [DateTime]
+        $Expires = [DateTime]::MaxValue,
+        [switch]
+        $MaskPassword
+    )
+    begin {
+        [PSCustomObject]$locker = $null
+        Get-PowerPassLocker -Locker ([ref] $locker)
+        if( -not $locker ) {
+            throw "Could not create or fetch your locker"
+        }
+        $changed = $false
+        New-Variable -Name EphemeralKey -Value (Get-PowerPassEphemeralKey) -Scope Script
+    } process {
+        $existingSecret = $locker.Secrets | Where-Object { $_.Title -eq $Title }
+        if( $existingSecret ) {
+            if( $UserName ) {
+                $existingSecret.UserName = Lock-PowerPassString $UserName
+                $changed = $true
+            }
+            if( $Password ) {
+                $existingSecret.Password = Lock-PowerPassString $Password
+                $changed = $true
+            }
+            if( $MaskPassword ) {
+                $existingSecret.Password = Get-PowerPassMaskedPassword -Prompt "Enter the Password for the secret" | Lock-PowerPassString
+                $changed = $true
+            }
+            if( $URL ) {
+                $existingSecret.URL = Lock-PowerPassString $URL
+                $changed = $true
+            }
+            if( $Notes ) {
+                $existingSecret.Notes = Lock-PowerPassString $Notes
+                $changed = $true
+            }
+            if( $Expires -ne ($existing.Expires) ) {
+                $existingSecret.Expires = $Expires
+                $changed = $true
+            }
+            if( $changed ) {
+                $existingSecret.Modified = (Get-Date).ToUniversalTime()
+            }
+        } else {
+            $changed = $true
+            $newSecret = New-PowerPassSecret
+            $newSecret.Title = $Title
+            $newSecret.UserName = Lock-PowerPassString $UserName
+            $newSecret.Password = Lock-PowerPassString $Password
+            if( $MaskPassword ) {
+                $newSecret.Password = Get-PowerPassMaskedPassword -Prompt "Enter the Password for the secret" | Lock-PowerPassString
+                $changed = $true
+            }
+            $newSecret.URL = Lock-PowerPassString $URL
+            $newSecret.Notes = Lock-PowerPassString $Notes
+            $newSecret.Expires = $Expires
+            $locker.Secrets += $newSecret
+        }
+    } end {
+        [PowerPass.AesCrypto]::EraseBuffer( $script:EphemeralKey )
+        Remove-Variable -Name EphemeralKey -Scope Script
+        if( $changed ) {
+            Out-PowerPassLocker -Locker $locker
+        }
+    }
+}
+
 function Export-PowerPassAttachment {
     <#
         .SYNOPSIS

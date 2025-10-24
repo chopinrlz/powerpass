@@ -97,14 +97,14 @@ function Open-PowerPassTestDatabase {
          .NOTES
          This function will fail if the test database file is not found in the module folder.
     #>
-    if ( -not (Test-Path $script:PowerPass.TestDatabasePath) ) {
+    if ( -not (Test-Path $PowerPass.TestDatabasePath) ) {
         throw "Test database not found"
     }
     $database = [PSCustomObject]@{
         Secrets      = New-Object "KeePassLib.PwDatabase"
         StatusLogger = New-Object "PowerPass.StatusLogger"
-        LiteralPath  = $script:PowerPass.TestDatabasePath
-        Connector    = [KeePassLib.Serialization.IOConnectionInfo]::FromPath( $script:PowerPass.TestDatabasePath )
+        LiteralPath  = $PowerPass.TestDatabasePath
+        Connector    = [KeePassLib.Serialization.IOConnectionInfo]::FromPath( $PowerPass.TestDatabasePath )
         Keys         = New-Object "KeePassLib.Keys.CompositeKey"
     }
     $database.StatusLogger.Echo = $true
@@ -484,120 +484,31 @@ function Get-PowerPassLocker {
 }
 
 # ------------------------------------------------------------------------------------------------------------- #
-# FUNCTION: Write-PowerPassSecret
+# FUNCTION: Out-PowerPassLocker
 # ------------------------------------------------------------------------------------------------------------- #
 
-function Write-PowerPassSecret {
+function Out-PowerPassLocker {
     <#
         .SYNOPSIS
-        Writes a secret into your PowerPass locker.
-        .PARAMETER Title
-        Mandatory. The Title of the secret. This is unique to your locker. If you already have a secret in your
-        locker with this Title, it will be updated, but only the parameters you specify will be updated.
-        .PARAMETER UserName
-        Optional. Sets the UserName property of the secret in your locker.
-        .PARAMETER Password
-        Optional. Sets the Password property of the secret in your locker.
-        .PARAMETER URL
-        Optional. Sets the URL property of the secret in your locker.
-        .PARAMETER Notes
-        Optional. Sets the Notes property of the secret in your locker.
-        .PARAMETER Expires
-        Optional. Sets the Expiras property of the secret in your locker.
-        .PARAMETER MaskPassword
-        An optional switch that, when specified, will prompt you to enter a password rather than having to use the Password parameter.
+        Outputs the Locker to disk.
+        .PARAMETER Locker
+        A reference to the Locker object.
     #>
     param(
-        [Parameter(Mandatory,ValueFromPipeline,ValueFromPipelineByPropertyName,Position=0)]
-        [string]
-        $Title,
-        [Parameter(ValueFromPipelineByPropertyName)]
-        [string]
-        $UserName,
-        [Parameter(ValueFromPipelineByPropertyName)]
-        [string]
-        $Password,
-        [Parameter(ValueFromPipelineByPropertyName)]
-        [string]
-        $URL,
-        [Parameter(ValueFromPipelineByPropertyName)]
-        [string]
-        $Notes,
-        [Parameter(ValueFromPipelineByPropertyName)]
-        [DateTime]
-        $Expires = [DateTime]::MaxValue,
-        [switch]
-        $MaskPassword
+        [Parameter(Mandatory,Position = 0)]
+        [PSCustomObject]
+        $Locker
     )
-    begin {
-        [PSCustomObject]$locker = $null
-        Get-PowerPassLocker -Locker ([ref] $locker)
-        if( -not $locker ) {
-            throw "Could not create or fetch your locker"
-        }
-        $changed = $false
-        New-Variable -Name EphemeralKey -Value (Get-PowerPassEphemeralKey) -Scope Script
-    } process {
-        $existingSecret = $locker.Secrets | Where-Object { $_.Title -eq $Title }
-        if( $existingSecret ) {
-            if( $UserName ) {
-                $existingSecret.UserName = Lock-PowerPassString $UserName
-                $changed = $true
-            }
-            if( $Password ) {
-                $existingSecret.Password = Lock-PowerPassString $Password
-                $changed = $true
-            }
-            if( $MaskPassword ) {
-                $existingSecret.Password = Get-PowerPassMaskedPassword -Prompt "Enter the Password for the secret" | Lock-PowerPassString
-                $changed = $true
-            }
-            if( $URL ) {
-                $existingSecret.URL = Lock-PowerPassString $URL
-                $changed = $true
-            }
-            if( $Notes ) {
-                $existingSecret.Notes = Lock-PowerPassString $Notes
-                $changed = $true
-            }
-            if( $Expires -ne ($existing.Expires) ) {
-                $existingSecret.Expires = $Expires
-                $changed = $true
-            }
-            if( $changed ) {
-                $existingSecret.Modified = (Get-Date).ToUniversalTime()
-            }
-        } else {
-            $changed = $true
-            $newSecret = New-PowerPassSecret
-            $newSecret.Title = $Title
-            $newSecret.UserName = Lock-PowerPassString $UserName
-            $newSecret.Password = Lock-PowerPassString $Password
-            if( $MaskPassword ) {
-                $newSecret.Password = Get-PowerPassMaskedPassword -Prompt "Enter the Password for the secret" | Lock-PowerPassString
-                $changed = $true
-            }
-            $newSecret.URL = Lock-PowerPassString $URL
-            $newSecret.Notes = Lock-PowerPassString $Notes
-            $newSecret.Expires = $Expires
-            $locker.Secrets += $newSecret
-        }
-    } end {
-        [PowerPass.AesCrypto]::EraseBuffer( $script:EphemeralKey )
-        Remove-Variable -Name EphemeralKey -Scope Script
-        if( $changed ) {
-            $salt = Get-PowerPassLockerSalt
-            if( -not $salt ) {
-                throw "Error writing secret, no locker salt"
-            }
-            $pathToLocker = $PowerPass.LockerFilePath
-            [byte[]]$data = $null
-            Get-PowerPassLockerBytes -Locker $locker -Data ([ref] $data)
-            $encData = [System.Security.Cryptography.ProtectedData]::Protect($data,$salt,"CurrentUser")
-            $encDataText = [System.Convert]::ToBase64String($encData)
-            Out-File -FilePath $pathToLocker -InputObject $encDataText -Force
-        }
+    $salt = Get-PowerPassLockerSalt
+    if( -not $salt ) {
+        throw "Error writing secret, no locker salt"
     }
+    $json = ConvertTo-Json -InputObject $Locker
+    $data = ConvertTo-Utf8ByteArray -InputString $json
+    $encData = [System.Security.Cryptography.ProtectedData]::Protect( $data, $salt, "CurrentUser" )
+    $encDataText = [System.Convert]::ToBase64String( $encData )
+    Out-File -FilePath ($PowerPass.LockerFilePath) -InputObject $encDataText -Force
+    [PowerPass.AesCrypto]::EraseBuffer( $data )
 }
 
 # ------------------------------------------------------------------------------------------------------------- #
@@ -749,11 +660,7 @@ function Initialize-PowerPassLocker {
         }
         $locker = New-PowerPassLocker -Populated
         $locker.Secrets | Lock-PowerPassSecret
-        [byte[]]$data = $null
-        Get-PowerPassLockerBytes -Locker $locker -Data ([ref] $data)
-        $encData = [System.Security.Cryptography.ProtectedData]::Protect($data,$salt,"CurrentUser")
-        $encDataText = [System.Convert]::ToBase64String($encData)
-        Out-File -FilePath $pathToLocker -InputObject $encDataText -Force
+        Out-PowerPassLocker -Locker $locker
     }
     if( -not (Test-Path $pathToLocker) ) {
         throw "Failed to initialize the user's locker"
@@ -885,12 +792,12 @@ function Import-PowerPassLocker {
     $aes = New-Object -TypeName "PowerPass.AesCrypto"
     $aes.SetPaddedKey( $Password )
     $data = $aes.Decrypt( $LockerFilePath )
-    [PowerPass.AesCrypto]::EraseBuffer( $data )
     $aes.Dispose()
     if( -not $data ) {
         throw "Decryption failed"
     }
     $json = ConvertTo-Utf8String -InputObject $data
+    [PowerPass.AesCrypto]::EraseBuffer( $data )
     $locker = ConvertFrom-Json $json
     if( -not $locker ) {
         throw "Invalid file format"
@@ -905,13 +812,7 @@ function Import-PowerPassLocker {
     Write-Warning "You are about to OVERWRITE your existing locker. This will REPLACE ALL existing locker secrets."
     $answer = Read-Host "Do you you want to continue? [N/y]"
     if( Test-PowerPassAnswer $answer ) {
-        [byte[]]$data = $null
-        Get-PowerPassLockerBytes -Locker $locker -Data ([ref] $data)
-        $pathToLocker = $PowerPass.LockerFilePath
-        $encData = [System.Security.Cryptography.ProtectedData]::Protect($data,$salt,"CurrentUser")
-        $encDataText = [System.Convert]::ToBase64String($encData)
-        Out-File -FilePath $pathToLocker -InputObject $encDataText -Force
-        [PowerPass.AesCrypto]::EraseBuffer( $data )
+        Out-PowerPassLocker -Locker $locker
     } else {
         throw "Import cancelled by user"
     }
@@ -956,11 +857,7 @@ function Update-PowerPassSalt {
         $encLockerSaltText = [System.Convert]::ToBase64String($encLockerSalt)
         Out-File -InputObject $encLockerSaltText -FilePath ($script:PowerPass.LockerSaltPath) -Force
     }
-    [byte[]]$data = $null
-    Get-PowerPassLockerBytes -Locker $locker -Data ([ref] $data)
-    $encData = [System.Security.Cryptography.ProtectedData]::Protect($data,$lockerSalt,"CurrentUser")
-    $encDataText = [System.Convert]::ToBase64String($encData)
-    Out-File -FilePath ($script:PowerPass.LockerFilePath) -InputObject $encDataText -Force
+    Out-PowerPassLocker -Locker $locker
 }
 
 # ------------------------------------------------------------------------------------------------------------- #
@@ -1017,17 +914,8 @@ function Remove-PowerPassSecret {
         }
     } end {
         if( $changed ) {
-            $salt = Get-PowerPassLockerSalt
-            if( -not $salt ) {
-                throw "Error writing secret, no locker salt"
-            }
             $newLocker.Secrets = $locker.Secrets | Where-Object { -not ($_.Mfd) }
-            $pathToLocker = $PowerPass.LockerFilePath
-            [byte[]]$data = $null
-            Get-PowerPassLockerBytes -Locker $newLocker -Data ([ref] $data)
-            $encData = [System.Security.Cryptography.ProtectedData]::Protect($data,$salt,"CurrentUser")
-            $encDataText = [System.Convert]::ToBase64String($encData)
-            Out-File -FilePath $pathToLocker -InputObject $encDataText -Force
+            Out-PowerPassLocker -Locker $newLocker
         }
     }
 }
@@ -1172,16 +1060,7 @@ function Write-PowerPassAttachment {
             $locker.Attachments += $ex
         }
     } end {
-        $salt = Get-PowerPassLockerSalt
-        if( -not $salt ) {
-            throw "Error writing secret, no locker salt"
-        }
-        $pathToLocker = $script:PowerPass.LockerFilePath
-        [byte[]]$data = $null
-        Get-PowerPassLockerBytes -Locker $locker -Data ([ref] $data)
-        $encData = [System.Security.Cryptography.ProtectedData]::Protect($data,$salt,"CurrentUser")
-        $encDataText = [System.Convert]::ToBase64String($encData)
-        Out-File -FilePath $pathToLocker -InputObject $encDataText -Force
+        Out-PowerPassLocker -Locker $locker
     }
 }
 
@@ -1266,16 +1145,7 @@ function Add-PowerPassAttachment {
         }
     } end {
         if( $changed ) {
-            $salt = Get-PowerPassLockerSalt
-            if( -not $salt ) {
-                throw "Error writing secret, no locker salt"
-            }
-            $pathToLocker = $script:PowerPass.LockerFilePath
-            [byte[]]$data = $null
-            Get-PowerPassLockerBytes -Locker $locker -Data ([ref] $data)
-            $encData = [System.Security.Cryptography.ProtectedData]::Protect($data,$salt,"CurrentUser")
-            $encDataText = [System.Convert]::ToBase64String($encData)
-            Out-File -FilePath $pathToLocker -InputObject $encDataText -Force
+            Out-PowerPassLocker -Locker $locker
         }
     }
 }
@@ -1322,17 +1192,8 @@ function Remove-PowerPassAttachment {
         }
     } end {
         if( $changed ) {
-            $salt = Get-PowerPassLockerSalt
-            if( -not $salt ) {
-                throw "Error writing secret, no locker salt"
-            }
             $newLocker.Attachments = $locker.Attachments | Where-Object { -not ($_.Mfd) }
-            $pathToLocker = $script:PowerPass.LockerFilePath
-            [byte[]]$data = $null
-            Get-PowerPassLockerBytes -Locker $newLocker -Data ([ref] $data)
-            $encData = [System.Security.Cryptography.ProtectedData]::Protect($data,$salt,"CurrentUser")
-            $encDataText = [System.Convert]::ToBase64String($encData)
-            Out-File -FilePath $pathToLocker -InputObject $encDataText -Force
+            Out-PowerPassLocker -Locker $newLocker
         }
     }
 }
@@ -1383,17 +1244,7 @@ function Import-PowerPassSecrets {
     } else {
         Import-PowerPassSecretsFromGroup -Parent "" -Group $rootGroup -Locker $locker
     }
-    $salt = Get-PowerPassLockerSalt
-    if( -not $salt ) {
-        throw "Error importing secrets, no locker salt"
-    }
-    $pathToLocker = $script:PowerPass.LockerFilePath
-    [byte[]]$data = $null
-    Get-PowerPassLockerBytes -Locker $locker -Data ([ref] $data)
-    $encData = [System.Security.Cryptography.ProtectedData]::Protect($data,$salt,"CurrentUser")
-    $encDataText = [System.Convert]::ToBase64String($encData)
-    Out-File -FilePath $pathToLocker -InputObject $encDataText -Force
-    [PowerPass.AesCrypto]::EraseBuffer( $data )
+    Out-PowerPassLocker -Locker $locker
 }
 
 # ------------------------------------------------------------------------------------------------------------- #
