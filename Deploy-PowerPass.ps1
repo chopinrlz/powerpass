@@ -223,6 +223,15 @@ switch( $installation ) {
 # Report on status
 if( $missingFiles ) {
     Write-Output "PowerPass deployed with warnings, please review messages above"
+    $a = Read-Host "Do you want to check for updates now or later? [y/N]"
+    if( $a -eq 'y' ) {
+        Import-Module PowerPass
+        Update-PowerPass
+    } else {
+        Write-Output "After you fix the deployment errors above please run Update-PowerPass to apply any required updates to your Locker"
+    }
 } else {
     Write-Output "PowerPass deployed successfully"
+    Import-Module PowerPass
+    Update-PowerPass
 }

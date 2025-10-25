@@ -850,3 +850,38 @@ function Read-PowerPassPassword {
     }
     Write-Output $password
 }
+
+function Update-PowerPass {
+    <#
+        .SYNOPSIS
+        Checks the Locker for any required updates and runs the updates.
+    #>
+    [PSCustomObject]$locker = $null
+    Get-PowerPassLocker -Locker ([ref] $locker)
+    if( -not $locker ) {
+        throw "Failed to open Locker"
+    }
+    if( $locker.Revision ) {
+        switch( $locker.Revision ) {
+            3 {
+                Write-Output "Your Locker is up to date"
+            }
+            default {
+                Write-Warning "Your Locker has an unknown rev number"
+            }
+        }
+    } else {
+        # Revision flag added in version 3: text values are encrypted with a one-time pad
+        $newLocker = New-PowerPassLocker
+        $newLocker.Created = $locker.Created
+        # Rev 1 Lockers do not have the Modified flag
+        if( $locker.Modified ) {
+            $newLocker.Modified = $locker.Modified
+        }
+        $newLocker.Secrets = $locker.Secrets
+        $newLocker.Attachments = $locker.Attachments
+        $newLocker.Secrets | Lock-PowerPassSecret
+        Out-PowerPassLocker -Locker $newLocker
+        Write-Output "Your Locker has been upgraded to rev 3"
+    }
+}

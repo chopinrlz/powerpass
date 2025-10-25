@@ -429,7 +429,7 @@ function Clear-PowerPassLocker {
         if( Test-PowerPassAnswer $answer ) {
             $answer = Read-Host "CONFIRM: Please confirm again with Y or y to delete your PowerPass locker [N/y]"
             if( Test-PowerPassAnswer $answer ) {
-                Write-Host "Deleting your PowerPass locker"
+                Write-Output "Deleting your PowerPass locker"
                 if( Test-Path ($PowerPass.LockerFilePath) ) {
                     Remove-Item -Path ($PowerPass.LockerFilePath) -Force
                 }
@@ -437,10 +437,10 @@ function Clear-PowerPassLocker {
                     Remove-Item -Path ($PowerPass.LockerSaltPath) -Force
                 }
             } else {
-                Write-Host "Cancelled, locker not deleted"
+                Write-Output "Cancelled, locker not deleted"
             }
         } else {
-            Write-Host "Cancelled, locker not deleted"
+            Write-Output "Cancelled, locker not deleted"
         }
     }
 }

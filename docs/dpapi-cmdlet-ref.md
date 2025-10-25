@@ -172,7 +172,7 @@ $db = Open-PowerPassDatabase -Path "C:\Secrets\KeePassDb.kdbx" -WindowsUserAccou
 # Get all the secrets and output their titles
 $secrets = Get-PowerPassSecret -Database $db
 foreach( $secret in $secrets ) {
-    Write-Host $secret.Title
+    Write-Output $secret.Title
 }
 ```
 ### EXAMPLE 2: Getting Secrets with Pipeline Filtering

@@ -97,7 +97,7 @@ function Clear-PowerPassLocker {
         if( Test-PowerPassAnswer $answer ) {
             $answer = Read-Host "CONFIRM: Please confirm again with Y or y to delete your PowerPass locker [N/y]"
             if( Test-PowerPassAnswer $answer ) {
-                Write-Host "Deleting your PowerPass locker"
+                Write-Output "Deleting your PowerPass locker"
                 if( Test-Path ($script:PowerPass.LockerFilePath) ) {
                     Remove-Item -Path ($script:PowerPass.LockerFilePath) -Force
                 }
@@ -105,10 +105,10 @@ function Clear-PowerPassLocker {
                     Remove-Item -Path ($script:PowerPass.LockerKeyFilePath) -Force
                 }
             } else {
-                Write-Host "Cancelled, locker not deleted"
+                Write-Output "Cancelled, locker not deleted"
             }
         } else {
-            Write-Host "Cancelled, locker not deleted"
+            Write-Output "Cancelled, locker not deleted"
         }
     }
 }
@@ -542,7 +542,7 @@ function Export-PowerPassLockerFromMemory {
         $path = Read-Host "Please enter a file path to export your locker"
         if( Test-Path $path ) {
             if( (Get-Item -Path $path) -is [System.IO.DirectoryInfo] ) {
-                Write-Host "You must specify a file path, not a directory path"
+                Write-Output "You must specify a file path, not a directory path"
             } else {    
                 $a = Read-Host "File [$path] already exists, overwrite?"
                 if( Test-PowerPassAnswer $a ) {
@@ -554,7 +554,7 @@ function Export-PowerPassLockerFromMemory {
             if( Test-Path $path -IsValid ) {
                 $ask = $false
             } else {
-                Write-Host "[$path] is not a legal file path"
+                Write-Output "[$path] is not a legal file path"
             }
         }
     }
