@@ -828,3 +828,25 @@ function Lock-PowerPassSecret {
         Remove-Variable -Name EphemeralKey -Scope Script
     }
 }
+
+function Read-PowerPassPassword {
+    <#
+        .SYNOPSIS
+        Prompts the user to enter a password.
+    #>
+    if( $PSVersionTable.PSVersion.Major -eq 5 ) {
+        $secString = Read-Host "Enter a password (4 - 32 characters)" -AsSecureString
+        $bString = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR( $secString )
+        $password = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto( $bString )
+        [System.Runtime.InteropServices.Marshal]::ZeroFreeBSTR( $bString )
+    } else {
+        $password = Read-Host -Prompt "Enter a locker password (4 - 32 characters)" -MaskInput
+    }
+    if( $password -eq "" ) {
+        throw "You cannot use a blank password"
+    }
+    if( ($password.Length -lt 4) -or ($password.Length -gt 32) ) {
+        throw "The password must be between 4 and 32 characters."
+    }
+    Write-Output $password
+}
