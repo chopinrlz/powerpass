@@ -1,5 +1,5 @@
 # PowerPass Cmdlet Reference for the Windows PowerShell Data Protection API and KeePass 2 Edition
-#### _Revised: July 31, 2025_
+#### _Revised: October 27, 2025_
 The Windows PowerShell Data Protection API implementation supports Windows PowerShell 5.1 and includes support for KeePass 2 databases as well as PowerPass Lockers. Cmdlets for this implementation are as follows:
 1. [Add-PowerPassAttachment](#add-powerpassattachment): adds one or more attachments (files) into your Locker
 2. [Clear-PowerPassLocker](#clear-powerpasslocker): erases all secrets and attachments from your Locker
@@ -25,70 +25,79 @@ Continue reading for the cmdlet details.
 # Add-PowerPassAttachment
 ### SYNOPSIS
 Adds files from the file system into your locker. The difference between `Add-PowerPassAttachment` and
-`Write-PowerPassAttachment` is Add cmdlet is optimized for bulk adds from the pipeline using `Get-ChildItem`.
-Also, the Add cmdlet does not prompt for a filename, but rather uses the filename, either the short name
-or full path, of the file on disk as the filename in your locker.
+`Write-PowerPassAttachment` is the Add amdlet is optimized for bulk adds from the pipeline using `Get-ChildItem`.
+Also, the Add cmdlet does not prompt for a filename, but rather uses the filename, either the short name or
+full path, of the file on disk as the filename in your locker.
 Any files that already exist in your locker will be updated.
-### PARAMETER FileInfo
-One or more `FileInfo` objects collected from `Get-Item` or `Get-ChildItem`. Can be passed via pipeline.
-### PARAMETER FullPath
-If specified, the full file path will be saved as the file name.
-### PARAMETER GZip
-Enable GZip compression.
+### PARAMETER **FileInfo** `[System.IO.FileInfo]`
+**Required.** One or more `FileInfo` objects collected from `Get-Item` or `Get-ChildItem`. Can be passed via pipeline.
+### PARAMETER **FullPath** `[switch]`
+Optional. If specified, the full file path will be saved as the file name.
+### PARAMETER **GZip** `[switch]`
+Optional. If specified, enables GZip compression.
 ### EXAMPLE 1: Save All the Files in the Current Directory
 In this example we load all the files from the current directory into our locker.
 ```powershell
-# Attach all files in the current directory with just the filename as the stored filename
+# Attach all files in the current directory using the short filename
 Get-ChildItem | Add-PowerPassAttachment
 ```
 Note that directories will be ignored.
 This example also supports adding GZip compression to the files:
 ```powershell
-# Compress and attach all files in the current directory with just the filename as the stored filename
+# Attach and compress all files in the current directory using the short filename
 Get-ChildItem | Add-PowerPassAttachment -GZip
 ```
 ### EXAMPLE 2: Save All the Files in the Current Directory with the Full Path
 In this example we load all the files from the current directory into our locker using the full path
 from the location on disk as the filename.
 ```powershell
-# Add all the file in the current directory as attachments with the full path as the stored filename
+# Attach all files in the current directory using the full path and filename
 Get-ChildItem | Add-PowerPassAttachment -FullPath
 ```
-This example also supports adding GZip compression to all the files in the current directory.
+### EXAMPLE 3: Save All the Files in the Current Directory with the Full Path and Compress each File
+In this example we load all the files from the current directory into our locker using the full path
+from the location on disk as the filename and we enable GZip compression for each file.
 ```powershell
-# Add all the file in the current directory as attachments with the full path as the stored filename
+# Compress and attach all files in the current directory using the full path and filename
 Get-ChildItem | Add-PowerPassAttachment -FullPath -GZip
 ```
+### REMARKS
+The `FileInfo` parameter is not bound to a specific type meaning you can pass anything as its value.
+The implementation, however, will ignore any objects that are not `[System.IO.FileInfo]` types.
+### NOTES
+Rather than using `Write-PowerPassAttachment`, you can use `Add-PowerPassAttachment` to add multiple files
+to your locker at once by piping the output of `Get-ChildItem` to `Add-PowerPassAttachment`. Each file fetched
+by `Get-ChildItem` will be added to your locker using either the file name or the full path.
 ##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-windows-powershell-data-protection-api-and-keepass-2-edition)***
 # Clear-PowerPassLocker
 ### SYNOPSIS
-Deletes all your locker secrets.
+Deletes all your locker secrets, locker attachments, and locker salt.
+### PARAMETER Force `[switch]`
+Optional. WARNING: If you specify Force, your locker and salt will be removed WITHOUT confirmation.
 ### DESCRIPTION
 If you want to delete your locker secrets and start with a clean locker, you can use this cmdlet to do so.
 When you deploy PowerPass using the Deploy-Module.ps1 script provided with this module, it generates a
 unique salt for this deployment which is used to encrypt your locker's salt. If you replace this salt by
 redeploying the module, you will no longer be able to access your locker and will need to start with a
 clean locker.
-### PARAMETER Force
-WARNING: If you specify Force, your locker and salt will be removed WITHOUT confirmation.
 ##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-windows-powershell-data-protection-api-and-keepass-2-edition)***
 # Export-PowerPassAttachment
 ### SYNOPSIS
-Exports one or more attachments from your locker.
-### PARAMETER FileName
-The filename of the attachment to fetch. Supports wildcard matching.
-### PARAMETER Path
-The Path to the directory to output the file(s). Overrides LiteralPath.
-### PARAMETER LiteralPath
-The LiteralPath to the directory to output the file(s).
-### PARAMETER OriginalPath
-An optional switch that, when specified, uses the path of the file in the locker,
+Exports one or more attachments from your locker to disk.
+### PARAMETER **FileName** `[string]`
+**Required.** The filename of the attachment to fetch. Supports wildcard matching via the `-like` operator.
+### PARAMETER **Path** `[string]`
+Option 1. The Path to the directory to output the file(s). Overrides LiteralPath.
+### PARAMETER **LiteralPath** `[string]`
+Option 2. The LiteralPath to the directory to output the file(s).
+### PARAMETER **OriginalPath** `[switch]`
+Option 3. An switch that, when specified, uses the path of the file in the locker,
 assuming that file in the locker has a full path, otherwise the file will be
 exported to the current directory. Cannot be combined with Path or LiteralPath.
-### PARAMETER Force
-An optional switch that will force-overwrite any existing files on disk.
+### PARAMETER **Force** `[switch]`
+Optional. An optional switch that will force-overwrite any existing files on disk.
 ### OUTPUTS
-This cmdlet outputs the FileInfo for each exported file.
+This cmdlet outputs the `FileInfo` for each exported file.
 ### EXAMPLE 1
 In this example we export a specific attachment to a specified directory.
 ```powershell
@@ -105,24 +114,45 @@ Export-PowerPassAttachment -FileName "C:\Secrets\*" -OriginalPath
 ##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-windows-powershell-data-protection-api-and-keepass-2-edition)***
 # Export-PowerPassLocker
 ### SYNOPSIS
-Exports your PowerPass Locker to an encrypted backup file powerpass_locker.bin.
+Exports your PowerPass Locker to an encrypted backup file named `powerpass_locker.bin` in the directory
+specified by the `Path` parameter.
+### PARAMETER **Path** `[string]`
+**Required.** The path to the directory where the exported file will go. This is mandatory, and this path must exist.
 ### DESCRIPTION
-You will be prompted to enter a password.
-### PARAMETER Path
-The path where the exported file will go. This is mandatory, and this path must exist.
+You will be prompted to enter a password to encrypt the locker. The password must be
+between 4 and 32 characters.
 ### OUTPUTS
-This cmdlet does not output to the pipeline. It creates the file powerpass_locker.bin
-in the target Path. If the file already exists, you will be prompted to replace it.
+This cmdlet does not output to the pipeline. It creates the file `powerpass_locker.bin`
+in the target `Path`. If the file already exists, you will be prompted to replace it.
+### EXAMPLE
+In this example, we backup our Locker and key to a USB drive mounted as the E: drive.
+```powershell
+# Backup my locker and key to a USB drive
+Export-PowerPassLocker -Path "E:\"
+```
 ##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-windows-powershell-data-protection-api-and-keepass-2-edition)***
-# Import-PowerPassLocker
-# SYNOPSIS
-Imports an encrypted PowerPass locker created from Export-PowerPassLocker.
-### DESCRIPTION
-You can import a PowerPass locker including all the locker secrets and attachments from an exported copy.
-You can import any locker, either from the AES edition or the DP API edition of PowerPass.
-You will be prompted to enter the password to the locker.
-### PARAMETER LockerFilePath
-The path to the locker file on disk. This is mandatory.
+# Get-PowerPass
+### SYNOPSIS
+Gets all the information about this PowerPass deployment.
+### OUTPUTS
+This cmdlet outputs a `PSCustomObject` with the following properties:
+```
+1.  KeePassLibraryPath = The absolute path to the KeePassLib.dll used by PowerPass
+2.  KeePassLibAssembly = A [System.Reflection.Assembly] object of KeePassLib
+3.  TestDatabasePath   = The absolute path of the test KeePass 2 database
+4.  StatusLoggerSource = The absolute path to the StatusLogger class source code
+5.  ExtensionsSource   = The absolute path to the Extensions class source code
+6.  ModuleSaltFilePath = The absolute path to the module's salt file
+7.  AesCryptoSource    = The absolute path to the AES cryptography provider source code
+8.  CompressorSource   = The absolute path to the GZip compression provider source code
+9.  ConversionSource   = The absolute path to the CLR wrapper source code
+10. CommonSourcePath   = The absolute path to the common PowerPass script
+11. LockerFolderPath   = The absolute path to the folder where PowerPass stores your Locker
+12. LockerFilePath     = The absolute path to your Locker file
+13. LockerSaltPath     = The absolute path to your Locker's salt file
+14. Implementation     = The type of implementation either "DPAPI" or "AES", in this case "DPAPI"
+15. Version            = The version number of the PowerPass release you have installed
+```
 ##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-windows-powershell-data-protection-api-and-keepass-2-edition)***
 # Get-PowerPassAttachments
 ### SYNOPSIS
@@ -134,12 +164,19 @@ Outputs each attachment from your locker including the FileName, Created date, a
 # Get-PowerPassSecret
 ### SYNOPSIS
 Retrieves secrets from a KeePass 2 database opened with `Open-PowerPassDatabase`.
+### PARAMETER **Database** `[PSCustomObject]`
+**Required.** The PowerPass database opened using `Open-PowerPassDatabase`. This can be passed via pipeline.
+### PARAMETER **Match** `[string]`
+Optional. If specified, this cmdlet will only output secrets where the Title
+matches this filter. Use `*` for wildcards, use `?` for single characters, or specify an exact Title for
+an exact match. If this is not specified, all secrets will be returned.
+### PARAMETER **PlainTextPasswords** `[switch]`
+Optional. A switch which will cause this cmdlet to output secrets with plain-text passwords. By default,
+passwords are returned as SecureString objects.
 ### DESCRIPTION
 This cmdlet will extract and decrypt the secrets stored in a KeePass 2 database which was opened using
 the `Open-PowerPassDatabase` cmdlet. An optional `Match` parameter can be specified to limit the secrets found
 to those which match the query, or which match the text exactly.
-### INPUTS
-This cmdlet will accept the output from `Open-PowerPassDatabase` as pipeline input.
 ### OUTPUTS
 This cmdlet will output all, or each matching secret in the PowerPass database. Each secret is a `PSCustomObject`
 with the following properties:
@@ -152,15 +189,6 @@ with the following properties:
 6. Expires  = the Expires field value
 ```
 Each entry in the KeePass 2 database is output to the pipeline not including the groups.
-### PARAMETER Database
-The PowerPass database opened using `Open-PowerPassDatabase`. This can be passed via pipeline.
-### PARAMETER Match
-An optional match filter. If this is specified, this cmdlet will only output secrets where the Title
-matches this filter. Use * for wildcards, use ? for single characters, or specify an exact Title for
-an exact match. If this is not specified, all secrets will be returned.
-### PARAMETER PlainTextPasswords
-An optional switch which will cause this cmdlet to output secrets with plain-text passwords. By default,
-passwords are returned as SecureString objects.
 ### EXAMPLE 1: Get All Secrets
 In this example we demonstrate getting all the secrets from a KeePass 2 database.
 The hierarchy of the KeePass 2 database is not maintained.
@@ -204,28 +232,15 @@ In this example, we demonstrate using the pipeline to get a secret with a single
 $secret = "C:\Secrets\KeePassDb.kdbx" | Open-PowerPassDatabase -WindowsUserAccount | Get-PowerPassSecret -Match "Domain Service Account"
 ```
 ##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-windows-powershell-data-protection-api-and-keepass-2-edition)***
-# Get-PowerPass
-### SYNOPSIS
-Gets all the information about this PowerPass deployment.
-### OUTPUTS
-This cmdlet outputs a PSCustomObject with the following properties:
-```
-1.  KeePassLibraryPath = The absolute path to the KeePassLib.dll used by PowerPass
-2.  KeePassLibAssembly = A [System.Reflection.Assembly] object of KeePassLib
-3.  TestDatabasePath   = The absolute path of the test KeePass 2 database
-4.  StatusLoggerSource = The absolute path to the StatusLogger class source code
-5.  ExtensionsSource   = The absolute path to the Extensions class source code
-6.  ModuleSaltFilePath = The absolute path to the module's salt file
-7.  AesCryptoSource    = The absolute path to the AES cryptography provider source code
-8.  CompressorSource   = The absolute path to the GZip compression provider source code
-9.  ConversionSource   = The absolute path to the CLR wrapper source code
-10. CommonSourcePath   = The absolute path to the common PowerPass script
-11. LockerFolderPath   = The absolute path to the folder where PowerPass stores your Locker
-12. LockerFilePath     = The absolute path to your Locker file
-13. LockerSaltPath     = The absolute path to your Locker's salt file
-14. Implementation     = The type of implementation either "DPAPI" or "AES", in this case "DPAPI"
-15. Version            = The version number of the PowerPass release you have installed
-```
+# Import-PowerPassLocker
+# SYNOPSIS
+Imports an encrypted PowerPass locker created from Export-PowerPassLocker.
+### DESCRIPTION
+You can import a PowerPass locker including all the locker secrets and attachments from an exported copy.
+You can import any locker, either from the AES edition or the DP API edition of PowerPass.
+You will be prompted to enter the password to the locker.
+### PARAMETER LockerFilePath
+The path to the locker file on disk. This is mandatory.
 ##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-windows-powershell-data-protection-api-and-keepass-2-edition)***
 # Import-PowerPassSecrets
 ### SYNOPSIS

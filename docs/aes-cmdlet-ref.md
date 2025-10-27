@@ -20,19 +20,21 @@ The AES edition of PowerPass works on Windows PowerShell and PowerShell 7 on Lin
 17. [Write-PowerPassSecret](#write-powerpasssecret): adds secrets to your Locker
 
 Here are the cmdlets for the AES edition of PowerPass.
+
 # Add-PowerPassAttachment
+
 ### SYNOPSIS
 Adds files from the file system into your locker. The difference between `Add-PowerPassAttachment` and
 `Write-PowerPassAttachment` is the Add amdlet is optimized for bulk adds from the pipeline using `Get-ChildItem`.
 Also, the Add cmdlet does not prompt for a filename, but rather uses the filename, either the short name or
 full path, of the file on disk as the filename in your locker.
 Any files that already exist in your locker will be updated.
-### PARAMETER **FileInfo** `[System.IO.FileInfo]` _REQUIRED_
-One or more `FileInfo` objects collected from `Get-Item` or `Get-ChildItem`. Can be passed via pipeline.
+### PARAMETER **FileInfo** `[System.IO.FileInfo]`
+**Required.** One or more `FileInfo` objects collected from `Get-Item` or `Get-ChildItem`. Can be passed via pipeline.
 ### PARAMETER **FullPath** `[switch]`
-If specified, the full file path will be saved as the file name.
+Optional. If specified, the full file path will be saved as the file name.
 ### PARAMETER **GZip** `[switch]`
-Enable GZip compression.
+Optional. If specified, enables GZip compression.
 ### EXAMPLE 1: Save All the Files in the Current Directory
 In this example we load all the files from the current directory into our locker.
 ```powershell
@@ -67,30 +69,34 @@ Rather than using `Write-PowerPassAttachment`, you can use `Add-PowerPassAttachm
 to your locker at once by piping the output of `Get-ChildItem` to `Add-PowerPassAttachment`. Each file fetched
 by `Get-ChildItem` will be added to your locker using either the file name or the full path.
 ##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-aes-edition)***
+
 # Clear-PowerPassLocker
+
 ### SYNOPSIS
-Deletes all your locker secrets and your locker key. PowerPass will generate a new locker and key
+Deletes all your locker secrets, locker attachments and your locker key. PowerPass will generate a new locker and key
 for you the next time you write or read secrets to or from your locker.
 ### PARAMETER **Force** `[switch]`
-WARNING: If you specify Force, your locker and key or salt will be removed WITHOUT confirmation.
+Optional. WARNING: If you specify Force, your locker and key will be removed WITHOUT confirmation.
 ##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-aes-edition)***
+
 # Export-PowerPassAttachment
+
 ### SYNOPSIS
-Exports one or more attachments from your locker.
-### PARAMETER FileName
-The filename of the attachment to fetch. Supports wildcard matching.
-### PARAMETER Path
-The Path to the directory to output the file(s). Overrides LiteralPath.
-### PARAMETER LiteralPath
-The LiteralPath to the directory to output the file(s).
-### PARAMETER OriginalPath
-An optional switch that, when specified, uses the path of the file in the locker,
+Exports one or more attachments from your locker to disk.
+### PARAMETER **FileName** `[string]`
+**Required.** The filename of the attachment to fetch. Supports wildcard matching via the `-like` operator.
+### PARAMETER **Path** `[string]`
+Option 1. The Path to the directory to output the file(s). Overrides LiteralPath.
+### PARAMETER **LiteralPath** `[string]`
+Option 2. The LiteralPath to the directory to output the file(s).
+### PARAMETER **OriginalPath** `[switch]`
+Option 3. An switch that, when specified, uses the path of the file in the locker,
 assuming that file in the locker has a full path, otherwise the file will be
 exported to the current directory. Cannot be combined with Path or LiteralPath.
-### PARAMETER Force
-An optional switch that will force-overwrite any existing files on disk.
+### PARAMETER **Force** `[switch]`
+Optional. An optional switch that will force-overwrite any existing files on disk.
 ### OUTPUTS
-This cmdlet outputs the FileInfo for each exported file.
+This cmdlet outputs the `FileInfo` for each exported file.
 ### EXAMPLE 1
 In this example we export a specific attachment to a specified directory.
 ```powershell
@@ -105,15 +111,17 @@ These attachments were loaded into our locker using `Add-PowerPassAttachment` wi
 Export-PowerPassAttachment -FileName "C:\Secrets\*" -OriginalPath
 ```
 ##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-aes-edition)***
+
 # Export-PowerPassLocker
+
 ### SYNOPSIS
 Exports your PowerPass Locker to an encrypted backup file named `powerpass_locker.bin` in the directory
 specified by the `Path` parameter.
+### PARAMETER **Path** `[string]`
+**Required.** The path to the directory where the exported file will go. This is mandatory, and this path must exist.
 ### DESCRIPTION
 You will be prompted to enter a password to encrypt the locker. The password must be
 between 4 and 32 characters.
-### PARAMETER Path
-The path where the exported file will go. This is mandatory, and this path must exist.
 ### OUTPUTS
 This cmdlet does not output to the pipeline. It creates the file `powerpass_locker.bin`
 in the target `Path`. If the file already exists, you will be prompted to replace it.
@@ -121,24 +129,27 @@ in the target `Path`. If the file already exists, you will be prompted to replac
 In this example, we backup our Locker and key to a USB drive mounted as the E: drive.
 ```powershell
 # Backup my locker and key to a USB drive
-Export-PowerPassLocker -Path "E:\" -Password "mySecretPassphrase"
+Export-PowerPassLocker -Path "E:\"
 ```
 ##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-aes-edition)***
 # Get-PowerPass
 ### SYNOPSIS
 Gets all the information about this PowerPass deployment.
 ### OUTPUTS
-A PSCustomObject with these properties:
-* AesCryptoSourcePath : The path on disk to the AesCrypto.cs source code for AES support
-* CommonSourcePath    : The path on disk to the PowerPass.Common.ps1 common script
-* CompressorPath      : The path on disk to the Compression.cs source code for GZip support
-* ConversionPath      : The path on disk to the Conversion.cs CLR wrappers source code
-* LockerFolderPath    : The folder where your locker is stored
-* LockerFilePath      : The absolute path to your PowerPass locker on disk
-* LockerKeyFolderPath : The folder where your locker key is stored
-* LockerKeyFilePath   : The absolute path to your PowerPass locker key file
-* Implementation      : The implementation you are using, either AES or DPAPI
-* Version             : The version number of the PowerPass module you have deployed
+A `PSCustomObject` with these properties:
+```
+1.  AesCryptoSourcePath : The path on disk to the AesCrypto.cs source code for AES support
+2.  CommonSourcePath    : The path on disk to the PowerPass.Common.ps1 common script
+3.  CompressorPath      : The path on disk to the Compression.cs source code for GZip support
+4.  ConversionPath      : The path on disk to the Conversion.cs CLR wrappers source code
+5.  LockerFolderPath    : The folder where your locker is stored
+6.  LockerFilePath      : The absolute path to your PowerPass locker on disk
+7.  LockerKeyFolderPath : The folder where your locker key is stored
+8.  LockerKeyFilePath   : The absolute path to your PowerPass locker key file
+9.  Implementation      : The implementation you are using, either AES or DPAPI
+10. Version             : The version number of the PowerPass module you have deployed
+11. CustomSettingsFile  : The path on disk to the file where custom settings are stored
+```
 
 You can access these properties after assigning the output of `Get-PowerPass` to a variable.
 ##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-aes-edition)***
@@ -151,18 +162,30 @@ Outputs each attachment from your locker including the FileName, Created date, a
 ##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-aes-edition)***
 # Import-PowerPassLocker
 ### SYNOPSIS
-Imports a PowerPass locker file.
+Imports a PowerPass locker file from disk created with `Export-PowerPassLocker`.
+### PARAMETER **LockerFile** `[string]`
+**Required.** The path to the locker file on disk to import.
+### PARAMETER **Force** `[switch]`
+Optional. Import the locker files without prompting for confirmation.
+### PARAMETER **Merge** `[switch]`
+Optional. Merge the imported secrets and attachments into the existing locker. Existing secrets will be updated with
+values from the import file. Existing attachments will be updated with values from the import file.
 ### DESCRIPTION
-You will be prompted to enter the locker password.
-### PARAMETER LockerFile
-The path to the locker file on disk to import.
-### PARAMETER Force
-Import the locker files without prompting for confirmation.
-### EXAMPLE
+When you import a Locker from disk it will overwrite your existing Locker secrets and attachments with the
+contents from the `LockerFile`. You can merge the secrets and attachments into your existing locker by specifying
+the `Merge` parameter. You will always be prompted to enter the locker's password that was used when the export
+was creating using `Export-PowerPassLocker`.
+### EXAMPLE 1: Import and Replace
 In this example, we import a Locker file which will overwrite your existing Locker file if you have one.
 ```powershell
 # Import my old locker file
-Import-PowerPassLocker -LockerFile "E:\Backup\powerpass_locker.bin" -Password "mySecretPassphrase"
+Import-PowerPassLocker -LockerFile "E:\Backup\powerpass_locker.bin"
+```
+### EXAMPLE 2: Import and Merge
+In this example, we import a Locker file from disk and merge the secrets and attachments into our existing Locker.
+```powershell
+# Import a secondary locker file with additional secrets and attachments
+Import-PowerPassLocker -LockerFile "C:\Users\janedoe\Downloads\company_locker_data.bin" -Merge
 ```
 ##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-aes-edition)***
 # New-PowerPassRandomPassword
