@@ -27,7 +27,7 @@ Adds files from the file system into your locker. The difference between `Add-Po
 Also, the Add cmdlet does not prompt for a filename, but rather uses the filename, either the short name or
 full path, of the file on disk as the filename in your locker.
 Any files that already exist in your locker will be updated.
-### PARAMETER **FileInfo** `[System.IO.FileInfo]` __REQUIRED__
+### PARAMETER **FileInfo** `[System.IO.FileInfo]` _REQUIRED_
 One or more `FileInfo` objects collected from `Get-Item` or `Get-ChildItem`. Can be passed via pipeline.
 ### PARAMETER **FullPath** `[switch]`
 If specified, the full file path will be saved as the file name.
