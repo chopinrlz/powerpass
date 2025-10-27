@@ -1,5 +1,5 @@
 # PowerPass Cmdlet Reference for the AES Edition
-#### _Revised: July 31, 2025_
+#### _Revised: October 27, 2025_
 The AES edition of PowerPass works on Windows PowerShell and PowerShell 7 on Linux, MacOS, and Windows. These are the cmdlets:
 1. [Add-PowerPassAttachment](#add-powerpassattachment): adds one or more attachments (files) into your Locker
 2. [Clear-PowerPassLocker](#clear-powerpasslocker): erases all secrets and attachments from your Locker
@@ -13,9 +13,11 @@ The AES edition of PowerPass works on Windows PowerShell and PowerShell 7 on Lin
 10. [Read-PowerPassSecret](#read-powerpasssecret): fetches one or more secrets from your Locker
 11. [Remove-PowerPassAttachment](#remove-powerpassattachment): deletes an attachment (file) from your Locker
 12. [Remove-PowerPassSecret](#remove-powerpasssecret): deletes a secret from your Locker
-13. [Update-PowerPassKey](#update-powerpasskey): rotates your Locker key
-14. [Write-PowerPassAttachment](#write-powerpassattachment): adds one attachment (file) into your Locker
-15. [Write-PowerPassSecret](#write-powerpasssecret): adds secrets to your Locker
+13. [Set-PowerPass](#set-powerpass): change the file locations of your Locker and key
+14. [Update-PowerPass](#update-powerpass): updates your Locker to the latest revision
+15. [Update-PowerPassKey](#update-powerpasskey): rotates your Locker key
+16. [Write-PowerPassAttachment](#write-powerpassattachment): adds one attachment (file) into your Locker
+17. [Write-PowerPassSecret](#write-powerpasssecret): adds secrets to your Locker
 
 Here are the cmdlets for the AES edition of PowerPass.
 # Add-PowerPassAttachment
@@ -25,11 +27,11 @@ Adds files from the file system into your locker. The difference between `Add-Po
 Also, the Add cmdlet does not prompt for a filename, but rather uses the filename, either the short name or
 full path, of the file on disk as the filename in your locker.
 Any files that already exist in your locker will be updated.
-### PARAMETER FileInfo
+### PARAMETER FileInfo `[System.IO.FileInfo]`
 One or more `FileInfo` objects collected from `Get-Item` or `Get-ChildItem`. Can be passed via pipeline.
-### PARAMETER FullPath
+### PARAMETER FullPath `[switch]`
 If specified, the full file path will be saved as the file name.
-### PARAMETER GZip
+### PARAMETER GZip `[switch]`
 Enable GZip compression.
 ### EXAMPLE 1: Save All the Files in the Current Directory
 In this example we load all the files from the current directory into our locker.
