@@ -27,7 +27,7 @@ Adds files from the file system into your locker. The difference between `Add-Po
 Also, the Add cmdlet does not prompt for a filename, but rather uses the filename, either the short name or
 full path, of the file on disk as the filename in your locker.
 Any files that already exist in your locker will be updated.
-### PARAMETER **FileInfo** `[System.IO.FileInfo]`
+### PARAMETER **FileInfo** `[System.IO.FileInfo]` __REQUIRED__
 One or more `FileInfo` objects collected from `Get-Item` or `Get-ChildItem`. Can be passed via pipeline.
 ### PARAMETER **FullPath** `[switch]`
 If specified, the full file path will be saved as the file name.
@@ -59,17 +59,20 @@ from the location on disk as the filename and we enable GZip compression for eac
 # Compress and attach all files in the current directory using the full path and filename
 Get-ChildItem | Add-PowerPassAttachment -FullPath -GZip
 ```
-##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-aes-edition)***
+### REMARKS
+The `FileInfo` parameter is not bound to a specific type meaning you can pass anything as its value.
+The implementation, however, will ignore any objects that are not `[System.IO.FileInfo]` types.
 ### NOTES
-Rather than using Write-PowerPassAttachment, you can use Add-PowerPassAttachment to add multiple files
-to your locker at once by piping the output of Get-ChildItem to Add-PowerPassAttachment. Each file fetched
-by Get-ChildItem will be added to your locker using either the file name or the full path.
+Rather than using `Write-PowerPassAttachment`, you can use `Add-PowerPassAttachment` to add multiple files
+to your locker at once by piping the output of `Get-ChildItem` to `Add-PowerPassAttachment`. Each file fetched
+by `Get-ChildItem` will be added to your locker using either the file name or the full path.
+##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-aes-edition)***
 # Clear-PowerPassLocker
 ### SYNOPSIS
 Deletes all your locker secrets and your locker key. PowerPass will generate a new locker and key
 for you the next time you write or read secrets to or from your locker.
-### PARAMETER Force
-WARNING: If you specify Force, your locker and salt will be removed WITHOUT confirmation.
+### PARAMETER **Force** `[switch]`
+WARNING: If you specify Force, your locker and key or salt will be removed WITHOUT confirmation.
 ##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-aes-edition)***
 # Export-PowerPassAttachment
 ### SYNOPSIS
