@@ -116,12 +116,11 @@ Export-PowerPassAttachment -FileName "C:\Secrets\*" -OriginalPath
 
 ### SYNOPSIS
 Exports your PowerPass Locker to an encrypted backup file named `powerpass_locker.bin` in the directory
-specified by the `Path` parameter.
+specified by the `Path` parameter. You will be prompted to enter a password to encrypt the locker. The password must be
+between 4 and 32 characters.
 ### PARAMETER **Path** `[string]`
 **Required.** The path to the directory where the exported file will go. This is mandatory, and this path must exist.
-### DESCRIPTION
-You will be prompted to enter a password to encrypt the locker. The password must be
-between 4 and 32 characters.
+This can also be passed from the pipeline.
 ### OUTPUTS
 This cmdlet does not output to the pipeline. It creates the file `powerpass_locker.bin`
 in the target `Path`. If the file already exists, you will be prompted to replace it.
@@ -132,7 +131,9 @@ In this example, we backup our Locker and key to a USB drive mounted as the E: d
 Export-PowerPassLocker -Path "E:\"
 ```
 ##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-aes-edition)***
+
 # Get-PowerPass
+
 ### SYNOPSIS
 Gets all the information about this PowerPass deployment.
 ### OUTPUTS
@@ -153,14 +154,23 @@ A `PSCustomObject` with these properties:
 
 You can access these properties after assigning the output of `Get-PowerPass` to a variable.
 ##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-aes-edition)***
+
 # Get-PowerPassAttachments
+
 ### SYNOPSIS
-Exports all the attachments to a list so you can search for attachments and see what attachments are
+Exports all the attachments to a collection so you can search for attachments and see what attachments are
 in your locker without exposing the file data.
 ### OUTPUTS
-Outputs each attachment from your locker including the FileName, Created date, and Modified date.
+Outputs each attachment from your locker with three properties: `FileName`, `Created`, and `Modified`.
+```
+1. FileName : the name of the attachment in your Locker
+2. Created  : the date and time (UTC) when the attachment was created in your Locker
+3. Modified : the date and time (UTC) when the attachment was last modified in your Locker
+```
 ##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-aes-edition)***
+
 # Import-PowerPassLocker
+
 ### SYNOPSIS
 Imports a PowerPass locker file from disk created with `Export-PowerPassLocker`.
 ### PARAMETER **LockerFile** `[string]`
@@ -188,34 +198,44 @@ In this example, we import a Locker file from disk and merge the secrets and att
 Import-PowerPassLocker -LockerFile "C:\Users\janedoe\Downloads\company_locker_data.bin" -Merge
 ```
 ##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-aes-edition)***
+
 # New-PowerPassRandomPassword
+
 ### SYNOPSIS
 Generates a random password from all available standard US 101-key keyboard characters.
-### PARAMETER Length
-The length of the password to generate. Can be between 1 and 65536 characters long. Defaults to 24.
+### PARAMETER **Length** `[int]`
+Optional. The length of the password to generate. Can be between 1 and 65536 characters long. Defaults to 24.
 ### OUTPUTS
 Outputs a random string of typable characters to the pipeline which can be used as a password.
 ##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-aes-edition)***
+
 # Read-PowerPassAttachment
+
 ### SYNOPSIS
-Reads an attachment from your locker.
-### PARAMETER FileName
-The filename of the attachment to fetch.
-### PARAMETER Raw
-An optional parameter that, when specified, will return the entire PSCustomObject for the attachment.
-Cannot be combined with AsText or Encoding.
-### PARAMETER AsText
-An optional parameter that, when specified, will return the attachment data as a Unicode string. Cannot
-be combined with Raw.
-### PARAMETER Encoding
-If `-AsText` is specified, you can optionally specify a specific encoding, otherwise the default encoding
-Unicode is used since Unicode is the default encoding used when writing text attachments into your locker.
+Reads an attachment from your locker including the data itself.
+### PARAMETER **FileName** `[string]`
+**Required.** The filename of the attachment to fetch. Can be passed from the pipeline.
+### PARAMETER **Raw** `[switch]`
+Optional. When specified will return the entire `PSCustomObject` for the attachment.
+Cannot be combined with `AsText` or `Encoding` parameters.
+### PARAMETER **AsText** `[switch]`
+Optional. When specified will return the attachment data as a string based on the specified
+`Encoding`. Cannot be combined with `Raw`.
+### PARAMETER **Encoding** `[string]`
+Optional. If `AsText` is specified, you can optionally specify a specific encoding, otherwise the default encoding
+`[System.Text.Encoding]::Unicode` is used since Unicode is the default encoding used when writing text attachments into your locker.
 This parameter can be useful if you stored a text attachment into your locker from a byte array since the
-contents of the file may be ASCII, UTF-8, or Unicode you can specify that with the `-Encoding` parameter.
+contents of the file may be ASCII, UTF-8, or Unicode you can specify that with the `Encoding` parameter. Options include:
+```
+Ascii
+Utf8
+Unicode
+```
 ### OUTPUTS
-Outputs the attachment data in byte[] format, or the PSCustomObject if -Raw was specified, or a
-string if -AsText was specified, or $null if no file was found matching the specified filename.
-### EXAMPLE 1
+Outputs the attachment data in `byte[]` format, or the `PSCustomObject` format if `Raw` was specified, or a
+`string` if `AsText` was specified, or `$null` if no file was found matching the specified filename. This cmdlet
+will not generate errors if no attachment was found.
+### EXAMPLE 1: Read Out an Attachments's Data
 In this example, we fetch a text file from our locker and convert it to a string using the UTF-8 encoding
 ourselves. The call to `Read-PowerPassAttachment` returns a `[byte[]]`.
 ```powershell
@@ -223,24 +243,24 @@ ourselves. The call to `Read-PowerPassAttachment` returns a `[byte[]]`.
 $bytes = Read-PowerPassAttachment -FileName "readme.txt"
 $str = ([System.Text.Encoding]::UTF8).GetString( $bytes )
 ```
-### EXAMPLE 2
+### EXAMPLE 2: Read Out a Text File Attachment into a String
 In this example, we fetch a text file from our locker and have PowerPass convert it to a string using the
-Unicode encoding, the default encoding for text-based attachments. This example will not work properly if
-you write a UTF-8 text file attachment from a `[byte[]]` into your locker. In this case, follow Example 3.
+`Unicode` encoding, the default encoding for text-based attachments. This example will not work properly if
+you write a `UTF-8` text file attachment from a `[byte[]]` into your locker. In this case, follow Example 3.
 ```powershell
 # Get the readme file and have PowerPass encode it as a string
 $str = Read-PowerPassAttachment -FileName "readme.txt" -AsText
 ```
-### EXAMPLE 3
-In this example, we fetch a text file from our locker and have PowerPass convert it to a string using the
-UTF-8 encoding. We use UTF-8 because, when we added the attachment we added it using the `[byte[]]` of the
-file data itself, which is not encoded. Since we want the string back, we encode it to UTF-8 which is the
-encoding of the original file.
+### EXAMPLE 3: Read Out a UTF-8 Text File Attachment into a String
+In this example, we fetch a text file from our locker and have PowerPass convert it to a `string` using the
+`UTF-8` encoding. We use `UTF-8` because, when we added the attachment to our Locker we added it using the `[byte[]]` of the
+file data itself, **which is not encoded**. Since we want the string back and NOT the bytes, we encode it to `UTF-8` which is the
+encoding of the original file itself.
 ```powershell
 # Get the readme file as a UTF-8 string
 $str = Read-PowerPassAttachment -FileName "readme.txt" -AsText -Encoding Utf8
 ```
-### EXAMPLE 5
+### EXAMPLE 4: Read Out a Binary File into a Byte Array
 In this example, we fetch a binary file from our locker. Binary files are returned as `[byte[]]` objects.
 ```powershell
 # Get a certificate file as binary data
@@ -248,40 +268,51 @@ $bin = Read-PowerPassAttachment -FileName "certificate.pfx"
 ```
 Your PowerPass locker is a better place to store private key certificate files than sitting on the file system.
 This is the most useful purpose for attachments, but you can store anything you want.
-### EXAMPLE 6
+### EXAMPLE 5: Read Out a Raw Attachment and Get the Fields
 In this example, we get the raw `PSCustomObject` back from PowerPass and check its properties.
 File data for raw attachments is stored as base64-encoded text in the `Data` property.
 ```powershell
 # Get the readme file as a raw PSCustomObject
 Read-PowerPassAttachment -FileName "readme.txt" -Raw | Get-Member
 ```
+Attachments are `PSCustomObject` instances with the following properties:
+```
+1. FileName [string]   : the name of the file or the full path of the file when it was imported
+2. Data     [string]   : the base-64 encoded raw data of the file
+3. Created  [DateTime] : the date and time (UTC) when the attachment was created
+4. Modified [DateTime] : the date and time (UTC) the last time the attachment was modified
+5. Mfd      [bool]     : internal flag for deletion tagging
+6. GZip     [bool]     : a flag indicating the file data is compressed using GZip
+```
 ##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-aes-edition)***
+
 # Read-PowerPassSecret
+
 ### SYNOPSIS
 Reads secrets from your PowerPass locker.
-### PARAMETER Match
-An optional filter. If specified, only secrets whose Title matches this filter are output to the pipeline.
-Cannot be combined with Title as Title will be ignored if Match is specified.
-### PARAMETER Title
-An optional exact match filter. If specified, only the secret which exactly matches the Title will be
-output to the pipeline. Do not combine with Match as Title will be ignored if Match is specified.
-### PARAMETER PlainTextPasswords
-An optional switch which instructs PowerPass to output the passwords in plain-text. By default, all
-passwords are output as `SecureString` objects. You cannot combine this with `-AsCredential`.
-### PARAMETER AsCredential
-An optional switch which instructs PowerPass to output the secrets as `PSCredential` objects. You cannot
-combine this with `-PlainTextPasswords`.
+### PARAMETER **Match** `[string]`
+Optional. Pattern filter. If specified, only secrets whose Title matches this filter using the `-like` operator are output to the pipeline.
+Cannot be combined with `Title` as Title will be ignored if Match is specified.
+### PARAMETER **Title** `[string]`
+Optional. Exact match filter. If specified, only the secret with this Title will be
+output to the pipeline. Do not combine with `Match` as Title will be ignored if Match is specified.
+### PARAMETER **PlainTextPasswords** `[switch]`
+Optional. An optional switch which instructs PowerPass to output passwords in plain-text. By default, all
+passwords are output as `SecureString` objects. You cannot combine this with `AsCredential`.
+### PARAMETER **AsCredential** `[switch]`
+Optional. An optional switch which instructs PowerPass to output the secrets as `PSCredential` objects. You cannot
+combine this with `PlainTextPasswords`.
 ### OUTPUTS
-This cmdlet outputs PowerPass secrets from your locker to the pipeline. Each secret is a PSCustomObject
+This cmdlet outputs PowerPass secrets from your locker to the pipeline. Each secret is a `PSCustomObject`
 with these properties:
-1. Title     - the name, or title, of the secret, this value is unique to the locker
-2. UserName  - the username field string for the secret
-3. Password  - the password field for the secret, by default a SecureString
-4. URL       - the URL string for the secret
-5. Notes     - the notes string for the secret
-6. Expires   - the expiration date for the secret, by default December 31, 9999
-7. Created   - the date and time the secret was created in the locker
-8. Modified  - the date and time the secret was last modified
+1. **`Title     -`** the name, or title, of the secret, this value is unique to the locker
+2. **`UserName  -`** the username field string for the secret
+3. `Password  -` the password field for the secret, by default a SecureString
+4. `URL       -` the URL string for the secret
+5. `Notes     -` the notes string for the secret
+6. `Expires   -` the expiration date for the secret, by default December 31, 9999
+7. `Created   -` the date and time the secret was created in the locker
+8. `Modified  -` the date and time the secret was last modified
 
 You can access these properties after assigning the output to a variable.
 ### NOTES
