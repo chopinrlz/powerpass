@@ -1,5 +1,5 @@
 # Deployment
-#### _Revised: July 31, 2025_
+#### _Revised: October 28, 2025_
 PowerPass is not your typical PowerShell module.
 It works like a module, it's deployed like a module, but due to its nature it must be deployed using a deployment script packaged with PowerPass.
 Depending on the edition of PowerPass that you want to use, the AES edition or the Data Protection API edition (and in the future the TPM edition), PowerPass has different dependencies and requirements that are validated and/or configured at deployment time.
@@ -12,6 +12,19 @@ This guide will walk you through the deployment of PowerPass on Linux, MacOS, an
 First, you must install [PowerShell](https://github.com/PowerShell/PowerShell) if you haven't done so already, unless you are on Windows and plan to use Windows PowerShell which is built-in. If you already have PowerShell installed, follow the [Quick Start](#quick-start) next or skip ahead to [Deploying PowerPass](#deploying-powerpass).
 
 # Quick Start
+### Deploying from the Latest Release on macOS and Linux
+1. On Linux or macOS, you can download the latest `tar.gz` release from the [Releases](https://github.com/chopinrlz/powerpass/releases) page on Github.
+2. Unpack the tarball to a directory in `~` and open a PowerShell window
+3. Run the `Deploy-PowerPass.ps1` script provided with the build
+
+### Deploying from the Latest Release on Windows
+1. On Windows, you can download the latest `zip` release from the [Releases](https://github.com/chopinrlz/powerpass/releases) page on Github.
+2. Unzip the release zip file to your profile folder and open a PowerShell window there
+3. Run the `Deploy-PowerPass.ps1` script provided with the build
+
+# Development Builds
+You can clone the PowerPass repo if you want to use a development build.
+This is only recommended for testing and development as the `main` branch is not always stable.
 ### Deploying from Git on macOS and Linux
 On Linux or macOS, you can open a terminal and use these commands to clone the repo and deploy PowerPass from your home directory.
 ```bash
@@ -33,15 +46,15 @@ PS C:\Users\janedoe\Documents\powerpass> .\Deploy-PowerPass.ps1
 # Installing PowerShell
 ## Linux
 PowerPass runs on PowerShell 7 on Linux.
-### _[Main Article: Installing PowerShell on Linux](https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell-on-linux?view=powershell-7.4)_
+### _[Main Article: Installing PowerShell on Linux](https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell-on-linux?view=powershell-7.5)_
 PowerPass on Linux requires PowerShell 7 which is provided for many distros as an installable package.
 If you do not already have PowerShell 7 installed on your Linux distro, you can browse the [PowerShell readme file](https://github.com/PowerShell/PowerShell/blob/master/README.md) on GitHub for instructions on installing PowerShell 7 for your distro.
 <br/>
 Supported distros currently include:
-1. Alpine 3.20
-2. Debian 12
-3. RHEL (Red Hat Enterprise Linux) 8 or 9
-4. Ubuntu 20.04, 22.04, and 24.04  
+1. Alpine (latest)
+2. Debian (latest)
+3. RHEL (Red Hat Enterprise Linux) 7, 8, 9 and 10
+4. Ubuntu 20.04 through 24.04
 
 Once PowerShell 7 is installed, simply run the [deployment](#deploying-powerpass) script in PowerShell 7 to deploy PowerPass.
 ## MacOS
@@ -57,7 +70,7 @@ Once PowerShell 7 is installed, simply run the [deployment](#deploying-powerpass
 ## Windows
 PowerPass runs on Windows PowerShell 5.1 or PowerShell 7 on Windows.
 You will also need the .NET Framework 4.8.1 or higher if you use the Data Protection API edition.
-### _[Main Article: Installing PowerShell on Windows](https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell-on-windows?view=powershell-7.4)_
+### _[Main Article: Installing PowerShell on Windows](https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell-on-windows?view=powershell-7.5)_
 Installing PowerShell 7 on Windows can be done by downloading and running the installer from the [latest release](https://github.com/PowerShell/PowerShell/releases) of PowerShell on GitHub.
 
 # Deploying PowerPass
@@ -76,9 +89,9 @@ For the AES edition it will generate a key for you and deploy the module.
 For details on prerequisites for each implementation, please see the [Prerequisites](https://chopinrlz.github.io/powerpass/prerequisites) page.
 
 ## Step 1: Clone the Repository or Download a Release
-Clone https://github.com/chopinrlz/powerpass.git to a **writeable** folder on your local machine OR download and unpack **[the latest release](https://github.com/chopinrlz/powerpass/releases)**.
+Clone https://github.com/chopinrlz/powerpass.git to a **writeable** folder on your local machine **OR** download and unpack **[the latest release](https://github.com/chopinrlz/powerpass/releases)** (using the latest release is recommended).
 You must have write permissions to this folder.
-You must have `git` installed to clone the repo from GitHub.
+You must have `git` installed to clone the repo from GitHub but not for releases.
 You can download Git from [here](https://git-scm.com/downloads), but on Linux your distro likely has a package which includes git.
 ## Step 2: Run Deploy-PowerPass.ps1
 Open your target PowerShell environment, either PowerShell 7 or Windows PowerShell.
@@ -103,29 +116,34 @@ They will look like this:
 #### For the Data Protection API Edition
 ```powershell
 KeePassLibraryPath : C:\Users\janedoe\Documents\WindowsPowerShell\Modules\PowerPass\KeePassLib.dll
-KeePassLibAssembly : KeePassLib, Version=2.55.0.25753, Culture=neutral, PublicKeyToken=null
+KeePassLibAssembly : KeePassLib, Version=2.59.0.0, Culture=neutral, PublicKeyToken=null
 TestDatabasePath   : C:\Users\janedoe\Documents\WindowsPowerShell\Modules\PowerPass\TestDatabase.kdbx
 StatusLoggerSource : C:\Users\janedoe\Documents\WindowsPowerShell\Modules\PowerPass\StatusLogger.cs
 ExtensionsSource   : C:\Users\janedoe\Documents\WindowsPowerShell\Modules\PowerPass\Extensions.cs
 ModuleSaltFilePath : C:\Users\janedoe\Documents\WindowsPowerShell\Modules\PowerPass\powerpass.salt
 AesCryptoSource    : C:\Users\janedoe\Documents\WindowsPowerShell\Modules\PowerPass\AesCrypto.cs
+CompressorSource   : C:\Users\janedoe\Documents\WindowsPowerShell\Modules\PowerPass\Compression.cs
+ConversionSource   : C:\Users\janedoe\Documents\WindowsPowerShell\Modules\PowerPass\Conversion.cs
 CommonSourcePath   : C:\Users\janedoe\Documents\WindowsPowerShell\Modules\PowerPass\PowerPass.Common.ps1
 LockerFolderPath   : C:\Users\janedoe\AppData\Local\PowerPassV1
 LockerFilePath     : C:\Users\janedoe\AppData\Local\PowerPassV1\powerpass.locker
 LockerSaltPath     : C:\Users\janedoe\AppData\Local\PowerPassV1\locker.salt
 Implementation     : DPAPI
-Version            : 2.2.0
+Version            : 2.3.1
 ```
 #### For the AES Edition
 ```powershell
 AesCryptoSourcePath : C:\Users\janedoe\Documents\PowerShell\Modules\PowerPass\AesCrypto.cs
 CommonSourcePath    : C:\Users\janedoe\Documents\PowerShell\Modules\PowerPass\PowerPass.Common.ps1
+CompressorPath      : C:\Users\janedoe\Documents\PowerShell\Modules\PowerPass\Compression.cs
+ConversionPath      : C:\Users\janedoe\Documents\PowerShell\Modules\PowerPass\Conversion.cs
 LockerFolderPath    : C:\Users\janedoe\Documents
 LockerFilePath      : C:\Users\janedoe\Documents\.powerpass_locker
 LockerKeyFolderPath : C:\Users\janedoe\AppData\Local\powerpassv2
 LockerKeyFilePath   : C:\Users\janedoe\AppData\Local\powerpassv2\.locker_key
 Implementation      : AES
-Version             : 2.2.0
+Version             : 2.3.1
+CustomSettingsFile  : C:\Users\janedoe\Documents\.powerpass_settings
 ```
 PowerPass is now ready for use.
 ## Step 4: (Optional) Test the Deployment
@@ -139,7 +157,7 @@ Running `Read-PowerPassSecret` will initialize your PowerPass Locker with a defa
 This will confirm the Locker functionality of PowerPass is working properly.
 # Additional Information
 ## About KeePassLib
-PowerPass comes bundled with the KeePassLib 2.55 source code which is copyright 2003-2023 Dominik Reichl <dominik.reichl@t-online.de> and is licensed under the GNU Public License 2.0. A copy of this license is included in the LICENSE file in this repository. KeePassLib has not been modified from its release version. You can use PowerPass with KeePassLib 2.55 or with your own version of KeePassLib.
+PowerPass comes bundled with the KeePassLib 2.59 source code which is copyright 2003-2025 Dominik Reichl <dominik.reichl@t-online.de> and is licensed under the GNU Public License 2.0. A copy of this license is included in the LICENSE file in this repository. KeePassLib has not been modified from its release version. You can use PowerPass with KeePassLib 2.59 or with your own version of KeePassLib.
 ## Test Database Password
 You can alter the KeePass test database if you like. The master password to the test database TestDatabase.kdbx is "12345" without the quotation marks. The test database is stored in the module deployment directory.
 # All PowerPass Topics

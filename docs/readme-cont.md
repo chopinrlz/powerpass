@@ -1,5 +1,5 @@
 # How It Works
-#### _Revised: July 31, 2025_
+#### _Revised: October 28, 2025_
 ## AES Edition
 PowerPass on Linux, MacOS, or Windows in PowerShell 7 can read and write secrets from PowerPass Lockers encrypted with AES.
 

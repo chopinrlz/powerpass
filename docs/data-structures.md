@@ -1,5 +1,5 @@
 # Data Structures
-#### _Revised: July 31, 2025_
+#### _Revised: October 28, 2025_
 PowerPass uses the `PSCustomObject` type to define several custom data structures suitable for storing and recalling your PowerShell Locker, its Secrets and Attachments, as well as KeePass 2 databases and their connection information.
 ## Lockers
 Both the AES edition and the Data Protection API edition use the same data structures for common objects including:
@@ -25,15 +25,16 @@ However, for those who are curious, the Locker is a `PSCustomObject` with these 
 It is serialized as JSON before being encrypted and converted to a base-64 encoded string for storage.
 
 <table>
-<tr><th width="30%">Property Name</th><th>Data Type</th></tr>
-<tr><td width="30%">1. Secrets</td><td>PSCustomObject[]</td></tr>
-<tr><td width="30%">2. Attachments</td><td>PSCustomObject[]</td></tr>
-<tr><td width="30%">3. Created</td><td>System.DateTime (UTC)</td></tr>
-<tr><td width="30%">4. Modified</td><td>System.DateTime (UTC)</td></tr>
+<tr><th width="20%">Property Name</th><th>Data Type</th></tr>
+<tr><td width="15%">1. Secrets</td><td>PSCustomObject[]</td></tr>
+<tr><td width="20%">2. Attachments</td><td>PSCustomObject[]</td></tr>
+<tr><td width="15%">3. Created</td><td>System.DateTime (UTC)</td></tr>
+<tr><td width="15%">4. Modified</td><td>System.DateTime (UTC)</td></tr>
+<tr><td width="15%">5. Revision></td><td>Int32</td></tr>
 </table>
 
 ### Property: Secrets
-The `Secrets` property is an array of `PSCustomObject` items with Title, UserName, Password, URL, Notes, Expires, Created, and Modified fields. When you call the `Read-PowerPassSecret` cmdlet one or more of these objects are output to the pipeline for you. The Password is stored as a `SecureString` unless you specify the `-PlainTextPasswords` parameter in which case the password is returned from your Locker in plain-text as a `String`.
+The `Secrets` property is an array of `PSCustomObject` items with Title, UserName, Password, URL, Notes, Expires, Created, and Modified fields. When you call the `Read-PowerPassSecret` cmdlet one or more of these objects are output to the pipeline for you. The Password is stored as a `SecureString` unless you specify the `PlainTextPasswords` parameter in which case the password is returned from your Locker in plain-text as a `String`.
 
 <table>
 <tr><th width="30%">Property Name</th><th>Data Type</th><th>Purpose</th></tr>
