@@ -672,6 +672,17 @@ There is a new property called `Revision` on the Locker object which will inform
 Running this cmdlet on PowerPass 3 while you have a PowerPass 2 Locker configured will automatically update the Locker to revision 3.
 ##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-windows-powershell-data-protection-api-and-keepass-2-edition)***
 
+# Update-PowerPassSalt
+
+### SYNOPSIS
+Rotates the Locker salt to a new random key.
+### DESCRIPTION
+As a routine precaution, key rotation is recommended as a best practice when dealing with sensitive,
+encrypted data. When you rotate a key, PowerPass reencrypts your PowerPass Locker with a new Locker
+salt. This ensures that even if a previous encryption was broken, a new attempt must be made if an
+attacker regains access to your encrypted Locker.
+##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-windows-powershell-data-protection-api-and-keepass-2-edition)***
+
 # Write-PowerPassAttachment
 
 ### SYNOPSIS
