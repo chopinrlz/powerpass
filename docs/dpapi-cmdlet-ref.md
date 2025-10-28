@@ -22,7 +22,9 @@ The Windows PowerShell Data Protection API implementation supports Windows Power
 19. [Write-PowerPassSecret](#write-powerpasssecret): adds secrets to your Locker
 
 Continue reading for the cmdlet details.
+
 # Add-PowerPassAttachment
+
 ### SYNOPSIS
 Adds files from the file system into your locker. The difference between `Add-PowerPassAttachment` and
 `Write-PowerPassAttachment` is the Add amdlet is optimized for bulk adds from the pipeline using `Get-ChildItem`.
@@ -69,7 +71,9 @@ Rather than using `Write-PowerPassAttachment`, you can use `Add-PowerPassAttachm
 to your locker at once by piping the output of `Get-ChildItem` to `Add-PowerPassAttachment`. Each file fetched
 by `Get-ChildItem` will be added to your locker using either the file name or the full path.
 ##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-windows-powershell-data-protection-api-and-keepass-2-edition)***
+
 # Clear-PowerPassLocker
+
 ### SYNOPSIS
 Deletes all your locker secrets, locker attachments, and locker salt.
 ### PARAMETER Force `[switch]`
@@ -81,7 +85,9 @@ unique salt for this deployment which is used to encrypt your locker's salt. If 
 redeploying the module, you will no longer be able to access your locker and will need to start with a
 clean locker.
 ##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-windows-powershell-data-protection-api-and-keepass-2-edition)***
+
 # Export-PowerPassAttachment
+
 ### SYNOPSIS
 Exports one or more attachments from your locker to disk.
 ### PARAMETER **FileName** `[string]`
@@ -112,7 +118,9 @@ These attachments were loaded into our locker using `Add-PowerPassAttachment` wi
 Export-PowerPassAttachment -FileName "C:\Secrets\*" -OriginalPath
 ```
 ##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-windows-powershell-data-protection-api-and-keepass-2-edition)***
+
 # Export-PowerPassLocker
+
 ### SYNOPSIS
 Exports your PowerPass Locker to an encrypted backup file named `powerpass_locker.bin` in the directory
 specified by the `Path` parameter.
@@ -131,7 +139,9 @@ In this example, we backup our Locker and key to a USB drive mounted as the E: d
 Export-PowerPassLocker -Path "E:\"
 ```
 ##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-windows-powershell-data-protection-api-and-keepass-2-edition)***
+
 # Get-PowerPass
+
 ### SYNOPSIS
 Gets all the information about this PowerPass deployment.
 ### OUTPUTS
@@ -154,14 +164,23 @@ This cmdlet outputs a `PSCustomObject` with the following properties:
 15. Version            = The version number of the PowerPass release you have installed
 ```
 ##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-windows-powershell-data-protection-api-and-keepass-2-edition)***
+
 # Get-PowerPassAttachments
+
 ### SYNOPSIS
-Exports all the attachments to a list so you can search for attachments and see what attachments are
+Exports all the attachments to a collection so you can search for attachments and see what attachments are
 in your locker without exposing the file data.
 ### OUTPUTS
-Outputs each attachment from your locker including the FileName, Created date, and Modified date.
+Outputs each attachment from your locker with three properties: `FileName`, `Created`, and `Modified`.
+```
+1. FileName : the name of the attachment in your Locker
+2. Created  : the date and time (UTC) when the attachment was created in your Locker
+3. Modified : the date and time (UTC) when the attachment was last modified in your Locker
+```
 ##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-windows-powershell-data-protection-api-and-keepass-2-edition)***
+
 # Get-PowerPassSecret
+
 ### SYNOPSIS
 Retrieves secrets from a KeePass 2 database opened with `Open-PowerPassDatabase`.
 ### PARAMETER **Database** `[PSCustomObject]`
@@ -172,7 +191,7 @@ matches this filter. Use `*` for wildcards, use `?` for single characters, or sp
 an exact match. If this is not specified, all secrets will be returned.
 ### PARAMETER **PlainTextPasswords** `[switch]`
 Optional. A switch which will cause this cmdlet to output secrets with plain-text passwords. By default,
-passwords are returned as SecureString objects.
+passwords are returned as `SecureString` objects.
 ### DESCRIPTION
 This cmdlet will extract and decrypt the secrets stored in a KeePass 2 database which was opened using
 the `Open-PowerPassDatabase` cmdlet. An optional `Match` parameter can be specified to limit the secrets found
@@ -232,27 +251,55 @@ In this example, we demonstrate using the pipeline to get a secret with a single
 $secret = "C:\Secrets\KeePassDb.kdbx" | Open-PowerPassDatabase -WindowsUserAccount | Get-PowerPassSecret -Match "Domain Service Account"
 ```
 ##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-windows-powershell-data-protection-api-and-keepass-2-edition)***
+
 # Import-PowerPassLocker
+
 # SYNOPSIS
-Imports an encrypted PowerPass locker created from Export-PowerPassLocker.
-### DESCRIPTION
+Imports an encrypted PowerPass locker created from `Export-PowerPassLocker`.
+### PARAMETER **LockerFilePath** `[string]`
+**Required.** The path to the locker file on disk.
+### PARAMETER **Merge** `[switch]`
+Optional. Merge the imported secrets and attachments into your current locker.
+### PARAMETER **ByDate** `[switch]`
+Optional. When used with the `Merge` parameter will only update existing secrets and attachments which are older
+than their imported counterparts.
+### NOTES
 You can import a PowerPass locker including all the locker secrets and attachments from an exported copy.
 You can import any locker, either from the AES edition or the DP API edition of PowerPass.
 You will be prompted to enter the password to the locker.
-### PARAMETER LockerFilePath
-The path to the locker file on disk. This is mandatory.
+### EXAMPLE 1: Import and Replace
+In this example, we import a Locker file which will overwrite your existing Locker file if you have one.
+```powershell
+# Import my old locker file
+Import-PowerPassLocker -LockerFilePath "E:\Backup\powerpass_locker.bin"
+```
+### EXAMPLE 2: Import and Merge
+In this example, we import a Locker file from disk and merge the secrets and attachments into our existing Locker.
+```powershell
+# Import a secondary locker file with additional secrets and attachments
+Import-PowerPassLocker -LockerFilePath "C:\Users\janedoe\Downloads\company_locker_data.bin" -Merge
+```
+## EXAMPLE 3: Import and Merge Modified Items
+In this example we import a Locker file from disk and merge the secrets and attachments into our Locker
+but only those which are newer than the ones we already have.
+```powershell
+# Import a backup with updated items
+Import-PowerPassLocker -LockerFilePath "C:\Users\janedoe\Documents\my_locker_backup.bin" -Merge -ByDate
+```
 ##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-windows-powershell-data-protection-api-and-keepass-2-edition)***
+
 # Import-PowerPassSecrets
+
 ### SYNOPSIS
 Imports secrets from a KeePass 2 database into your PowerPass Locker.
-### PARAMETER Database
-The KeePass 2 database opened using `Open-PowerPassDatabase`.
-### PARAMETER Simple
-Ignores group names during import using only the Name of the secret as the Title for your Locker.
+### PARAMETER **Database** `[PSCustomObject]`
+**Required.** The KeePass 2 database opened using `Open-PowerPassDatabase`.
+### PARAMETER **Simple** `[switch]`
+Optional. Ignores group names during import using only the Name of the secret as the Title for your Locker.
 ### NOTES
 Secrets are imported using a full-path format for the title. Each KeePass 2
 secret will be prefixed with the parent groups where they are found. If a secret
-already exists in your Locker, you will be prompted to update it. Use the `-Simple`
+already exists in your Locker, you will be prompted to update it. Use the `Simple`
 parameter to import secrets using just the Name of the entry from KeePass.
 ### EXAMPLE
 Importing secrets into your Locker from KeePass 2 can be helpful when you want to copy or migrate your
@@ -267,15 +314,19 @@ $db = Open-PowerPassDatabase -Path ".\MyDatabase.kdbx" -KeyFile "C:\Secrets\MyKe
 Import-PowerPassSecrets -Database $db
 ```
 ##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-windows-powershell-data-protection-api-and-keepass-2-edition)***
+
 # New-PowerPassRandomPassword
+
 ### SYNOPSIS
 Generates a random password from all available standard US 101-key keyboard characters.
-### PARAMETER Length
-The length of the password to generate. Can be between 1 and 65536 characters long. Defaults to 24.
+### PARAMETER **Length** `[int]`
+Optional. The length of the password to generate. Can be between 1 and 65536 characters long. Defaults to 24.
 ### OUTPUTS
 Outputs a random string of typable characters to the pipeline which can be used as a password.
 ##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-windows-powershell-data-protection-api-and-keepass-2-edition)***
+
 # Open-PowerPassDatabase
+
 ### SYNOPSIS
 Opens a KeePass 2 database file.
 ### DESCRIPTION
@@ -284,16 +335,14 @@ parameters. This cmdlet will then create a PSCustomObject containing the KeePass
 along with the metadata about the database including its location on disk, log events from KeePass, and
 the collection of keys required to open it. You can then pipe or pass the output of this cmdlet to the
 Get-PowerPassSecret cmdlet to extract the encrypted secrets.
-### PARAMETER Path
-The path on disk to the KeePass file.
-### PARAMETER MasterPassword
+### PARAMETER **Path** `[string]`
+**Required.** The path on disk to the KeePass file.
+### PARAMETER **MasterPassword** `[SecureString]`
 If the KeePass 2 database uses a master password, include that here.
-### PARAMETER KeyFile
+### PARAMETER **KeyFile** `[string]`
 If the KeePass 2 database uses a key file, include the path to the key file here.
-### PARAMETER WindowsUserAccount
+### PARAMETER **WindowsUserAccount** `[switch]`
 If the KeePass 2 database uses the Windows user account, include this switch.
-### INPUTS
-This cmdlet does not take any pipeline input.
 ### OUTPUTS
 This cmdlet outputs a `PSCustomObject` containing the KeePass 2 database secrets. Pipe or pass this to
 `Get-PowerPassSecret` to extract the secrets from the database.
@@ -321,7 +370,7 @@ This method is more secure since the password for the database is stored in the 
 # where the master password is securely stored in your PowerPass Locker.
 #
 
-$sc = Read-PowerPassSecret -Match "My KeePass Database Password"
+$sc = Read-PowerPassSecret -Title "My KeePass Database Password"
 $db = Open-PowerPassDatabase -Path "C:\Secrets\MyKeePassDatabase.kdbx" -MasterPassword ($sc.Password)
 ```
 ### EXAMPLE 3: Open a KeePass 2 Database with a Key File
@@ -352,28 +401,30 @@ These databases can be opened using the `-WindowsUserAccount` parameter with `Op
 $db = Open-PowerPassDatabase -Path "C:\Secrets\MyKeePassDatabase.kdbx" -WindowsUserAccount
 ```
 ##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-windows-powershell-data-protection-api-and-keepass-2-edition)***
+
 # Open-PowerPassTestDatabase
+
 ### SYNOPSIS
 Opens the TestDatabase.kdbx database bundled with PowerPass for testing.
 ### DESCRIPTION
-When you use Open-PowerPassTestDatabase the PowerPass module will load the
-KeePass database TestDatabase.kdbx bundled with this module. By default,
-this database contains one key required to open it: the password 12345. You
+When you use `Open-PowerPassTestDatabase` the PowerPass module will load the
+KeePass database `TestDatabase.kdbx` bundled with this module. By default,
+this database contains one key required to open it: the password `12345`. You
 can open this database in KeePass 2. It was originally created with KeePass 2.
 The output from this cmdlet includes all the relevant properties and data
 required to access and read data from KeePass databases. It also showcases
-the standard PSCustomObject data structure utilized by the PowerPass module.
+the standard `PSCustomObject` data structure utilized by the PowerPass module.
 ### INPUTS
-This cmdlet has no inputs, but it depends on the TestDatabase.kdbx file bundled
+This cmdlet has no inputs, but it depends on the `TestDatabase.kdbx` file bundled
 with this module.
 ### OUTPUTS
-This cmdlet outputs a PSCustomObject with these properties:
+This cmdlet outputs a `PSCustomObject` with these properties:
 ```
-1. Secrets - the KeePassLib.PwDatabase instance which exposes the secrets contained within the test database
-2. StatusLogger - the PowerPass.StatusLogger instance which captures logging messages from KeePassLib
-3. LiteralPath - the absolute path to the test database on the local file system
-4. Connector - the KeePassLib.IOConnectionInfo instance which tells KeePassLib where to find the test database
-5. Keys - the collection of keys required to open the test database, in this case just the password key
+1. Secrets      : the KeePassLib.PwDatabase instance which exposes the secrets contained within the test database
+2. StatusLogger : the PowerPass.StatusLogger instance which captures logging messages from KeePassLib
+3. LiteralPath  : the absolute path to the test database on the local file system
+4. Connector    : the KeePassLib.IOConnectionInfo instance which tells KeePassLib where to find the test database
+5. Keys         : the collection of keys required to open the test database, in this case just the password key
 ```
 Below is a code example for how to use this cmdlet.
 ### EXAMPLE
@@ -394,26 +445,34 @@ foreach( $entry in $rootGroup.Entries ) {
 ### NOTES
 This function will fail if the test database file is not found in the module folder.
 ##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-windows-powershell-data-protection-api-and-keepass-2-edition)***
+
 # Read-PowerPassAttachment
+
 ### SYNOPSIS
-Reads an attachment from your locker.
-### PARAMETER FileName
-The filename of the attachment to fetch.
-### PARAMETER Raw
-An optional parameter that, when specified, will return the entire PSCustomObject for the attachment.
-Cannot be combined with AsText or Encoding.
-### PARAMETER AsText
-An optional parameter that, when specified, will return the attachment data as a Unicode string. Cannot
-be combined with Raw.
-### PARAMETER Encoding
-If `-AsText` is specified, you can optionally specify a specific encoding, otherwise the default encoding
-Unicode is used since Unicode is the default encoding used when writing text attachments into your locker.
+Reads an attachment from your locker including the data itself.
+### PARAMETER **FileName** `[string]`
+**Required.** The filename of the attachment to fetch. Can be passed from the pipeline.
+### PARAMETER **Raw** `[switch]`
+Optional. When specified will return the entire `PSCustomObject` for the attachment.
+Cannot be combined with `AsText` or `Encoding` parameters.
+### PARAMETER **AsText** `[switch]`
+Optional. When specified will return the attachment data as a string based on the specified
+`Encoding`. Cannot be combined with `Raw`.
+### PARAMETER **Encoding** `[string]`
+Optional. If `AsText` is specified, you can optionally specify a specific encoding, otherwise the default encoding
+`[System.Text.Encoding]::Unicode` is used since Unicode is the default encoding used when writing text attachments into your locker.
 This parameter can be useful if you stored a text attachment into your locker from a byte array since the
-contents of the file may be ASCII, UTF-8, or Unicode you can specify that with the `-Encoding` parameter.
+contents of the file may be ASCII, UTF-8, or Unicode you can specify that with the `Encoding` parameter. Options include:
+```
+Ascii
+Utf8
+Unicode
+```
 ### OUTPUTS
-Outputs the attachment data in byte[] format, or the PSCustomObject if -Raw was specified, or a
-string if -AsText was specified, or $null if no file was found matching the specified filename.
-### EXAMPLE 1
+Outputs the attachment data in `byte[]` format, or the `PSCustomObject` format if `Raw` was specified, or a
+`string` if `AsText` was specified, or `$null` if no file was found matching the specified filename. This cmdlet
+will not generate errors if no attachment was found.
+### EXAMPLE 1: Read Out an Attachments's Data
 In this example, we fetch a text file from our locker and convert it to a string using the UTF-8 encoding
 ourselves. The call to `Read-PowerPassAttachment` returns a `[byte[]]`.
 ```powershell
@@ -421,24 +480,24 @@ ourselves. The call to `Read-PowerPassAttachment` returns a `[byte[]]`.
 $bytes = Read-PowerPassAttachment -FileName "readme.txt"
 $str = ([System.Text.Encoding]::UTF8).GetString( $bytes )
 ```
-### EXAMPLE 2
+### EXAMPLE 2: Read Out a Text File Attachment into a String
 In this example, we fetch a text file from our locker and have PowerPass convert it to a string using the
-Unicode encoding, the default encoding for text-based attachments. This example will not work properly if
-you write a UTF-8 text file attachment from a `[byte[]]` into your locker. In this case, follow Example 3.
+`Unicode` encoding, the default encoding for text-based attachments. This example will not work properly if
+you write a `UTF-8` text file attachment from a `[byte[]]` into your locker. In this case, follow Example 3.
 ```powershell
 # Get the readme file and have PowerPass encode it as a string
 $str = Read-PowerPassAttachment -FileName "readme.txt" -AsText
 ```
-### EXAMPLE 3
-In this example, we fetch a text file from our locker and have PowerPass convert it to a string using the
-UTF-8 encoding. We use UTF-8 because, when we added the attachment we added it using the `[byte[]]` of the
-file data itself, which is not encoded. Since we want the string back, we encode it to UTF-8 which is the
-encoding of the original file.
+### EXAMPLE 3: Read Out a UTF-8 Text File Attachment into a String
+In this example, we fetch a text file from our locker and have PowerPass convert it to a `string` using the
+`UTF-8` encoding. We use `UTF-8` because, when we added the attachment to our Locker we added it using the `[byte[]]` of the
+file data itself, **which is not encoded**. Since we want the string back and NOT the bytes, we encode it to `UTF-8` which is the
+encoding of the original file itself.
 ```powershell
 # Get the readme file as a UTF-8 string
 $str = Read-PowerPassAttachment -FileName "readme.txt" -AsText -Encoding Utf8
 ```
-### EXAMPLE 5
+### EXAMPLE 4: Read Out a Binary File into a Byte Array
 In this example, we fetch a binary file from our locker. Binary files are returned as `[byte[]]` objects.
 ```powershell
 # Get a certificate file as binary data
@@ -446,31 +505,42 @@ $bin = Read-PowerPassAttachment -FileName "certificate.pfx"
 ```
 Your PowerPass locker is a better place to store private key certificate files than sitting on the file system.
 This is the most useful purpose for attachments, but you can store anything you want.
-### EXAMPLE 6
+### EXAMPLE 5: Read Out a Raw Attachment and Get the Fields
 In this example, we get the raw `PSCustomObject` back from PowerPass and check its properties.
 File data for raw attachments is stored as base64-encoded text in the `Data` property.
 ```powershell
 # Get the readme file as a raw PSCustomObject
 Read-PowerPassAttachment -FileName "readme.txt" -Raw | Get-Member
 ```
+Attachments are `PSCustomObject` instances with the following properties:
+```
+1. FileName [string]   : the name of the file or the full path of the file when it was imported
+2. Data     [string]   : the base-64 encoded raw data of the file
+3. Created  [DateTime] : the date and time (UTC) when the attachment was created
+4. Modified [DateTime] : the date and time (UTC) the last time the attachment was modified
+5. Mfd      [bool]     : internal flag for deletion tagging
+6. GZip     [bool]     : a flag indicating the file data is compressed using GZip
+```
 ##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-windows-powershell-data-protection-api-and-keepass-2-edition)***
+
 # Read-PowerPassSecret
+
 ### SYNOPSIS
 Reads secrets from your PowerPass locker.
-### PARAMETER Match
-An optional filter. If specified, only secrets whose Title matches this filter are output to the pipeline.
-Do not combine with Title as Title will be ignored if Match is specified.
-### PARAMETER Title
-An optional exact match filter. If specified, only the one secret with the Title specified will be returned.
-Cannot be combined with Match as Title will be ignored if Match is specified.
-### PARAMETER PlainTextPasswords
-An optional switch which instructs PowerPass to output the passwords in plain-text. By default, all
-passwords are output as SecureString objects. You cannot combine this with AsCredential.
-### PARAMETER AsCredential
-An optional switch which instructs PowerPass to output the secrets as a PSCredential object. You cannot
-combine this with PlainTextPasswords.
+### PARAMETER **Match** `[string]`
+Optional. Pattern filter. If specified, only secrets whose Title matches this filter using the `-like` operator are output to the pipeline.
+Cannot be combined with `Title` as Title will be ignored if Match is specified.
+### PARAMETER **Title** `[string]`
+Optional. Exact match filter. If specified, only the secret with this Title will be
+output to the pipeline. Do not combine with `Match` as Title will be ignored if Match is specified.
+### PARAMETER **PlainTextPasswords** `[switch]`
+Optional. An optional switch which instructs PowerPass to output passwords in plain-text. By default, all
+passwords are output as `SecureString` objects. You cannot combine this with `AsCredential`.
+### PARAMETER **AsCredential** `[switch]`
+Optional. An optional switch which instructs PowerPass to output the secrets as `PSCredential` objects. You cannot
+combine this with `PlainTextPasswords`.
 ### OUTPUTS
-This cmdlet outputs PowerPass secrets from your locker to the pipeline. Each secret is a PSCustomObject
+This cmdlet outputs PowerPass secrets from your locker to the pipeline. Each secret is a `PSCustomObject`
 with these properties:
 ```
 1. Title     - the name, or title, of the secret, this value is unique to the locker
@@ -481,24 +551,25 @@ with these properties:
 6. Expires   - the expiration date for the secret, by default December 31, 9999
 7. Created   - the date and time the secret was created in the locker
 8. Modified  - the date and time the secret was last modified
+9. Mfd       - internal flag used for deletion processing
 ```
+You can access these properties after assigning the output to a variable.
 ### NOTES
 When you use PowerPass for the first time, PowerPass creates a default secret in your locker with the
 Title "Default" with all fields populated as an example of the data structure stored in the locker.
-You can delete or change this secret by using Write-PowerPassSecret or Delete-PowerPassSecret and specifying
+You can delete or change this secret by using `Write-PowerPassSecret` or `Remove-PowerPassSecret` and specifying
 the Title of "Default".
-### EXAMPLE 1: Get All the Secrets from your Locker
-Calling the cmdlet by itself will output all your Locker secrets.
+### EXAMPLE 1: Get a Secret by Exact Title
+In this example we fetch a secret using an exact Title match which we expect to find in our locker.
+If no secret matching the Title is found, nothing is returned. This was the main purpose for the creation of PowerPass:
+to fetch a specific secret at run-time. The Title match is NOT case-sensitive.
 ```powershell
-# Get all my locker secrets
-$secrets = Read-PowerPassSecret
-foreach( $s in $secrets ) {
-    $s.Title
-}
+# Get a specific secret from the locker
+$sec = Read-PowerPassSecret -Title "Domain Admin Account"
 ```
-### EXAMPLE 2: Get a Specific Secret from your Locker
-Rather than fetching everything, you can use a match to fetch one or more secrets where the `Title` of the secret matches the filter you provide.
-You can incorporate wildcards or RegEx in your `Match` parameter to get the secrets by exact title or by pattern.
+### EXAMPLE 2: Get Matching Secrets from your Locker
+In this example we fetch a collection of secrets which match a pattern. You can incorporate wildcards or RegEx in
+the `Match` parameter to get secrets by exact title or by pattern.
 ```powershell
 # Find all the domain logins
 $domainLogins = Read-PowerPassSecret -Match "Domain Account for *"
@@ -506,59 +577,75 @@ foreach( $s in $domainLogins ) {
     $s.Title
 }
 ```
-### EXAMPLE 3: Get a Secret with the Password in Plain Text
+### EXAMPLE 3: Get All the Secrets from your Locker
+Calling this cmdlet by itself will output all your Locker secrets. **NOTE: This is generally not recommended.** Doing this without
+applying any `Match` or `Title` filter will load every secret from your locker into memory. Passwords will remain protected on output
+and will only be decoded if you specify the `PlainTextPasswords` parameter. Therefore you should generally avoid calling
+`Read-PowerPassSecret -PlainTextPasswords` to avoid exposing all your Locker secrets. Fully decrypted and decoded Locker secrets
+will remain resident in memory until the .NET garbage collector cleans them up. Rather than fetching everything, you should use a
+match to fetch one or more secrets where the `Title` of the secret matches the filter you provide. The purpose of using PowerPass
+is to find a secret you know is already there because you put it there earlier, or you imported it from a file on disk at some prior
+time and now you need to fetch it.
+```powershell
+# Get all my locker secrets
+$secrets = Read-PowerPassSecret
+foreach( $s in $secrets ) {
+    $s.Title
+}
+```
+### EXAMPLE 4: Get a Secret with the Password in Plain Text
 There may be an occasion where you need the `Password` property in plain-text.
 A common example of this is when you need a Client ID and Client Secret for app-based authentication.
+For these situations use the `PlainTextPasswords` parameter to fetch the password in plain-text.
 ```powershell
 # Get the secret in plain-text
-$s = Read-PowerPassSecret -Match "My Client App" -PlainTextPasswords
+$s = Read-PowerPassSecret -Title "My Client App" -PlainTextPasswords
 $clientId = $s.UserName
 $clientSecret = $s.Password
 ```
-### EXAMPLE 4: Get a Secret in PSCredential Format
-Many PowerShell cmdlets which require authentication support the PSCredential format.
+### EXAMPLE 5: Get a Secret in PSCredential Format
+Many PowerShell cmdlets which require authentication support the `PSCredential` format.
 You can fetch a secret from your locker in this format automatically and pass it directly to the other cmdlet.
-To create the `PSCredential`, the secret must have a `UserName` and a `Password` property set.
-If either property is blank, the operation may fail with an error.
 ```powershell
 # Get all the Active Directory users
-$svcAccount = Read-PowerPassSecret -Match "Domain Reader Service" -AsCredential
-Get-ADUser -Credential $svcAccount
-```
-### EXAMPLE 5: Get a Specific Secret by Title
-In this example we fetch a single secret by Title of a known secret we expect to be in our locker, one that was added earlier.
-If the Title we specify is not found in the locker, nothing will be returned.
-```powershell
-# Get the secret with this exact Title
-$sec = Read-PowerPassSecret -Title "Domain Admin Login"
-```
-### EXAMPLE 6: Get a Specific Secret as a Credential by Title
-In this example we fetch a single secret as a `PSCredential` by Title of a known secret we expect to be in our locker.
-If the Title we specify is not found in the locker, nothing will be returned.
-To create the `PSCredential`, the secret must have a `UserName` and a `Password` property set.
-If either property is blank, the operation may fail with an error.
-```powershell
-# Get the Domain Admin Login credential
-$svcAccount = Read-PowerPassSecret -Title "Domain Admin Login" -AsCredential
+$svcAccount = Read-PowerPassSecret -Title "Domain Reader Service" -AsCredential
 Get-ADUser -Credential $svcAccount
 ```
 ##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-windows-powershell-data-protection-api-and-keepass-2-edition)***
+
 # Remove-PowerPassAttachment
+
 ### SYNOPSIS
 Removes an attachment from your locker.
-### PARAMETER FileName
-The filename of the attachment to remove from your locker.
+### PARAMETER **FileName** `[string]`
+**Required.** The filename of the attachment to remove from your locker. Can be passed from the pipeline.
 ### NOTES
-The filename parameter can be passed from the pipeline. You can see what attachments are in your locker
-by running [Get-PowerPassAttachments](#get-powerpassattachments). You are not prompted to remove attachments.
+**You are not prompted to remove attachments from your Locker.** Attachments are immediately removed. The `FileName` parameter can be passed from
+the pipeline. You can see what attachments are in your locker by running [Get-PowerPassAttachments](#get-powerpassattachments).
+If you try to remove an attachment which does not exist nothing will happen, no error will be generated.
+### EXAMPLE 1: Removing an Attachment
+In this example we remove a specific attachment from our Locker that we no longer need.
+```powershell
+# Make sure our Locker no longer has this file
+Remove-PowerPassAttachment -FileName "private_key_pair.pfx"
+```
+### EXAMPLE 2: Removing Attachments we just Exported to Disk
+In this example we remove several attachments from our Locker after we export them to disk.
+```powershell
+# Export the attachments we need them remove them from our Locker
+Export-PowerPassAttachment -FileName "C:\PowerPass\Data\*" -OriginalPath -Force | % { Remove-PowerPassAttachment -FileName $_.FullName }
+```
 ##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-windows-powershell-data-protection-api-and-keepass-2-edition)***
+
 # Remove-PowerPassSecret
+
 ### SYNOPSIS
 Removes a secret from your locker.
-### PARAMETER Title
-The Title of the secret to remove from your locker.
+### PARAMETER **Title** `[string]`
+**Required.** The Title of the secret to remove from your locker. Can be passed from the pipeline.
 ### NOTES
-The Title parameter can be passed from the pipeline.
+**You are NOT prompted to remove secrets from your Locker.** Secrets are immediately removed. Attempts to remove
+secrets that do not exist will do nothing, no errors will be generated.
 ### EXAMPLE 1: Remove a Secret
 In this example we demonstrate removing a single secret from the Locker.
 ```powershell
@@ -571,63 +658,75 @@ In this example we demonstrate removing several secrets from the Locker at once.
 # Remove all the service accounts
 "svc_sqlserver","svc_sharepoint","svc_spadmin" | Remove-PowerPassSecret
 ```
-# Update-PowerPassSalt
-### SYNOPSIS
-Rotates the Locker salt to a new random key.
-### DESCRIPTION
-As a routine precaution, key rotation is recommended as a best practice when dealing with sensitive,
-encrypted data. When you rotate a key, PowerPass re-encrypts your PowerPass Locker with a new Locker
-salt. This ensures that even if a previous encryption was broken, a new attempt must be made if an
-attacker regains access to your encrypted Locker.
 ##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-windows-powershell-data-protection-api-and-keepass-2-edition)***
+
+# Update-PowerPass
+
+### SYNOPSIS
+Checks your Locker for any required updates then applies the updates.
+This cmdlet is also automatically run for you when you use the `Deploy-PowerPass.ps1` script.
+### NOTES
+Introduced in PowerPass 3, this cmdlet simplifies the upgrade process for older Locker files.
+PowerPass 2 added a new property to the Locker data structure while PowerPass 3 added one-time pad in-memory protection for secrets.
+There is a new property called `Revision` on the Locker object which will inform PowerPass of your Locker version.
+Running this cmdlet on PowerPass 3 while you have a PowerPass 2 Locker configured will automatically update the Locker to revision 3.
+##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-windows-powershell-data-protection-api-and-keepass-2-edition)***
+
 # Write-PowerPassAttachment
+
 ### SYNOPSIS
 Writes an attachment into your locker.
-### PARAMETER FileName
-The name of the file to write into your locker. If this file already exists, it will be updated.
-### PARAMETER Path
-Specify the Path to a file on disk. Cannot be combined with other parameters.
-### PARAMETER LiteralPath
-Specify the LiteralPath to a file on disk. Cannot be combined with other parameters.
-### PARAMETER Data
-Specify the Data for the file in any format, or from the pipeline such as from Get-ChildItem.
+### PARAMETER **FileName** `[string]`
+**Required.** The name of the file to write into your locker. If this file already exists, it will be updated.
+### PARAMETER **Path** `[string]`
+Option 1. Specify the Path to a file on disk. Cannot be combined with other parameters.
+### PARAMETER **LiteralPath** `[string]`
+Option 2. Specify the LiteralPath to a file on disk. Cannot be combined with other parameters.
+### PARAMETER **Data** `[object]`
+Option 3. Specify the Data for the file in any format, or from the pipeline such as from Get-ChildItem.
 See the examples below for how to use this parameter. Cannot be combined with other parameters.
-### PARAMETER Text
-Specify the contents of the file as a text string. Your attachment will be created with Unicode
+### PARAMETER **Text** `[string]`
+Option 4. Specify the contents of the file as a text string. Your attachment will be created with Unicode
 text encoding. Cannot be combined with other parameters.
-### PARAMETER GZip
-Enable GZip compression. Can only be used with Path, LiteralPath, or Data if Data is a FileInfo object.
+### PARAMETER **GZip** `[switch]`
+Optional. Enable GZip compression. Can only be used with `Path`, `LiteralPath`, or `Data` if Data is a `FileInfo` object.
 ### NOTES
-Data and Text in string format is encoded with Unicode. Data in PSCustomObject format is converted to JSON then
-encoded with Unicode. Byte arrays and FileInfo objects are stored natively with Byte encoding. Data in any other
-formats is converted to a string using the build-in .NET `ToString()` function then encoded with Unicode. To
-fetch text back from your locker saved as attachments use the `-AsText` parameter of `Read-PowerPassAttachment`
+`Data` and `Text` in `[string]` format is encoded with `Unicode`. Data in `PSCustomObject` format is serialized to JSON then
+encoded with `Unicode`. Byte arrays and `FileInfo` objects are stored natively with Byte encoding. Data in any other
+formats is converted to a string using the build-in .NET `ToString()` function then encoded with `Unicode`. To
+fetch text back from your locker saved as attachments use the `AsText` and `Encoding` parameters of `Read-PowerPassAttachment`
 to ensure the correct encoding is used.
-### EXAMPLE 1
+### EXAMPLE 1: Save a Binary File Attachment
 In this example we load a binary certificate file into our locker from a relative path.
 ```powershell
 # Add a certificate file from the current folder
 Write-PowerPassAttachment -FileName "certificate.pfx" -Path ".\cert.pfx"
 ```
-This example also supports adding GZip compression:
+### EXAMPLE 2: Save a Binary File Attachment Compressed
+In this example we load a binary certificate file into our locker from a relative path and compress it
+with GZip compression. This is usually recommended for large text files as most well-known file types
+already natively include compression.
 ```powershell
 # Add a certificate file from the current folder
 Write-PowerPassAttachment -FileName "certificate.pfx" -Path ".\cert.pfx" -GZip
 ```
-### EXAMPLE 2
+### EXAMPLE 3: Save a Binary File Attachment from a Literal Path
 In this example we local a binary certificate file into our locker from a literal path.
 ```powershell
 # Add the certificate file from C:\Private into our locker
 Write-PowerPassAttachment -FileName "certificate.pfx" -LiteralPath "C:\Private\cert.pfx"
 ```
-This example also supports adding GZip compression:
+### EXAMPLE 4: Save a Binary File Attachment from a Literal Path with Compression
+In this example we local a binary certificate file into our locker from a literal path and compress it
+with GZip compression. This is usually recommended for large text files as most well-known file types
+already natively include compression.
 ```powershell
 # Add the certificate file from C:\Private into our locker
 Write-PowerPassAttachment -FileName "certificate.pfx" -LiteralPath "C:\Private\cert.pfx" -GZip
 ```
-### EXAMPLE 3
-In this example we demonstrate using the `-Data` parameter to load a file from a byte array.
-This isn't necessary, as the `-Path` and `-LiteralPath` parameters provider better options,
+### EXAMPLE 5: Save a Byte Array as an Attachment
+In this example we demonstrate using the `Data` parameter to load a file from a byte array.
+This isn't necessary, as the `Path` and `LiteralPath` parameters provider better options,
 but this demonstrates the capability, for example if you are getting a `[byte[]]` from another
 library.
 ```powershell
@@ -637,8 +736,8 @@ Write-PowerPassAttachment -FileName "certificate.pfx" -Data $data
 ```
 Keep in mind you cannot do this in PowerShell 7 because `-Encoding Byte` is not an option.
 Use the `-Path` or `-LiteralPath` parameters instead to save binary files as attachments.
-### EXAMPLE 4
-In this example we demonstrate using the `-Data` parameter from the pipeline. `Get-Item`
+### EXAMPLE 6: Pipeline an Attachment from Get-Item
+In this example we demonstrate using the `Data` parameter from the pipeline. `Get-Item`
 outputs a `FileInfo` object which PowerPass will process automatically for you. To do this
 with multiple files, see [Add-PowerPassAttachment](#add-powerpassattachment) which is optimized
 for multiple files coming from the pipeline.
@@ -646,13 +745,13 @@ for multiple files coming from the pipeline.
 # Get the file info for cert.pfx and save it as an attachment
 Get-Item ".\cert.pfx" | Write-PowerPassAttachment -FileName "certificate.pfx"
 ```
-This example also supports adding GZip compression:
+This example also supports the use of the `-GZip` parameter to enable GZip compression on the file.
 ```powershell
 # Get the file info for cert.pfx and save it as an attachment
 Get-Item ".\cert.pfx" | Write-PowerPassAttachment -FileName "certificate.pfx" -GZip
 ```
-### EXAMPLE 5
-In this example we demonstrate using the `-Data` parameter with `Get-Content` to save a text
+### EXAMPLE 7: Create an Attachment with Text from a File
+In this example we demonstrate using the `Data` parameter with `Get-Content` to save a text
 file which is output by `Get-Content` as an `[object[]]` with hard returns removed. Keep in
 mind that when you use `Read-PowerPassAttachment` to get the data back, the hard returns in
 the returned attachment data may not match those in the original file because they are stripped
@@ -661,10 +760,12 @@ from the data by `Get-Content`.
 # Save the text file readme.txt as an attachment
 Write-PowerPassAttachment -FileName "readme.txt" -Data (Get-Content ".\readme.txt")
 ```
-### EXAMPLE 6
-In this example we demonstrate using the `-Data` parameter to store a custom object as an
+### EXAMPLE 8: Create an Attachment from a Custom Data Structure
+In this example we demonstrate using the `Data` parameter to store a custom object as an
 attachment. This is very useful if you want to save a complex object into your locker that
-isn't a simple set of credentials.
+isn't a simple set of credentials. You can use PowerPass to serialize data in-memory into your
+Locker and keep it encrypted on disk for later use. Keep in mind this will not work properly
+with objects that cannot be serialized, like network sockets or window frames.
 ```powershell
 # Save a complex object as an attachment
 $data = [PSCustomObject]@{
@@ -673,41 +774,35 @@ $data = [PSCustomObject]@{
 }
 Write-PowerPassAttachment -FileName "custom-data.json" -Data $data
 ```
-### EXAMPLE 7
-In this example we demonstrate using the `-Text` parameter to save a text file as an attachment
-using the default encoding provided by PowerPass `Unicode`.
+### EXAMPLE 9: Save a Text File with Default Encoding
+In this example we demonstrate using the `Text` parameter to save a text file as an attachment
+using the default encoding provided by PowerPass: `Unicode`.
 ```powershell
 # Save the LICENSE text file as an attachment
 $license = Get-Content ".\LICENSE" -Raw
 Write-PowerPassAttachment -FileName "license.txt" -Text $license
 ```
 ##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-windows-powershell-data-protection-api-and-keepass-2-edition)***
+
 # Write-PowerPassSecret
+
 ### SYNOPSIS
-Writes a secret into your PowerPass locker.
-### DESCRIPTION
-Before you can read any secrets from your PowerPass locker you have to write them into your PowerPass locker.
-Use the `Write-PowerPassSecret` cmdlet to write secrets into your encrypted PowerPass locker and fetch them later.
-### PARAMETER Title
-Mandatory. The Title of the secret. This is unique to your locker. If you already have a secret in your
-locker with this Title, it will be updated, but only the parameters you specify will be updated.
-Can be set from the pipeline by property name.
-### PARAMETER UserName
-Optional. Sets the UserName property of the secret in your locker.
-Can be set from the pipeline by property name.
-### PARAMETER Password
-Optional. Sets the Password property of the secret in your locker.
-Can be set from the pipeline by property name.
-### PARAMETER URL
-Optional. Sets the URL property of the secret in your locker.
-Can be set from the pipeline by property name.
-### PARAMETER Notes
-Optional. Sets the Notes property of the secret in your locker.
-Can be set from the pipeline by property name.
-### PARAMETER Expires
-Optional. Sets the Expires property of the secret in your locker.
-Can be set from the pipeline by property name.
-### PARAMETER MaskPassword
+Writes one or more secrets into your PowerPass locker.
+### PARAMETER **Title** `[string]`
+**Required**. The Title of the secret. This is unique to your locker. If you already have a secret in your locker
+with this Title, it will be updated, but only the parameters you specify will be updated. Can be set from
+the pipeline by property name.
+### PARAMETER **UserName** `[string]`
+Optional. Sets the UserName property of the secret in your locker. Can be set from the pipeline by property name.
+### PARAMETER **Password** `[string]`
+Optional. Sets the Password property of the secret in your locker. Can be set from the pipeline by property name.
+### PARAMETER **URL** `[string]`
+Optional. Sets the URL property of the secret in your locker. Can be set from the pipeline by property name.
+### PARAMETER **Notes** `[string]`
+Optional. Sets the Notes property of the secret in your locker. Can be set from the pipeline by property name.
+### PARAMETER **Expires** `[DateTime]`
+Optional. Sets the Expires property of the secret in your locker. Can be set from the pipeline by property name.
+### PARAMETER **MaskPassword** `[switch]`
 An optional switch that, when specified, will prompt you to enter a password rather than having to use the Password parameter.
 ### EXAMPLE 1: Saving a Secret with a UserName and Password
 Most secrets are combinations of usernames and passwords.
@@ -718,10 +813,10 @@ Write-PowerPassSecret -Title "Domain Service Account" -UserName "DEV\svc_admin" 
 ```
 NOTE: It is important that you close your PowerShell terminal if you do this to avoid leaving the password on-screen to avoid exposing the password to others.
 You can also save a secret without having to specify the password as a parameter.
-Using the `-MaskPassword` parameter, PowerPass will prompt you for a password and mask the input.
+Using the `MaskPassword` parameter, PowerPass will prompt you for a password and mask the input.
 ```powershell
 # Store our new secret
-PS C:\Users\me> Write-PowerPassSecret -Title "Domain Service Account" -UserName "DEV\svc_admin" -MaskPassword
+Write-PowerPassSecret -Title "Domain Service Account" -UserName "DEV\svc_admin" -MaskPassword
 Enter the Password for the secret: *************
 ```
 ### EXAMPLE 2: Saving a Secret with a Random Password
@@ -739,6 +834,7 @@ In this example, we add some addition information to our `Domain Service Account
 # Add some more info to our Domain Service Account
 Write-PowerPassSecret -Title "Domain Service Account" -URL "https://intranet.dev.local" -Notes "Use this account to access AD" -Expires ((Get-Date).AddDays(90))
 ```
+In this example the existing secret named Domain Service Account is updated with a URL, Notes and an expiration date. The existing username and password remain unchanged.
 ### EXAMPLE 4: Bulk Loading Multiple Secrets
 In this example we show loading multiple secrets into your Locker from an external source in bulk.
 When you load multiple secrets into your Locker, it is more efficient to pipeline the collection of secrets into the Locker.
@@ -749,7 +845,7 @@ In the code below, we import a CSV file and load its contents into the Locker.
 # Import the secrets from a CSV file
 Import-Csv "MySecrets.csv" | Write-PowerPassSecret
 ```
-Assuming the CSV file is formatting to include a Title, an optionally a UserName, Password, URL, and Notes field, you can pass the imported CSV file object directly via the pipeline to the `Write-PowerPassSecret` cmdlet.
+Assuming the CSV file is formatted to include a Title, an optionally a UserName, Password, URL, and Notes field, you can pass the imported CSV file object directly via the pipeline to the `Write-PowerPassSecret` cmdlet.
 ### EXAMPLE 5: Bulk Loading Secrets from Custom Objects
 You can also use `PSCustomObject` instances to load secrets one at a time or in bulk such as from an array of secrets loaded from elsewhere.
 ```powershell
@@ -762,6 +858,8 @@ $mySecret = [PSCustomObject]@{
 $mySecret | Write-PowerPassSecret
 ```
 ##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-windows-powershell-data-protection-api-and-keepass-2-edition)***
+
 # All PowerPass Topics
+
 Select one of the links below to browse to another topic.
 ## [AES Cmdlet Reference](https://chopinrlz.github.io/powerpass/aes-cmdlet-ref) | [Data Structures](https://chopinrlz.github.io/powerpass/data-structures) | [Deployment](https://chopinrlz.github.io/powerpass/deployment) | [Domain Credentials](https://chopinrlz.github.io/powerpass/domain-credentials) | [DP API Cmdlet Reference](https://chopinrlz.github.io/powerpass/dpapi-cmdlet-ref) | [Home](https://chopinrlz.github.io/powerpass) | [How It Works](https://chopinrlz.github.io/powerpass/readme-cont) | [OneDrive Backup](https://chopinrlz.github.io/powerpass/onedrivebackup) | [Prerequisites](https://chopinrlz.github.io/powerpass/prerequisites) | [Release Notes](https://chopinrlz.github.io/powerpass/release-notes) | [Roadmap](https://chopinrlz.github.io/powerpass/roadmap) | [Usage](https://chopinrlz.github.io/powerpass/usage)

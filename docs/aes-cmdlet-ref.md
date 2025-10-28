@@ -197,6 +197,13 @@ In this example, we import a Locker file from disk and merge the secrets and att
 # Import a secondary locker file with additional secrets and attachments
 Import-PowerPassLocker -LockerFile "C:\Users\janedoe\Downloads\company_locker_data.bin" -Merge
 ```
+## EXAMPLE 3: Import and Merge Modified Items
+In this example we import a Locker file from disk and merge the secrets and attachments into our Locker
+but only those which are newer than the ones we already have.
+```powershell
+# Import a backup with updated items
+Import-PowerPassLocker -LockerFile "C:\Users\janedoe\Documents\my_locker_backup.bin" -Merge -ByDate
+```
 ##### ***[Back to Top](#powerpass-cmdlet-reference-for-the-aes-edition)***
 
 # New-PowerPassRandomPassword
