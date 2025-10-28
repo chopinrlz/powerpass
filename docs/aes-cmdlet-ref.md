@@ -180,6 +180,9 @@ Optional. Import the locker files without prompting for confirmation.
 ### PARAMETER **Merge** `[switch]`
 Optional. Merge the imported secrets and attachments into the existing locker. Existing secrets will be updated with
 values from the import file. Existing attachments will be updated with values from the import file.
+### PARAMETER **ByDate** `[switch]`
+Optional. When used with the `Merge` parameter will only update existing secrets and attachments which are older
+than their imported counterparts.
 ### DESCRIPTION
 When you import a Locker from disk it will overwrite your existing Locker secrets and attachments with the
 contents from the `LockerFile`. You can merge the secrets and attachments into your existing locker by specifying
