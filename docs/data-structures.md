@@ -25,12 +25,12 @@ However, for those who are curious, the Locker is a `PSCustomObject` with these 
 It is serialized as JSON before being encrypted and converted to a base-64 encoded string for storage.
 
 <table>
-<tr><th width="20%">Property Name</th><th>Data Type</th></tr>
-<tr><td width="15%">1. Secrets</td><td>PSCustomObject[]</td></tr>
-<tr><td width="20%">2. Attachments</td><td>PSCustomObject[]</td></tr>
-<tr><td width="15%">3. Created</td><td>System.DateTime (UTC)</td></tr>
-<tr><td width="15%">4. Modified</td><td>System.DateTime (UTC)</td></tr>
-<tr><td width="15%">5. Revision></td><td>Int32</td></tr>
+<tr><th width="30%">Property Name</th><th>Data Type</th></tr>
+<tr><td width="30%">1. Secrets</td><td>PSCustomObject[]</td></tr>
+<tr><td width="30%">2. Attachments</td><td>PSCustomObject[]</td></tr>
+<tr><td width="30%">3. Created</td><td>System.DateTime (UTC)</td></tr>
+<tr><td width="30%">4. Modified</td><td>System.DateTime (UTC)</td></tr>
+<tr><td width="30%">5. Revision></td><td>Int32</td></tr>
 </table>
 
 ### Property: Secrets

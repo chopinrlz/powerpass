@@ -11,10 +11,10 @@ How can we protect ourselves from this situation?
 The Locker implementation is being hardened to ensure that Locker secrets in-memory are scrambled.
 Planned changes include:
 <table>
-<tr><th>Update</th><th>Purpose</th></tr>
-<tr><td>Port Locker to C#</td><td>Move the Locker object into C# to allow for implementations across the AES and DP API editions of PowerPass and to more readily support the <code>IDisposable</code> interface and <code>byte[]</code> data structures to ensure sensitive memory areas are cleared when the Locker is closed</td></tr>
-<tr><td>Generate a Memory Key</td><td>Build a new non-memory-resident ephemeral key to use as a one-time-pad for encrypted retention of the Locker while in memory</td></tr>
-<tr><td>Encrypt In-Memory Secret Values</td><td>Use the ephemeral one-time-pad value to encrypt and decrypt the values of the Locker secrets in-memory after reading them from disk when they are requested by the user</td></tr>
+<tr><th width="30%">Update</th><th>Purpose</th></tr>
+<tr><td width="30%">Port Locker to C#</td><td>Move the Locker object into C# to allow for implementations across the AES and DP API editions of PowerPass and to more readily support the <code>IDisposable</code> interface and <code>byte[]</code> data structures to ensure sensitive memory areas are cleared when the Locker is closed</td></tr>
+<tr><td width="30%">Generate a Memory Key</td><td>Build a new non-memory-resident ephemeral key to use as a one-time-pad for encrypted retention of the Locker while in memory</td></tr>
+<tr><td width="30%">Encrypt In-Memory Secret Values</td><td>Use the ephemeral one-time-pad value to encrypt and decrypt the values of the Locker secrets in-memory after reading them from disk when they are requested by the user</td></tr>
 </table>
 
 ### `String` vs `SecureString`
