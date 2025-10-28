@@ -40,6 +40,8 @@ You can export your locker to save a backup copy elsewhere with the [Export-Powe
 #### Rotating your Locker Key
 You can also rotate your locker key automatically using [Update-PowerPassKey](https://chopinrlz.github.io/powerpass/aes-cmdlet-ref#update-powerpasskey). When you rotate your locker key PowerPass will decrypt your locker, generate a new key, encrypt your locker with the new key, and encrypt the new key with the ephemeral key.
 
+![Forest Mountain](forest-mountain-banner.jpg)
+
 ## Data Protection API
 <hr/>
 PowerPass on Windows PowerShell supports secrets from these two sources:
