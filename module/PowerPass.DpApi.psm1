@@ -754,12 +754,20 @@ function Import-PowerPassLocker {
         You will be prompted to enter the password to the locker.
         .PARAMETER LockerFilePath
         The path to the locker file on disk. This is mandatory.
+        .PARAMETER Merge
+        Merge the imported secrets and attachments into your existing Locker.
+        .PARAMETER ByDate
+        Only overwrite existing secrets and attachments if the imported ones are newer.
     #>
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]
         [string]
-        $LockerFilePath
+        $LockerFilePath,
+        [switch]
+        $Merge,
+        [switch]
+        $ByDate
     )
 
     # Assert the import file path
@@ -790,12 +798,14 @@ function Import-PowerPassLocker {
 
     # Open the locker from disk
     $aes = New-Object -TypeName "PowerPass.AesCrypto"
-    $aes.SetPaddedKey( $Password )
+    $aes.SetPaddedKey( $password )
     $data = $aes.Decrypt( $LockerFilePath )
     $aes.Dispose()
     if( -not $data ) {
         throw "Decryption failed"
     }
+
+    # Create the locker from imported data
     $json = ConvertTo-Utf8String -InputObject $data
     [PowerPass.AesCrypto]::EraseBuffer( $data )
     $locker = ConvertFrom-Json $json
@@ -803,18 +813,41 @@ function Import-PowerPassLocker {
         throw "Invalid file format"
     }
 
-    # Lock the imported secrets
-    if( $locker.Secrets ) {
-        $locker.Secrets | Lock-PowerPassSecret
-    }
+    # Determine the import routine
+    if( $Merge ) {
+        # Open the current locker
+        [PSCustomObject]$to
+        Get-PowerPassLocker -Locker ([ref] $to)
+        if( -not $to ) {
+            throw "Failed to open Locker"
+        }
 
-    # Update the current locker with the imported locker
-    Write-Warning "You are about to OVERWRITE your existing locker. This will REPLACE ALL existing locker secrets."
-    $answer = Read-Host "Do you you want to continue? [N/y]"
-    if( Test-PowerPassAnswer $answer ) {
-        Out-PowerPassLocker -Locker $locker
+        # Merge the lockers together
+        $modified = $false
+        if( $ByDate ) {
+            $modified = Merge-PowerPassLockers -From $locker -To $to -ByDate
+        } else {
+            $modified = Merge-PowerPassLockers -From $locker -To $to
+        }
+
+        # Write out the updated locker
+        if( $modified ) {
+            Out-PowerPassLocker -Locker $to
+        }
     } else {
-        throw "Import cancelled by user"
+        # Lock the imported secrets
+        if( $locker.Secrets ) {
+            $locker.Secrets | Lock-PowerPassSecret
+        }
+
+        # Update the current locker with the imported locker
+        Write-Warning "You are about to OVERWRITE your existing locker. This will REPLACE ALL existing locker secrets."
+        $answer = Read-Host "Do you you want to continue? [N/y]"
+        if( Test-PowerPassAnswer $answer ) {
+            Out-PowerPassLocker -Locker $locker
+        } else {
+            throw "Import cancelled by user"
+        }
     }
 }
 
