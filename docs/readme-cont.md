@@ -10,8 +10,9 @@ PowerPass comes in two flavors:
 
 Text values inside the Locker secrets are encrypted using a [one-time pad](https://en.wikipedia.org/wiki/One-time_pad) so that when they are loaded into memory from disk the contents of your Locker remain protected from cross-process in-memory attack vectors as much as possible. The one-time pad is based on an ephemeral key tied to your user profile and physical hardware. This functionality was added in PowerPass 3 and is not present in PowerPass 2 or PowerPass 1.
 
+![Sunset Waves](sunset-waves-banner.jpg)
+
 ## AES Edition
-<hr/>
 PowerPass on Linux, MacOS, or Windows in PowerShell 7 can read and write secrets from PowerPass Lockers encrypted with AES.
 
 ### PowerPass Lockers
