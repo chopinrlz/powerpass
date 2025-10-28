@@ -397,11 +397,12 @@ function Read-PowerPassAttachment {
                     }
                 } else {
                     $comp = ConvertFrom-Base64String -InputString $attachment.Data
-                    if( $PSVersionTable.PSVersion.Major -eq 5 ) {
-                        if( $comp.Length -ge (10 * 1024 * 1024) ) {
-                            Write-Warning "Windows PowerShell 5.1 has a known issue with large byte arrays"
-                        }
-                    }
+                    # Removed to avoid pushing warnings onto the pipeline since a $null or file data is expected
+                    # if( $PSVersionTable.PSVersion.Major -eq 5 ) {
+                    #   if( $comp.Length -ge (10 * 1024 * 1024) ) {
+                    #     Write-Warning "Windows PowerShell 5.1 has a known issue with large byte arrays"
+                    #   }
+                    # }
                     if( $attachment.GZip ) {
                         $file = [PowerPass.Compressor]::DecompressBytes( $comp )
                         # Write-Output causes a memory leak and does not complete in Windows PowerShell 5.1 with large byte arrays
