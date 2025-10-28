@@ -76,6 +76,34 @@ function New-PowerPassLocker {
     Write-Output $locker
 }
 
+function Get-PowerPassIsNewer {
+    <#
+        .SYNOPSIS
+        Compares secrets or attachments to determine if theirs is newer than ours.
+        .PARAMETER Ours
+        Our local secret or attachment.
+        .PARAMETER Theirs
+        Their imported secret or attachment.
+    #>
+    param(
+        [Parameter(Mandatory)]
+        [PSCustomObject]
+        $Ours,
+        [Parameter(Mandatory)]
+        [PSCustomObject]
+        $Theirs
+    )
+    if( $Ours ) {
+        if( $Theirs ) {
+            Write-Output (($Theirs.Created -gt $Ours.Created) -or ($Theirs.Modified -gt $Ours.Modified))
+        } else {
+            Write-Output $false
+        }
+    } else {
+        Write-Output $true
+    }
+}
+
 function Set-PowerPassSecureString {
     <#
         .SYNOPSIS
@@ -1203,4 +1231,77 @@ function Update-PowerPass {
         Out-PowerPassLocker -Locker $newLocker
         Write-Output "Your Locker has been upgraded to rev 3"
     }
+}
+
+function Merge-PowerPassLockers {
+    <#
+        .SYNOPSIS
+        Merges the contents of two Lockers.
+        .PARAMETER From
+        The source locker.
+        .PARAMETER To
+        The target locker.
+        .PARAMETER ByDate
+        An optional switch to merge if newer.
+    #>
+    param(
+        [Parameter(Mandatory)]
+        [PSCustomObject]
+        $From,
+        [Parameter(Mandatory)]
+        [PSCustomObject]
+        $To,
+        [switch]
+        $ByDate
+    )
+
+    # Declare the output flag
+    $modified = $false
+
+    # Merge in the secrets collection
+    foreach( $secret in $from.Secrets ) {
+        $existing = $to.Secrets | Where-Object { $_.Title -eq ($secret.Title) }
+        if( $existing ) {
+            $shouldUpdate = if( $ByDate ) { (Get-PowerPassIsNewer -Ours $existing -Theirs $secret) } else { $true }
+            if( $shouldUpdate ) {
+                $existing.UserName = $secret.UserName
+                $existing.Password = $secret.Password
+                $existing.URL = $secret.URL
+                $existing.Notes = $secret.Notes
+                $existing.Expires = $secret.Expires
+                $existing.Modified = (Get-Date).ToUniversalTime()
+                Lock-PowerPassSecret $existing
+                $modified = $true
+            }
+        } else {
+            Lock-PowerPassSecret $secret
+            $to.Secrets += $secret
+            $modified = $true
+        }
+    }
+
+    # Merge in the attachments collection
+    foreach( $a in $from.Attachments ) {
+        $existing = $to.Attachments | Where-Object { $_.FileName -eq ($a.FileName) }
+        if( $existing ) {
+            $shouldUpdate = if( $ByDate ) { (Get-PowerPassIsNewer -Ours $existing -Theirs $a) } else { $true }
+            if( $shouldUpdate ) {
+                $existing.Data = $a.Data
+                $existing.Created = $a.Created
+                $existing.Modified = $a.Modified
+                if( $a.GZip ) {
+                    $existing.GZip = $a.GZip
+                } else {
+                    $existing.GZip = $false
+                }
+                $modified = $true
+            }
+        } else {
+            $to.Attachments += $a
+            $modified = $true
+        }
+    }
+
+    # Notify caller of changes
+    Write-Output $modified
 }

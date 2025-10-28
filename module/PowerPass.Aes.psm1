@@ -340,6 +340,8 @@ function Import-PowerPassLocker {
         Import the locker files without prompting for confirmation.
         .PARAMETER Merge
         Merge the contents of the Locker file backup with your existing Locker.
+        .PARAMETER ByDate
+        Only update existing secrets and attachments if they are newer by modified or created dates.
     #>
     [CmdletBinding()]
     param(
@@ -349,7 +351,9 @@ function Import-PowerPassLocker {
         [switch]
         $Force,
         [switch]
-        $Merge
+        $Merge,
+        [switch]
+        $ByDate
     )
 
     # Define variables
@@ -391,7 +395,7 @@ function Import-PowerPassLocker {
     # Determine the import routine
     if( $Merge ) {
 
-        # Parse the imported data into object format for parsing
+        # Load the imported locker data
         $lockerJson = ConvertTo-Utf8String -InputObject $data
         $from = ConvertFrom-Json $lockerJson
         if( -not $from ) {
@@ -399,26 +403,16 @@ function Import-PowerPassLocker {
         }
         [PowerPass.AesCrypto]::EraseBuffer( $data )
 
-        # Import the current locker
+        # Load the current locker
         $modified = $false
         [PSCustomObject]$to = $null
         Get-PowerPassLocker -Locker ([ref] $to)
-        foreach( $secret in $from.Secrets ) {
-            $existing = $to.Secrets | Where-Object { $_.Title -eq ($secret.Title) }
-            if( $existing ) {
-                $existing.UserName = $secret.UserName
-                $existing.Password = $secret.Password
-                $existing.URL = $secret.URL
-                $existing.Notes = $secret.Notes
-                $existing.Expires = $secret.Expires
-                $existing.Modified = (Get-Date).ToUniversalTime()
-                Lock-PowerPassSecret $existing
-                $modified = $true
-            } else {
-                Lock-PowerPassSecret $secret
-                $to.Secrets += $secret
-                $modified = $true
-            }
+
+        # Run the merge routine
+        if( $ByDate ) {
+            $modified = Merge-PowerPassLockers -From $from -To $to -ByDate
+        } else {
+            $modified = Merge-PowerPassLockers -From $from -To $to
         }
 
         # Write out the new Locker file
