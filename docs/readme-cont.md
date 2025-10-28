@@ -1,6 +1,17 @@
 # How It Works
 #### _Revised: October 28, 2025_
+PowerPass comes in two flavors:
+
+<table>
+<tr><th width="20%">Flavor</th><th>Implementation</th></tr>
+<tr><td width="20%"><a href="#aes-edition">AES Edition</a></td><td>Encrypts your locker using the AES symmetric block cipher encryption algorithm and a 256-bit key which is protected by an ephemeral key tied to your user profile and physical hardware</td></tr>
+<tr><td width="20%"><a href="#data-protection-api">Data Protection API Edition</a></td><td>Encrypts your locker using the Windows Data Protection API at the user scope and a 256-bit salt protected by the same API at the machine scope</td></tr>
+</table>
+
+Text values inside the Locker secrets are encrypted using a [one-time pad](https://en.wikipedia.org/wiki/One-time_pad) so that when they are loaded into memory from disk the contents of your Locker remain protected from cross-process in-memory attack vectors as much as possible. The one-time pad is based on an ephemeral key tied to your user profile and physical hardware. This functionality was added in PowerPass 3 and is not present in PowerPass 2 or PowerPass 1.
+
 ## AES Edition
+<hr/>
 PowerPass on Linux, MacOS, or Windows in PowerShell 7 can read and write secrets from PowerPass Lockers encrypted with AES.
 
 ### PowerPass Lockers
@@ -10,25 +21,26 @@ A Locker is a 256-bit AES encrypted file which stores your secrets and their met
 AES locker keys are generated automatically using the cryptographic random number generator class. All locker keys are 256-bits in length. This is the maximum AES key length supported by .NET on all operating systems.
 
 #### Key Generation and Storage
-When you first use PowerPass, the module will generate a key for you. The key is generated using the cryptographic random number generator. The Locker is stored in your home directory while the key is stored in your application data directory. These directories can only be accessed by you, but can also be accessed by anyone with admin rights to the computer, so bear that in mind when you store secrets in your Locker. The Locker is encrypted with the key while the key is encrypted with an ephemeral key that is based on your hostname, username, and primary MAC address. You can get the file paths to you locker and key files using the `Get-PowerPass` cmdlet.
+When you first use PowerPass, the module will generate a key for you. The key is generated using the cryptographic random number generator. The Locker is stored in your home directory while the key is stored in your application data directory. These directories can only be accessed by you, but can also be accessed by anyone with admin rights to the computer, so bear that in mind when you store secrets in your Locker. The Locker is encrypted with the key while the key is encrypted with an ephemeral key that is based on your hostname, username, and primary MAC address. You can get the file paths to you locker and key files using the [Get-PowerPass](https://chopinrlz.github.io/powerpass/aes-cmdlet-ref#get-powerpass) cmdlet.
 
 #### Precautions
 If you are using the AES edition of PowerPass, please be aware of the following precautions:
 1. Your Locker key is linked to your login name, hostname, and primary MAC address
 2. This linkage is **case-sensitive**
 3. Changing your login name, hostname, or primary MAC address will make your Locker inaccessible
-4. If you need to change any of the above, take a backup of your Locker with `Export-PowerPassLocker` first then restore it after you make the changes  
+4. If you need to change any of the above, take a backup of your Locker with [Export-PowerPassLocker](https://chopinrlz.github.io/powerpass/aes-cmdlet-ref#export-powerpasslocker) first then restore it after you make the changes
 <br/>
 
 <blockquote>Tl;dr: DO NOT change your username, hostname, or primary MAC address without backing up your Locker first.</blockquote>
 
 #### Exporting and Importing your Locker
-You can export your locker to save a backup copy elsewhere with the `Export-PowerPassLocker` cmdlet. When you export your locker, you specify a password to encrypt the locker. The password must be between 4 and 32 characters in length.
+You can export your locker to save a backup copy elsewhere with the [Export-PowerPassLocker](https://chopinrlz.github.io/powerpass/aes-cmdlet-ref#export-powerpasslocker) cmdlet. When you export your locker, you specify a password to encrypt the locker. The password must be between 4 and 32 characters in length.
 
 #### Rotating your Locker Key
-You can also rotate your locker key automatically. When you rotate your locker key PowerPass will decrypt your locker, generate a new key, encrypt your locker with the new key, and encrypt the new key with the ephemeral key.
+You can also rotate your locker key automatically using [Update-PowerPassKey](https://chopinrlz.github.io/powerpass/aes-cmdlet-ref#update-powerpasskey). When you rotate your locker key PowerPass will decrypt your locker, generate a new key, encrypt your locker with the new key, and encrypt the new key with the ephemeral key.
 
 ## Data Protection API
+<hr/>
 PowerPass on Windows PowerShell supports secrets from these two sources:
 
 1. KeePass 2 databases
@@ -44,7 +56,7 @@ A PowerPass Locker is an encrypted file created by PowerPass to store and retrie
 To increase the difficulty of attackers brute-force decrypting your Locker, the Locker is salted with a random key which is in turn salted by the PowerPass random key generated at deployment time. These random keys are generated using the cyrptographic random number generator.
 
 #### Locker and Key Storage
-The Locker is stored in your Application Data folder along with the salt file. Meanwhile, there is a secondary salt file stored in the module's folder. All three files are encrypted with the Data Protection API. Your locker and locker salt are encrypted at the user scope while the module salt is encrypted at the machine scope. You can get the file paths using the `Get-PowerPass` cmdlet.
+The Locker is stored in your Application Data folder along with the salt file. Meanwhile, there is a secondary salt file stored in the module's folder. All three files are encrypted with the Data Protection API. Your locker and locker salt are encrypted at the user scope while the module salt is encrypted at the machine scope. You can get the file paths using the [Get-PowerPass](https://chopinrlz.github.io/powerpass/dpapi-cmdlet-ref#get-powerpass) cmdlet.
 
 #### Precautions
 If you are using the DP API edition of PowerPass, please be aware of the following precautions:
@@ -56,7 +68,7 @@ If you are using the DP API edition of PowerPass, please be aware of the followi
 Your Locker is linked to your local Windows user profile. Always backup your Locker if you plan to make any changes to your local Windows user profile, such as if you are deleting it to have Windows recreate it due to profile directory issues.
 
 #### Exporting your Locker and Key
-You can export your locker and key to save a backup copy elsewhere using the `Export-PowerPassLocker` cmdlet. You can also rotate your locker salts automatically, but the locker key is built-in to your Windows profile. The Data Protection API does not allow you to explicitly rotate your user profile key.
+You can export your locker and key to save a backup copy elsewhere using the [Export-PowerPassLocker](https://chopinrlz.github.io/powerpass/dpapi-cmdlet-ref#export-powerpasslocker) cmdlet. You can also rotate your locker salts automatically using the [Update-PowerPassSalt](https://chopinrlz.github.io/powerpass/dpapi-cmdlet-ref#update-powerpasssalt) cmdlet, but the locker key is built-in to your Windows profile. The Data Protection API does not allow you to explicitly rotate your user profile key.
 
 # All PowerPass Topics
 Select one of the links below to browse to another topic.
