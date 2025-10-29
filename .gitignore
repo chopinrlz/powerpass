@@ -25,6 +25,8 @@
 /test/data.aes
 /test/.locker_key
 /test/.powerpass_locker
+/test/.remote_locker
+/test/.remote_locker_key
 
 # Ignore TPM compiled binaries
 /tpm/powerpasstpm

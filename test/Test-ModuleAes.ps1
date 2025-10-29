@@ -353,6 +353,62 @@ if( $secret ) {
 }
 $secret = $null
 
+# Test - custom file settings
+
+"Custom file paths"
+
+Clear-PowerPassLocker -Force
+Set-PowerPass -Reset
+Clear-PowerPassLocker -Force
+Write-PowerPassSecret -Title "Local Secret"
+Set-PowerPass -NewLockerFolderPath $PSScriptRoot -NewLockerKeyFolderPath $PSScriptRoot
+$remote = Get-PowerPass
+if( $remote.LockerFolderPath -ne $PSScriptRoot ) {
+    Write-Warning "Test failed: first locker folder path incorrect"
+}
+if( $remote.LockerFilePath -ne (Join-Path -Path $PSScriptRoot -ChildPath ".powerpass_locker") ) {
+    Write-Warning "Test failed: first locker file path incorrect"
+}
+if( $remote.LockerKeyFolderPath -ne $PSScriptRoot ) {
+    Write-Warning "Test failed: first locker key folder path incorrect"
+}
+if( $remote.LockerKeyFilePath -ne (Join-Path -Path $PSScriptRoot -ChildPath ".locker_key") ) {
+    Write-Warning "Test failed: first locker key file path incorrect"
+}
+Set-PowerPass -NewLockerFolderPath $PSScriptRoot -NewLockerFileName ".remote_locker" -NewLockerKeyFolderPath $PSScriptRoot -NewLockerKeyFileName ".remote_locker_key"
+$remote = Get-PowerPass
+if( $remote.LockerFolderPath -ne $PSScriptRoot ) {
+    Write-Warning "Test failed: second locker folder path incorrect"
+}
+if( $remote.LockerFilePath -ne (Join-Path -Path $PSScriptRoot -ChildPath ".remote_locker") ) {
+    Write-Warning "Test failed: second locker file path incorrect"
+}
+if( $remote.LockerKeyFolderPath -ne $PSScriptRoot ) {
+    Write-Warning "Test failed: second locker key folder path incorrect"
+}
+if( $remote.LockerKeyFilePath -ne (Join-Path -Path $PSScriptRoot -ChildPath ".remote_locker_key") ) {
+    Write-Warning "Test failed: second locker key file path incorrect"
+}
+Write-PowerPassSecret -Title "Remote Secret"
+$remote = Read-PowerPassSecret -Title "Remote Secret"
+if( -not $remote ) {
+    Write-Warning "Test failed: remote secret not returned from remote locker"
+}
+Set-PowerPass -Reset
+$local = Read-PowerPassSecret -Title "Local Secret"
+if( -not $local ) {
+    Write-Warning "Test failed: local secret not returned from local locker"
+}
+Set-PowerPass -NewLockerFolderPath $PSScriptRoot -NewLockerFileName ".remote_locker" -NewLockerKeyFolderPath $PSScriptRoot -NewLockerKeyFileName ".remote_locker_key"
+$temp = Get-PowerPass
+Clear-PowerPassLocker -Force
+if( Test-Path $temp.LockerFilePath ) {
+    Write-Warning "Test failed: locker clear failed with custom file path settings"
+}
+if( Test-Path $temp.LockerKeyFilePath ) {
+    Write-Warning "Test failed: key clear failed with custom file path settings"
+}
+
 # Test - performance
 
 "Performance"
