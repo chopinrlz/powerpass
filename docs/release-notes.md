@@ -36,8 +36,8 @@ For detailed information about deployment see the [Deployment](https://chopinrlz
 # File Hashes
 | Release                 | SHA256 Hash                                                        |
 | ----------------------- | ------------------------------------------------------------------ |
-| PowerPass-2.3.1.tar.gz  | `050503ACAE955A1A7A4D30CA2157C2B5C46773031ABEA36618C2F7139F739C69` |
-| PowerPass-2.3.1.zip     | `A710AAE4396501C24D1AEFAFEBDA67D6B940D48F467A1F4AC3C28C34B3A4926C` |
+| PowerPass-3.0.1.tar.gz  | `29D8B41DBA34D2515D32E27B1EC77F732E44B7F51295510AF8DFC1C546554E41` |
+| PowerPass-3.0.1.zip     | `AB33AE298B494AEB2DC699DA53BA23F93EB1D4BD4E31576FBF73914473AE4CF3` |
 
 # All PowerPass Topics
 Select one of the links below to browse to another topic.
