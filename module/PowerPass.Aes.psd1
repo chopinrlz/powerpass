@@ -16,7 +16,7 @@
 RootModule = 'PowerPass.psm1'
 
 # Version number of this module.
-ModuleVersion = '2.3.1'
+ModuleVersion = '3.0.1'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -28,13 +28,13 @@ GUID = '4f2f7459-b51a-4a9c-916f-72a19dbe74b9'
 Author = 'Christian Holslin'
 
 # Company or vendor of this module
-CompanyName = 'The Daltas Group LLC'
+CompanyName = 'ShwaTech LLC'
 
 # Copyright statement for this module
-Copyright = 'Copyright 2023 by The Daltas Group LLC. All rights reserved.'
+Copyright = 'Copyright 2023-2005 by ShwaTech LLC. All rights reserved.'
 
 # Description of the functionality provided by this module
-Description = 'Store and retrieve secrets from KeePass databases'
+Description = 'Store and retrieve encrypted secrets with PowerShell on Windows, Linux, or MacOS and also from KeePass 2 databases on Windows'
 
 # Minimum version of the PowerShell engine required by this module
 PowerShellVersion = '5.1'
