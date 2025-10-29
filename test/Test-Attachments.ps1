@@ -359,7 +359,7 @@ Clear-PowerPassLocker -Force
 Remove-PowerPassAttachment -FileName "PowerPass.txt"
 $actualHash = Get-ChildItem -File | Get-FileHash
 Get-ChildItem -File | Add-PowerPassAttachment -FullPath
-Export-PowerPassAttachment -FileName "*" -OriginalPath -Force
+$null = Export-PowerPassAttachment -FileName "*" -OriginalPath -Force
 foreach( $ath in $actualHash ) {
     $hash = Get-FileHash -Path ($ath.Path)
     if( $hash.Hash -ne $ath.Hash ) {
@@ -374,7 +374,7 @@ Clear-PowerPassLocker -Force
 Remove-PowerPassAttachment -FileName "PowerPass.txt"
 $actualHash = Get-ChildItem -File | Get-FileHash
 Get-ChildItem -File | Add-PowerPassAttachment -FullPath -GZip
-Export-PowerPassAttachment -FileName "*" -OriginalPath -Force
+$null = Export-PowerPassAttachment -FileName "*" -OriginalPath -Force
 foreach( $ath in $actualHash ) {
     $hash = Get-FileHash -Path ($ath.Path)
     if( $hash.Hash -ne $ath.Hash ) {

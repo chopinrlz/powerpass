@@ -432,8 +432,12 @@ if( -not $readSecrets ) {
 
 # Test - export locker
 
+"Export locker"
+
 if( Test-Path $lockerExport ) { Remove-Item $lockerExport -Force }
 Write-PowerPassSecret -Title "Export Test"
+Write-PowerPassSecret -Title "Merge Secret" -UserName "older@gmail.com"
+Write-PowerPassSecret -Title "Newer Secret" -UserName "newer@gmail.com"
 Export-PowerPassLocker -Path $PSScriptRoot
 if( -not (Test-Path $lockerExport) ) {
     Write-Warning "Test failed: export file not created"
@@ -441,8 +445,10 @@ if( -not (Test-Path $lockerExport) ) {
 
 # Test - import locker
 
+"Import locker"
+
 Import-PowerPassLocker -LockerFile $lockerExport
-$secret = Read-PowerPassSecret | ? Title -eq "Export Test"
+$secret = Read-PowerPassSecret -Title "Export Test"
 $secretCount = (Measure-Object -InputObject $secret).Count
 if( -not $secret ) {
     Write-Warning "Test failed: export test not present after import"
@@ -453,6 +459,52 @@ if( -not $secret ) {
         }
     } else {
         Write-Warning "Test failed: multiple export test secrets returned after import"
+    }
+}
+$secret = $null
+$secretCount = -1
+
+# Test - merge import locker
+
+"Import locker with merge"
+
+Clear-PowerPassLocker -Force
+Write-PowerPassSecret -Title "Merge Secret" -UserName "newer@gmail.com"
+Write-PowerPassSecret -Title "Local Secret"
+Import-PowerPassLocker -LockerFile $lockerExport -Merge
+$local = Read-PowerPassSecret -Title "Local Secret"
+$secret = Read-PowerPassSecret -Title "Export Test"
+if( -not $local ) {
+    Write-Warning "Test failed: local secret missing from locker"
+}
+if( -not $secret ) {
+    Write-Warning "Test failed: imported secret missing from locker"
+}
+$mergeSecret = Read-PowerPassSecret -Title "Merge Secret"
+$mergeSecretCount = (Measure-Object -InputObject $mergeSecret).Count
+if( $mergeSecretCount -ne 1 ) {
+    Write-Warning "Test failed: there should only be 1 Merge Secret after merge"
+} else {
+    if( $mergeSecret.UserName -ne "older@gmail.com" ) {
+        Write-Warning "Test failed: older secret UserName not updated during merge"
+    }
+}
+$secret = $null
+$secretCount = -1
+
+# Test - merge import by date
+
+"Merge import by date"
+
+Clear-PowerPassLocker -Force
+Write-PowerPassSecret -Title "Merge Secret" -UserName "newer@gmail.com"
+Import-PowerPassLocker -LockerFile $lockerExport -Merge -ByDate
+$mergeSecret = Read-PowerPassSecret -Title "Merge Secret"
+if( -not $mergeSecret ) {
+    Write-Warning "Test failed: older secret missing after import"
+} else {
+    if( $mergeSecret.UserName -ne "newer@gmail.com" ) {
+        Write-Warning "Test failed: newer secret updated by older secret"
     }
 }
 $secret = $null

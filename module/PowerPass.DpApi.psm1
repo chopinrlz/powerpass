@@ -816,7 +816,7 @@ function Import-PowerPassLocker {
     # Determine the import routine
     if( $Merge ) {
         # Open the current locker
-        [PSCustomObject]$to
+        [PSCustomObject]$to = $null
         Get-PowerPassLocker -Locker ([ref] $to)
         if( -not $to ) {
             throw "Failed to open Locker"
