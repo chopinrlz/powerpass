@@ -1,32 +1,6 @@
 # Roadmap
-#### _Revised: October 8, 2025_
+#### _Revised: October 29, 2025_
 Here is the roadmap of upcoming features.
-
-## Security Hardening
-Currently under development is security hardening for the Locker contents while resident in memory.
-The purpose of this update is to protect against malware attempting to read the memory contents of the PowerShell process.
-In general this is not a concern because operating systems typically prevent processes from arbitrarily attaching to other processes and reading their memory.
-But, let's say you accidentally click "Allow" when the UAC popup appears and the process finds your PowerShell window.
-How can we protect ourselves from this situation?
-The Locker implementation is being hardened to ensure that Locker secrets in-memory are scrambled.
-Planned changes include:
-<table>
-<tr><th width="30%">Update</th><th>Purpose</th></tr>
-<tr><td width="30%">Port Locker to C#</td><td>Move the Locker object into C# to allow for implementations across the AES and DP API editions of PowerPass and to more readily support the <code>IDisposable</code> interface and <code>byte[]</code> data structures to ensure sensitive memory areas are cleared when the Locker is closed</td></tr>
-<tr><td width="30%">Generate a Memory Key</td><td>Build a new non-memory-resident ephemeral key to use as a one-time-pad for encrypted retention of the Locker while in memory</td></tr>
-<tr><td width="30%">Encrypt In-Memory Secret Values</td><td>Use the ephemeral one-time-pad value to encrypt and decrypt the values of the Locker secrets in-memory after reading them from disk when they are requested by the user</td></tr>
-</table>
-
-### `String` vs `SecureString`
-As always, the main limitation of this security hardening is PowerShell itself which works primarily with strings.
-Strings are immutable data types that cannot be "erased" when they are done being used.
-PowerPass will continue to give you the option to fetch your Locker secrets as `String` types because they are the most flexible for you.
-These Strings will remain resident in memory, unencrypted, for as long as the PowerShell window remains open.
-You will always have the option to use a `SecureString` to harden your own implementations which is the default Password data type for Locker secrets.
-
-### Is PowerPass Still Secure Now?
-Yes, your Locker secrets and Locker key/salt are encrypted while resident on disk.
-The purpose of this security hardening is to make it difficult for __other programs also running on your computer__ to read your Locker secrets __from memory__ in the event that your computer becomes infected with malware.
 
 ## Web Browser PowerPass
 Currently under development is a port of PowerPass into TypeScript for use with a web browser as a fully client-side password manager that can be hosted anywhere and uses local storage for your Locker.

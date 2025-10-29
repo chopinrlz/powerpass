@@ -1,5 +1,5 @@
 # Usage
-#### _Revised: July 31, 2025_
+#### _Revised: October 29, 2025_
 Service accounts and other non-interactive logins can access credentials you store for them.
 And of course you can always use PowerPass with your own login, too.
 Login to the system with your account, or the service account you use for automation, deploy PowerPass, and use `Write-PowerPassSecret` to store a credential for that account.
@@ -8,6 +8,7 @@ Keep in mind that you should NOT be using `Run as administrator` in Windows when
 ### **_The credentials you store while logged in will only be accessible to that same account._**
 
 The PowerPass module, Lockers, keys, and salts are all contained within the user's profile directory and everything is encrypted.
+On the AES edition you can now change where your Locker and key are stored to place them on external storage or remote locations.
 The [How It Works](https://chopinrlz.github.io/powerpass/readme-cont) article explains the technical workings in detail.
 To incorporate PowerPass into your scritps and modules, follow these examples.
 
@@ -15,6 +16,7 @@ To incorporate PowerPass into your scritps and modules, follow these examples.
 * To read a secret from PowerPass use the `Read-PowerPassSecret` cmdlet.
 * To write a secret into PowerPass use the `Write-PowerPassSecret` cmdlet.
 * To remove a secret from PowerPass use the `Remove-PowerPassSecret` cmdlet.
+* To import secerts from KeePass 2 use the `Import-PowerPassSecrets` cmdlet. _(DP API edition only)_
 
 ## Reading and Writing Files
 * To get the list of files in PowerPass use the `Get-PowerPassAttachments` cmdlet.
@@ -29,6 +31,7 @@ To incorporate PowerPass into your scritps and modules, follow these examples.
 * To import secrets and files previously exported use the `Import-PowerPassLocker` cmdlet.
 * To erase all secrets and files from PowerPass use the `Clear-PowerPassLocker` cmdlet.
 * To rotate your PowerPass Locker keys use the `Update-PowerPassKey` cmdlet.
+* To change where your Locker is stored use the `Set-PowerPass` cmdlet. _(AES edition only)_
 
 ## Utilities
 * To generate a random password use the `New-PowerPassRandomPassword` cmdlet.
@@ -39,11 +42,11 @@ To incorporate PowerPass into your scritps and modules, follow these examples.
 2. For the DP API edition: [PowerPass DP API Cmdlet Reference](https://chopinrlz.github.io/powerpass/dpapi-cmdlet-ref)
 
 # Getting Secrets from KeePass 2
-* To open a KeePass 2 database use the `Open-PowerPassDatabase` cmdlet.
-* Pipe or pass the output to `Get-PowerPassSecret` to fetch secrets from the KeePass database.
+* To open a KeePass 2 database use the `Open-PowerPassDatabase` cmdlet. _(DP API edition only)_
+* Pipe or pass the output to `Get-PowerPassSecret` to fetch secrets from the KeePass 2 database. _(DP API edition only)_
 
-## Storing KeePass Database Passwords
-If you are opening KeePass databases which use master passwords or key files, you can store these passwords and even the key files as well in PowerPass to keep them secure.
+## Storing KeePass 2 Database Passwords in PowerPass
+* To import secerts from KeePass 2 into PowerPass use the `Import-PowerPassSecrets` cmdlet. _(DP API edition only)_
 
 # Use Case: Automating Access to Active Directory
 One of the most common scenarios is automating access to Active Directory.
