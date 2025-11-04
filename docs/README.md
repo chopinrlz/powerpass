@@ -7,7 +7,7 @@ Select the link from one of the topics below to read the article.
 
 # Cmdlet Reference
 
-![bookshelf](bookshelf.jpg)
+![tome](tome.jpg)
 
 Get right down to business and start using PowerPass cmdlets to store and retrieve credentials.
 
@@ -17,6 +17,8 @@ Store and retrieve credentials and attachments with the AES edition of PowerPass
 Store and retrieve credentials and attachmnets with the Windows Data Protection API edition of PowerPass which includes KeePass 2 support in Windows PowerShell on Microsoft Windows and Windows Server wherever the .NET Framework 4.8.1 is available.
 
 # Installation and Usage
+
+![electrician](electrician.jpg)
 
 The requirements for and installation instructions for getting PowerPass up and running plus general usage best practices.
 
@@ -29,6 +31,8 @@ Developer reference for PowerPass general usage scenarios.
 
 # Special Topics
 
+![lecture](lecture.jpg)
+
 Articles covering unique scenarios or configurations.
 
 ## [Domain Credentials](https://chopinrlz.github.io/powerpass/domain-credentials)
@@ -38,6 +42,8 @@ An article on the effects of enabling OneDrive Backup and how it impacts where P
 
 # Inner Workings of PowerPass
 
+![watch](watch.jpg)
+
 Get to the know the implementation of PowerPass by understanding what's under the hood and how your information is stored within your Locker and what keeps it safe.
 
 ## [How It Works](https://chopinrlz.github.io/powerpass/readme-cont)
@@ -46,6 +52,8 @@ A technical walk-through of how PowerPass keeps your credentials secure.
 A detailed summary of the data structures created by PowerPass.
 
 # Miscellaneous
+
+![food](food.jpg)
 
 Anything else that's here for you to read.
 
