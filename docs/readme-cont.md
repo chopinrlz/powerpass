@@ -10,8 +10,6 @@ PowerPass comes in two flavors:
 
 Text values inside the Locker secrets are encrypted using a [one-time pad](https://en.wikipedia.org/wiki/One-time_pad) so that when they are loaded into memory from disk the contents of your Locker remain protected from cross-process in-memory attack vectors as much as possible. The one-time pad is based on an ephemeral key tied to your user profile and physical hardware. This functionality was added in PowerPass 3 and is not present in PowerPass 2 or PowerPass 1.
 
-![Sunset Waves](sunset-waves-banner.jpg)
-
 ## AES Edition
 PowerPass on Linux, MacOS, or Windows in PowerShell 7 can read and write secrets from PowerPass Lockers encrypted with AES.
 
@@ -39,8 +37,6 @@ You can export your locker to save a backup copy elsewhere with the [Export-Powe
 
 #### Rotating your Locker Key
 You can also rotate your locker key automatically using [Update-PowerPassKey](https://chopinrlz.github.io/powerpass/aes-cmdlet-ref#update-powerpasskey). When you rotate your locker key PowerPass will decrypt your locker, generate a new key, encrypt your locker with the new key, and encrypt the new key with the ephemeral key.
-
-![Forest Mountain](forest-mountain-banner.jpg)
 
 ## Data Protection API
 <hr/>

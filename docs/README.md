@@ -7,11 +7,13 @@ Select the link from one of the topics below to read the article.
 
 # Cmdlet Reference
 
+![bookshelf](bookshelf.jpg)
+
 Get right down to business and start using PowerPass cmdlets to store and retrieve credentials.
 
 ## [AES Edition Cmdlets](https://chopinrlz.github.io/powerpass/aes-cmdlet-ref)
 Store and retrieve credentials and attachments with the AES edition of PowerPass on Linux, macOS, or Windows.
-## [DP API Edition Cmdlets](https://chopinrlz.github.io/powerpass/dpapi-cmdlet-ref)
+## [Data Protection API Edition Cmdlets](https://chopinrlz.github.io/powerpass/dpapi-cmdlet-ref)
 Store and retrieve credentials and attachmnets with the Windows Data Protection API edition of PowerPass which includes KeePass 2 support in Windows PowerShell on Microsoft Windows and Windows Server wherever the .NET Framework 4.8.1 is available.
 
 # Installation and Usage
