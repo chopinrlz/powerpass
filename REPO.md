@@ -3,6 +3,7 @@
 | - | - |
 | ~ | ~ |
 | **Directories** | |
+| .github | GitHub Copilot instructions for using AI-assisted development |
 | /docs | Online documentation for the module which you can view [here](https://chopinrlz.github.io/powerpass). |
 | /KeePassLib | Source code for KeePassLib by Dominik Reichl <dominik.reichl@t-online.de> |
 | /module | Source code for the PowerPass module itself |
