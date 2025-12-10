@@ -1,5 +1,5 @@
 # PowerPass Cmdlet Reference for the AES Edition
-#### _Revised: October 27, 2025_
+#### _Revised: December 10, 2025_
 The AES edition of PowerPass works on Windows PowerShell and PowerShell 7 on Linux, MacOS, and Windows. These are the cmdlets:
 1. [Add-PowerPassAttachment](#add-powerpassattachment): adds one or more attachments (files) into your Locker
 2. [Clear-PowerPassLocker](#clear-powerpasslocker): erases all secrets and attachments from your Locker
@@ -25,7 +25,7 @@ Here are the cmdlets for the AES edition of PowerPass.
 
 ### SYNOPSIS
 Adds files from the file system into your locker. The difference between `Add-PowerPassAttachment` and
-`Write-PowerPassAttachment` is the Add amdlet is optimized for bulk adds from the pipeline using `Get-ChildItem`.
+`Write-PowerPassAttachment` is the Add cmdlet is optimized for bulk adds from the pipeline using `Get-ChildItem`.
 Also, the Add cmdlet does not prompt for a filename, but rather uses the filename, either the short name or
 full path, of the file on disk as the filename in your locker.
 Any files that already exist in your locker will be updated.

@@ -1,5 +1,5 @@
 # PowerPass
-#### _Online Documentation was Last Revised on October 29, 2025_
+#### _Online Documentation was Last Revised on December 10, 2025_
 Welcome to the online documentation for PowerPass.
 Documentation is organized into the table of contents below.
 Cmdlet reference is at the top for quick startup with additional articles below as needed for installation, usage, and additional topics.
@@ -14,7 +14,7 @@ Get right down to business and start using PowerPass cmdlets to store and retrie
 ## [AES Edition Cmdlets](https://chopinrlz.github.io/powerpass/aes-cmdlet-ref)
 Store and retrieve credentials and attachments with the AES edition of PowerPass on Linux, macOS, or Windows.
 ## [Data Protection API Edition Cmdlets](https://chopinrlz.github.io/powerpass/dpapi-cmdlet-ref)
-Store and retrieve credentials and attachmnets with the Windows Data Protection API edition of PowerPass which includes KeePass 2 support in Windows PowerShell on Microsoft Windows and Windows Server wherever the .NET Framework 4.8.1 is available.
+Store and retrieve credentials and attachments with the Windows Data Protection API edition of PowerPass which includes KeePass 2 support in Windows PowerShell on Microsoft Windows and Windows Server wherever the .NET Framework 4.8.1 is available.
 
 # Installation and Usage
 

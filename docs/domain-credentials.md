@@ -1,11 +1,11 @@
 # Storing and Retrieving Domain Credentials with PowerPass
-#### _Revised: July 31, 2025_
+#### _Revised: December 10, 2025_
 # Introduction
 PowerPass can be used to store and retrieve domain credentials from your Locker or from a KeePass 2 database.
 Many Windows PowerShell modules require the use of the `PSCredential` object to connect to resources protected by a domain account.
 PowerPass can automatically convert secrets from your Locker into `PSCredential` objects.
 Secrets from KeePass 2 databases, however, cannot be automatically converted at this time, but can be easily converted with a few lines of PowerShell.
-This article which explain how to store and retrieve domain credentials using PowerPass.
+This article which explains how to store and retrieve domain credentials using PowerPass.
 # Locker Secrets
 When storing an Active Directory domain credential in your PowerPass Locker, follow these simple conventions to ensure that you can successfully retrieve a `PSCredential` automatically using the `Read-PowerPassSecret` cmdlet.
 ## Domain Name and Login Name

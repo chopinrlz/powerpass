@@ -1,5 +1,5 @@
 # Roadmap
-#### _Revised: October 29, 2025_
+#### _Revised: December 10, 2025_
 Here is the roadmap of upcoming features.
 
 ## Web Browser PowerPass
@@ -10,7 +10,7 @@ Currently under development is a port of PowerPass into TypeScript for use with 
 <tr><td>Serialization</td><td>Not Started</td></tr>
 <tr><td>Key Generation</td><td>Not Started</td></tr>
 <tr><td>Encryption</td><td>Not Started</td></tr>
-<tr><td>Descryption</td><td>Not Started</td></tr>
+<tr><td>Decryption</td><td>Not Started</td></tr>
 <tr><td>User Interface</td><td>Not Started</td></tr>
 <tr><td>Unit Testing</td><td>Not Started</td></tr>
 </table>

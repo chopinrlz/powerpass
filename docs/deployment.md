@@ -1,5 +1,5 @@
 # Deployment
-#### _Revised: October 28, 2025_
+#### _Revised: December 10, 2025_
 PowerPass is not your typical PowerShell module.
 It works like a module, it's deployed like a module, but due to its nature it must be deployed using a deployment script packaged with PowerPass.
 Depending on the edition of PowerPass that you want to use, the AES edition or the Data Protection API edition (and in the future the TPM edition), PowerPass has different dependencies and requirements that are validated and/or configured at deployment time.
@@ -57,7 +57,7 @@ Supported distros currently include:
 4. Ubuntu 20.04 through 24.04
 
 Once PowerShell 7 is installed, simply run the [deployment](#deploying-powerpass) script in PowerShell 7 to deploy PowerPass.
-## MacOS
+## macOS
 PowerPass runs on PowerShell 7 on macOS.
 ### _[Main Article: Installing PowerShell on macOS](https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell-on-macos?view=powershell-7.4)_
 PowerPass on MacOS requires PowerShell 7 which is supported on macOS 13 and higher on x64 and arm64 processors.

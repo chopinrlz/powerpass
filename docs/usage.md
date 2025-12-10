@@ -1,5 +1,5 @@
 # Usage
-#### _Revised: October 29, 2025_
+#### _Revised: December 10, 2025_
 Service accounts and other non-interactive logins can access credentials you store for them.
 And of course you can always use PowerPass with your own login, too.
 Login to the system with your account, or the service account you use for automation, deploy PowerPass, and use `Write-PowerPassSecret` to store a credential for that account.
@@ -10,13 +10,13 @@ Keep in mind that you should NOT be using `Run as administrator` in Windows when
 The PowerPass module, Lockers, keys, and salts are all contained within the user's profile directory and everything is encrypted.
 On the AES edition you can now change where your Locker and key are stored to place them on external storage or remote locations.
 The [How It Works](https://chopinrlz.github.io/powerpass/readme-cont) article explains the technical workings in detail.
-To incorporate PowerPass into your scritps and modules, follow these examples.
+To incorporate PowerPass into your scripts and modules, follow these examples.
 
 ## Reading and Writing Secrets
 * To read a secret from PowerPass use the `Read-PowerPassSecret` cmdlet.
 * To write a secret into PowerPass use the `Write-PowerPassSecret` cmdlet.
 * To remove a secret from PowerPass use the `Remove-PowerPassSecret` cmdlet.
-* To import secerts from KeePass 2 use the `Import-PowerPassSecrets` cmdlet. _(DP API edition only)_
+* To import secrets from KeePass 2 use the `Import-PowerPassSecrets` cmdlet. _(DP API edition only)_
 
 ## Reading and Writing Files
 * To get the list of files in PowerPass use the `Get-PowerPassAttachments` cmdlet.
