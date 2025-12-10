@@ -6,6 +6,19 @@ Use this file to help an AI coding agent get productive quickly: major component
 
 ---
 
+## Repository structure (the purpose of each directory)
+
+- The root directory contains the deployment script, the license, code formatting rules, the readme, the repository directory, and a test KeePass database
+- `.github` - contains this instruction manual for Copilot
+- `Build` - a temporary directory created when compiling the KeePassLib assembly when building a release using the `util/Build-Release.ps1` - this is marked ignored inside the `.gitignore` file at the root
+- `docs` - online documentation in markdown format. These files are published to https://chopinrlz.github.io/powerpass/ by Github whenever a commit is made.
+- `KeePassLib` - source code for the KeePass 2 library written in C# and downloaded from https://keepass.info/download.html
+- `module` - source code for the two principal PowerPass editions (AES and DPAPI) written in PowerShell
+- `test` - scripts and artifacts for unit testing PowerPass before creating a release
+- `tpm` - source code for the TPM edition of PowerPass written in C and using the tpm2-tss library for TPM I/O
+- `ts` - source code for the web browser edition of PowerPass written in TypeScript
+- `util` - utility scripts for doing research, configuring access to GitHub, and building releases of PowerPass AES and DPAPI editions
+
 ## Big picture (what talks to what)
 
 - PowerShell module (module/*.ps1) is the canonical runtime for the native editions. It compiles/loads small C# helpers at runtime with `Add-Type` (see `module/AesCrypto.cs`, `module/Compression.cs`, `module/Conversion.cs`).
@@ -25,6 +38,7 @@ Use this file to help an AI coding agent get productive quickly: major component
 - `ts/powerpass.ts` — web edition entry: Secret type, Locker, and the place where web encryption/decryption lives.
 - `util/Build-Release.ps1` — how to build a release; requires Windows PowerShell 5 and csc.exe in the runtime directory.
 - `test/` — example scripts (e.g., `Test-AesCrypto.ps1`) that demonstrate runtime behavior and are good starting points for changes.
+- `docs/` — online documentation for PowerPass in markdown format with images for decoration. Changes here are automatically deployed to https://chopinrlz.github.io/powerpass/ after pushing commits to Github. The README.md file is the default document for the online documentation.
 
 ---
 
