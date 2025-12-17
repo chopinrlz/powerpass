@@ -158,6 +158,8 @@ if( $installation -eq $powerPassDpApi ) {
         $salt = [System.Byte[]]::CreateInstance( [System.Byte], 32 )
         $saltShaker.GetBytes( $salt )
         $encSalt = [System.Security.Cryptography.ProtectedData]::Protect($salt,$null,"LocalMachine")
+        # Overwrite the salt buffer so it does not remain resident in memory
+        $saltShaker.GetBytes( $salt )
         $saltText = [System.Convert]::ToBase64String($encSalt)
         Out-File -InputObject $saltText -FilePath $saltFile -Force
         if( -not (Test-Path $saltFile) ) {
