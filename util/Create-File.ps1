@@ -1,3 +1,11 @@
+#
+# Random binary file generator.
+#
+# Copyright 2023-2026 by ShwaTech LLC
+# This software is provided AS IS WITHOUT WARRANTEE.
+# You may copy, modify or distribute this software under the terms of the GNU Public License 2.0.
+#
+
 param(
 	[int]
 	$Size

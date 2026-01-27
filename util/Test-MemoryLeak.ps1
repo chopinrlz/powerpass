@@ -1,3 +1,13 @@
+#
+# Tests for the presence of a memory usage issue when converting to and from base64.
+# [Issue #5] Excessive memory usage and long processing delay when fetching large attachments
+# https://github.com/chopinrlz/powerpass/issues/5
+#
+# Copyright 2023-2026 by ShwaTech LLC
+# This software is provided AS IS WITHOUT WARRANTEE.
+# You may copy, modify or distribute this software under the terms of the GNU Public License 2.0.
+#
+
 # Create a random number generator and results collection
 $rand = [System.Random]::new()
 $testResults = @()
