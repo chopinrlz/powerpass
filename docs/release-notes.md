@@ -1,31 +1,13 @@
-This latest major release of PowerPass introduces in-memory security hardening, custom file path settings, and adds merge support to the Data Protection API edition. This is a breaking change from previous versions of PowerPass. **If you are running PowerPass v2.x your locker will be updated automatically. However, if you are still using PowerPass v1.x you will need to export your locker prior to deploying PowerPass v3.**
-#### Breaking Changes
-Locker secrets are now double-key encrypted. **PowerPass v1.x and PowerPass v2.x Lockers are not compatible with PowerPass v3.x. and vice versa.** Users on PowerPass v2.x can upgrade automatically using the `Deploy-PowerPass.ps1` script. PowerPass v1.x users will need to export their Lockers and re-import them manually.
-#### Automated Upgrade Path
-Version 3 of PowerPass introduces a new property to the Locker which tracks the revision. A new upgrade cmdlet named `Update-PowerPass` will update your v2.x Lockers to v3.x format, since the new format uses double-key encryption. **The deployment script will automatically invoke this cmdlet for you during install.** This has prevented the addition of extra code into the module for run-time checking and updating avoiding performance penalties from supporting legacy Locker revisions.
-
-Here is the full changelog:
-# New Features
-## In-Memory Security Hardening
-A major update to the PowerPass run-time has been introduced to protect against in-memory attack vectors. When your Locker is loaded from disk, the decrypted contents of the Locker's secrets remain protected with a one-time pad while resident in memory until you fetch them with `Read-PowerPassSecret`. This feature was added to protect from rogue processes which might access your PowerShell process memory to avoid scraping all your Locker secrets from memory in plain-text. The Locker secrets text properties are now double-key encrypted when stored on disk: first with an ephemeral one-time pad and secondly with a 256-bit AES key. Older versions of PowerPass will not be able to read these Lockers. Exported Lockers will not include this double-key encryption so they can continue to be portable.
-## Custom File Path Settings
-The AES edition of PowerPass has been enhanced to provide support for custom file paths for your Lockers and Locker keys. You are no longer required to store your Lockers or Locker keys in the default directories based on your user profile's user data and app data directories. The new `Set-PowerPass` cmdlet will allow you to change these paths and will store these settings in a custom settings file. You can also reset the settings back to their defaults allowing you to load a secondary/tertiary/etc. Locker at run-time then drop back to your default Locker. This functionality allows for more durable deployments where Lockers and Locker keys can be stored on different computers, a good practice for secure computing.
-## Merge Import
-### Attachments
-The `Merge` import option for an exported Locker will now merge attachments into the local Locker as well as secrets.
-### Merge by Date
-The `Merge` import option has been enhanced with the `ByDate` switch allowing the user to import an external Locker file and merge it into the local Locker but for only secrets and attachments that are newer. This enhancement is particularly useful if you use PowerPass to synchronize credentials across a network of computers and you do not want to erase local secret updates that may take precedence.
-### Data Protection API Edition
-The `Merge` option has been added to the Data Protection API edition's `Import-PowerPassLocker` cmdlet.
-# Security Updates, Optimizations, and Bug Fixes
-## Buffer Security
-A new routine has been added to the `PowerPass.AesCrypto` provider called `EraseBuffer` for erasing in-memory data buffers with random data rather than zeroes, as was being done before. When you erase the data inside of a fixed-length array with zeros it creates a findable location in your application memory. If a rogue process attaches to your process, it can find these memory locations by looking for blocks of zeroes. This presents a security concern. By filling these arrays with random data instead it makes it more difficult for an attacking process to locate memory locations with sensitive information. This routine has been incorporated into areas of PowerPass which load sensitive information into `[byte[]]` memory buffers.
-## Attachment Size Warning Suppression
-The `Read-PowerPassAttachment` cmdlet would previously output a warning if it encountered an attachment of 10 MiB or greater. This has been suppressed to avoid pushing non-attachment content to the output stream, potentially breaking the cmdlet.
-## Common Code Optimizations
-A full code review was performed between the AES edition and the DP API edition to identify all common code shared between the editions. All common code was promoted to the `PowerPass.Common.ps1` script file making the module files themselves slightly more compact and more efficient.
-## Documentation Refresh
-All of the online documentation has been refreshed to include examples for all the new functionality as well as correcting and refining coverage of existing functionality. Formatting has been updated and inaccurate or deprecated examples have been removed. Some missing documentation has been added.
+This minor release of PowerPass updates the KeePassLib version to 2.60 and introduces some minor changes to the testing and deployment scripts.
+* If you are upgrading from 2.x, please review the release notes for [PowerPass v3.0.1](https://github.com/chopinrlz/powerpass/releases/tag/v3.0.1) as there are breaking changes. Using the `Deploy-PowerPass.ps1` script will automatically upgrade your Locker to account for these changes.
+* If you are upgrading from 1.x, **you will need to export your Locker before upgrading.** The 1.x Locker format is not backwards compatible with v2.x or v3.x. You will need to export then re-import your Locker to retain your secrets.
+# Changelog
+## KeePassLib 2.60
+The KeePassLib version has been updated to the latest v2.60.
+## Deployment Salt Cleanup
+During deployment, the randomly generated salt `byte[]` was not erased from memory after use. To prevent this secret from residing in memory after deployment, the array is now refilled with random data [(see commit e7529de)](https://github.com/chopinrlz/powerpass/commit/e7529dea6177b171e706c341c1c25246c1e8fda4).
+## Import Testing Verification
+If you run the `Test-Import.ps1` script to test the import process for bringing KeePass 2 secrets into your PowerPass Locker, the script will generate errors if you do not run the script in Windows PowerShell using the DP API edition of PowerPass.
 # Deployment
 To install PowerPass:
 1. Download this release below, download the source code for this release, or clone to repo (for a dev build).
@@ -36,8 +18,8 @@ For detailed information about deployment see the [Deployment](https://chopinrlz
 # File Hashes
 | Release                 | SHA256 Hash                                                        |
 | ----------------------- | ------------------------------------------------------------------ |
-| PowerPass-3.0.1.tar.gz  | `29D8B41DBA34D2515D32E27B1EC77F732E44B7F51295510AF8DFC1C546554E41` |
-| PowerPass-3.0.1.zip     | `AB33AE298B494AEB2DC699DA53BA23F93EB1D4BD4E31576FBF73914473AE4CF3` |
+| PowerPass-3.0.5.tar.gz  | `9C91A9C8DE4E196B48768E657970513748FE2702DFDD70023E7B3E0BD562BF7B` |
+| PowerPass-3.0.5.zip     | `C2C7AB71AA940725B8FF0433587E69F0A12D991988C7FA4E346DE54F2EC89482` |
 
 # All PowerPass Topics
 Select one of the links below to browse to another topic.
