@@ -1,13 +1,9 @@
-This minor release of PowerPass updates the KeePassLib version to 2.60 and introduces some minor changes to the testing and deployment scripts.
+This minor release of PowerPass updates the KeePassLib version to 2.61.
 * If you are upgrading from 2.x, please review the release notes for [PowerPass v3.0.1](https://github.com/chopinrlz/powerpass/releases/tag/v3.0.1) as there are breaking changes. Using the `Deploy-PowerPass.ps1` script will automatically upgrade your Locker to account for these changes.
 * If you are upgrading from 1.x, **you will need to export your Locker before upgrading.** The 1.x Locker format is not backwards compatible with v2.x or v3.x. You will need to export then re-import your Locker to retain your secrets.
 # Changelog
-## KeePassLib 2.60
-The KeePassLib version has been updated to the latest v2.60.
-## Deployment Salt Cleanup
-During deployment, the randomly generated salt `byte[]` was not erased from memory after use. To prevent this secret from residing in memory after deployment, the array is now refilled with random data [(see commit e7529de)](https://github.com/chopinrlz/powerpass/commit/e7529dea6177b171e706c341c1c25246c1e8fda4).
-## Import Testing Verification
-If you run the `Test-Import.ps1` script to test the import process for bringing KeePass 2 secrets into your PowerPass Locker, the script will generate errors if you do not run the script in Windows PowerShell using the DP API edition of PowerPass.
+## KeePassLib 2.61
+The KeePassLib version has been updated to the latest v2.61.
 # Deployment
 To install PowerPass:
 1. Download this release below, download the source code for this release, or clone to repo (for a dev build).
@@ -18,8 +14,9 @@ For detailed information about deployment see the [Deployment](https://chopinrlz
 # File Hashes
 | Release                 | SHA256 Hash                                                        |
 | ----------------------- | ------------------------------------------------------------------ |
-| PowerPass-3.0.5.tar.gz  | `9C91A9C8DE4E196B48768E657970513748FE2702DFDD70023E7B3E0BD562BF7B` |
-| PowerPass-3.0.5.zip     | `C2C7AB71AA940725B8FF0433587E69F0A12D991988C7FA4E346DE54F2EC89482` |
+| PowerPass-3.0.6.tar.gz  | `E8C2B2237434F1D850A2DEB2106AAE3C50362DC17E5FBB928F4C8CCDBF275AF6` |
+| PowerPass-3.0.6.zip     | `0A0F6734EB1385F5033B1ACFE47E3115A802CB9186188359BC3B201122FF3BF1` |
+
 
 # All PowerPass Topics
 Select one of the links below to browse to another topic.

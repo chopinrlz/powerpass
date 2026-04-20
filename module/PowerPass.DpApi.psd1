@@ -16,7 +16,7 @@
 RootModule = 'PowerPass.psm1'
 
 # Version number of this module.
-ModuleVersion = '3.0.5'
+ModuleVersion = '3.0.6'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
