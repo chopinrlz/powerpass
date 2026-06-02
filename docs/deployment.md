@@ -1,5 +1,5 @@
 # Deployment
-#### _Revised: December 10, 2025_
+#### _Revised: June 2, 2026_
 PowerPass is not your typical PowerShell module.
 It works like a module, it's deployed like a module, but due to its nature it must be deployed using a deployment script packaged with PowerPass.
 Depending on the edition of PowerPass that you want to use, the AES edition or the Data Protection API edition (and in the future the TPM edition), PowerPass has different dependencies and requirements that are validated and/or configured at deployment time.
@@ -157,7 +157,7 @@ Running `Read-PowerPassSecret` will initialize your PowerPass Locker with a defa
 This will confirm the Locker functionality of PowerPass is working properly.
 # Additional Information
 ## About KeePassLib
-PowerPass comes bundled with the KeePassLib 2.59 source code which is copyright 2003-2025 Dominik Reichl <dominik.reichl@t-online.de> and is licensed under the GNU Public License 2.0. A copy of this license is included in the LICENSE file in this repository. KeePassLib has not been modified from its release version. You can use PowerPass with KeePassLib 2.59 or with your own version of KeePassLib.
+PowerPass comes bundled with the KeePassLib 2.61.1 source code which is copyright 2003-2026 Dominik Reichl <dominik.reichl@t-online.de> and is licensed under the GNU Public License 2.0. A copy of this license is included in the LICENSE file in this repository. KeePassLib has not been modified from its release version. You can use PowerPass with KeePassLib 2.61.1 or with your own version of KeePassLib.
 ## Test Database Password
 You can alter the KeePass test database if you like. The master password to the test database TestDatabase.kdbx is "12345" without the quotation marks. The test database is stored in the module deployment directory.
 # All PowerPass Topics

@@ -16,7 +16,7 @@
 RootModule = 'PowerPass.psm1'
 
 # Version number of this module.
-ModuleVersion = '3.0.6'
+ModuleVersion = '3.0.7'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -31,7 +31,7 @@ Author = 'Christian Holslin'
 CompanyName = 'ShwaTech LLC'
 
 # Copyright statement for this module
-Copyright = 'Copyright 2023-2005 by ShwaTech LLC. All rights reserved.'
+Copyright = 'Copyright 2023-2026 by ShwaTech LLC. All rights reserved.'
 
 # Description of the functionality provided by this module
 Description = 'Store and retrieve encrypted secrets with PowerShell on Windows, Linux, or MacOS and also from KeePass 2 databases on Windows'
